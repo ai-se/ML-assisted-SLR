@@ -7,6 +7,7 @@ from sklearn import svm
 from sklearn.feature_extraction import FeatureHasher
 from sklearn import naive_bayes
 from sklearn import tree
+import random
 from time import time
 from scipy.sparse import csr_matrix
 from nltk.corpus import stopwords
@@ -39,7 +40,8 @@ def timer(func):
     return inner
 
 
-
+def iqr(arr):
+    return np.percentile(arr,75)-np.percentile(arr,25)
 
 
 "term frequency "
@@ -818,7 +820,7 @@ def do_NB(train_data,train_label,issmote='smote',neighbors=5):
 
 
 "Load data from file to list of lists"
-def readfile(filename='',thres=[0.02,0.05],pre='stem'):
+def readfile_binary(filename='',thres=[0.02,0.05],pre='stem'):
     dict=[]
     label=[]
     targetlabel=[]
@@ -890,6 +892,39 @@ def readfile_multilabel(filename='',pre='stem'):
     label=np.array(label)
     return label, dict
 
+"top N label is kept"
+def readfile_topN(filename='',pre='stem',num=9):
+    label=[]
+    dict=[]
+    targetlist=[]
+    with open(filename,'r') as f:
+        for doc in f.readlines():
+            try:
+                row=doc.split(' >>> ')[0]
+                label.append(doc.split(' >>> ')[1].split()[0])
+                if pre=='stem':
+                    dict.append(Counter(process(row).split()))
+                elif pre=="bigram":
+                    tm=process(row).split()
+                    temp=[tm[i]+' '+tm[i+1] for i in xrange(len(tm)-1)]
+                    dict.append(Counter(temp+tm))
+                elif pre=="trigram":
+                    tm=process(row).split()
+                    #temp=[tm[i]+' '+tm[i+1] for i in xrange(len(tm)-1)]
+                    temp2=[tm[i]+' '+tm[i+1]+' '+tm[i+2] for i in xrange(len(tm)-2)]
+                    dict.append(Counter(temp2+tm))
+                else:
+                    dict.append(Counter(row.split()))
+            except:
+                pass
+    labelcount=Counter(label)
+    targetlist=np.array(labelcount.keys())[np.argsort(labelcount.values())[-num:]]
+
+    for i,key in enumerate(label):
+        if key not in targetlist:
+            label[i]='others'
+    label=np.array(label)
+    return label,dict
 
 
 

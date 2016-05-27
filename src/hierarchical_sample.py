@@ -19,6 +19,13 @@ def first(list):
     except:
         return list
 
+def random_pro(risk):
+    N=sum(risk)
+    p=random.random()*N
+    for i in range(len(risk)):
+        if sum(risk[:i+1])>p:
+            return i
+
 class b_tree(object):
     def __init__(self,root={}):
         self.root=root
@@ -67,7 +74,7 @@ class b_tree(object):
 
 "Parent"
 class Hierarchical_cluster(object):
-    def __init__(self,data,label,samples=10,thres=0.9):
+    def __init__(self,data,label,samples=10,thres=0.1,iscertain=True):
         self.tree=b_tree()
         self.clusters=1
         self.data=data
@@ -75,6 +82,7 @@ class Hierarchical_cluster(object):
         self.samples=samples
         self.thres=thres
         self.pool=[]
+        self.iscertain=iscertain
 
     def set_samples(self,samples):
         self.samples=samples
@@ -87,6 +95,9 @@ class Hierarchical_cluster(object):
             self.pool=list(set(self.pool)|set(indices))
         except:
             self.pool=list(set(self.pool)|set([indices]))
+
+    def getpool(self):
+        return self.pool
 
     def eval_inertia(self):
         return self.tree.inertia(self.data)
@@ -135,9 +146,9 @@ class Hierarchical_cluster(object):
 
     "will be defined in children classes"
     def split(self,data):
-        return 0,0,0
+        return 0,0
 
-    def addcluster(self):
+    def clustering(self):
 
         indices,route=self.bottom()
 
@@ -146,12 +157,22 @@ class Hierarchical_cluster(object):
             if len(already)<self.samples:
                 num=self.samples-len(already)
                 can=list(set(indices[i])-set(already))
-                sel=list(np.random.choice(can,num,replace=False))
+                try:
+                    sel=list(np.random.choice(can,num,replace=False))
+                except:
+                    sel=can
+
                 self.addlabel(sel)
+
                 already=already+sel
-                ispure=Counter(self.label[already])
-                if max(ispure.values())<self.thres:
-                    axis,splitpoint,gain=self.split(self.data[indices[i]])
+
+                if not already:
+                    continue
+
+                ispure=entropy(self.label[already])
+
+                if ispure>self.thres:
+                    axis,splitpoint=self.split(self.data[indices[i]])
                     tree=self.tree
                     for dir in route[i]:
                         if dir==0:
@@ -162,10 +183,60 @@ class Hierarchical_cluster(object):
                     tree.left=b_tree()
                     tree.right=b_tree()
                     self.clusters=self.clusters+1
-                    self.addcluster()
+                    self.clustering()
                     return self.pool
         return self.pool
 
+    def addcluster(self):
+
+        indices,route=self.bottom()
+
+        best=[]
+
+        for i in xrange(len(indices)):
+            already=list(set(indices[i])&set(self.pool))
+            if len(already)<self.samples:
+                num=self.samples-len(already)
+                can=list(set(indices[i])-set(already))
+                try:
+                    sel=list(np.random.choice(can,num,replace=False))
+                except:
+                    sel=can
+
+                self.addlabel(sel)
+
+                already=already+sel
+
+            if not already:
+                continue
+
+            ispure=entropy(self.label[already])
+            best.append(ispure)
+
+        loc=np.argmax(best)
+        if best[loc]<self.thres:
+            return True
+        if not self.iscertain:
+            loc=random_pro(best)
+
+        axis,splitpoint=self.split(indices[loc])
+        tree=self.tree
+        for dir in route[loc]:
+            if dir==0:
+                tree=tree.left
+            else:
+                tree=tree.right
+        tree.root={'axis':axis,'splitpoint':splitpoint}
+        tree.left=b_tree()
+        tree.right=b_tree()
+        self.clusters=self.clusters+1
+        return False
+
+    def addclusters(self,num):
+        for i in xrange(num):
+            flag=self.addcluster()
+            if flag:
+                return
 
     def generate_full_tree(self):
         leaf,route=self.bottom()
@@ -199,13 +270,17 @@ class Hierarchical_cluster(object):
 "principal component"
 class Pc_cluster(Hierarchical_cluster):
 
-    def split(self,csrmat):
+    def split(self,indices):
 
         def one_dimension(csrmat,axis):
-            return [[csr_dot(vec,axis)] for vec in csrmat]
+            return csrmat*axis.transpose()
+
+        csrmat=self.data[indices]
 
         if csrmat.shape[0]<2:
-            return 0,0,0
+            return 0,0
+            # return 0,0,0
+
         axis=csr_pc(csrmat)
         axis=csr_l2norm(csr_matrix(axis))
         one=one_dimension(csrmat,axis)
@@ -213,14 +288,101 @@ class Pc_cluster(Hierarchical_cluster):
         split=KMeans(n_clusters=2)
         split.fit(one)
         splitpoint=(split.cluster_centers_[1,0]+split.cluster_centers_[0,0])/2
-        labels=split.labels_
 
-        x1=[i for i in xrange(len(labels)) if labels[i]==0]
-        x2=[i for i in xrange(len(labels)) if labels[i]==1]
-        before=csr_inertia(csrmat)
-        after=csr_inertia(csrmat[x1])+csr_inertia(csrmat[x2])
-        gain=before-after
-        return axis,splitpoint,gain
+        # labels=split.labels_
+        # x1=[i for i in xrange(len(labels)) if labels[i]==0]
+        # x2=[i for i in xrange(len(labels)) if labels[i]==1]
+        # before=csr_inertia(csrmat)
+        # after=csr_inertia(csrmat[x1])+csr_inertia(csrmat[x2])
+        # gain=before-after
+        # return axis,splitpoint,gain
+
+        return axis, splitpoint
+
+"different entropy"
+class Pc_cluster_sel(Hierarchical_cluster):
+
+    def split(self,indices):
+
+        def one_dimension(csrmat,axis):
+            return csrmat*axis.transpose()
+
+        csrmat=self.data[indices]
+
+        if csrmat.shape[0]<2:
+            return 0,0
+            # return 0,0,0
+
+        axis=csr_pc(csrmat)
+        axis=csr_l2norm(csr_matrix(axis))
+        one=one_dimension(csrmat,axis)
+
+        split=KMeans(n_clusters=2)
+        split.fit(one)
+        splitpoint=(split.cluster_centers_[1,0]+split.cluster_centers_[0,0])/2
+
+        # labels=split.labels_
+        # x1=[i for i in xrange(len(labels)) if labels[i]==0]
+        # x2=[i for i in xrange(len(labels)) if labels[i]==1]
+        # before=csr_inertia(csrmat)
+        # after=csr_inertia(csrmat[x1])+csr_inertia(csrmat[x2])
+        # gain=before-after
+        # return axis,splitpoint,gain
+
+        return axis, splitpoint
+
+    def addcluster(self):
+
+        indices,route=self.bottom()
+
+        current=[]
+        for i in xrange(len(indices)):
+            already=list(set(indices[i])&set(self.pool))
+            if len(already)<self.samples & len(indices[i])>already:
+                num=self.samples-len(already)
+                can=list(set(indices[i])-set(already))
+                try:
+                    sel=list(np.random.choice(can,num,replace=False))
+                except:
+                    sel=can
+
+                self.addlabel(sel)
+
+                already=already+sel
+            current.append(already)
+
+        Q=Counter(self.label[self.pool])
+        N=sum(Q.values())
+        risk=[]
+        for i in xrange(len(indices)):
+            P=Counter(current[i])
+            M=sum(P.values())
+            if M==0:
+                risk.append(0)
+                continue
+            pro=0
+            for key in P.keys():
+                pro+=np.log2(Q[key]/N)*P[key]/M
+            risk.append(-pro)
+
+        if self.iscertain:
+            loc=np.argmax(risk)
+        else:
+            loc=random_pro(risk)
+
+        axis,splitpoint=self.split(indices[loc])
+        tree=self.tree
+        for dir in route[loc]:
+            if dir==0:
+                tree=tree.left
+            else:
+                tree=tree.right
+        tree.root={'axis':axis,'splitpoint':splitpoint}
+        tree.left=b_tree()
+        tree.right=b_tree()
+        self.clusters=self.clusters+1
+        return False
+
 
 
 

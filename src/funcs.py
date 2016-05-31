@@ -928,3 +928,76 @@ def readfile_topN(filename='',pre='stem',num=9):
 
 
 
+
+##################
+
+
+
+
+
+
+
+
+"Active Learning standard"
+def active_learning(data,label,pool,Classify=do_SVM,issmote="no_smote",neighbors=5,step=50,last=10):
+    pool=list(pool)
+    x=list(len(pool)+np.array(range(last+1))*step)
+
+    testing=list(set(range(len(label)))-set(pool))
+
+    result={}
+    result['F_M']={}
+    result['F_u']={}
+    result['acc']={}
+    for i in x:
+
+        print(issmote+'_active_'+str(i))
+        clf=Classify(data[pool],label[pool],issmote=issmote,neighbors=neighbors)
+        prediction=clf.predict(data[testing])
+        abcd=ABCD(before=label[testing],after=prediction)
+        prec = abcd("Prec")
+        rec = abcd("Rec")
+        TP = abcd("TP")
+        acc = sum(TP.values())/len(testing)
+        pop = Counter(label[testing])
+        prec_M = np.mean(prec.values())
+        rec_M = np.mean(rec.values())
+        prec_u = sum([prec[x]*pop[x] for x in pop])/len(testing)
+        rec_u = sum([rec[x]*pop[x] for x in pop])/len(testing)
+        F_M = 2*prec_M*rec_M/(prec_M+rec_M)
+        F_u = 2*prec_u*rec_u/(prec_u+rec_u)
+        result['F_M'][i]=F_M
+        result['F_u'][i]=F_u
+        result['acc'][i]=acc
+
+        prob=clf.predict_proba(data[testing])
+        certainty = [(sorted(x)[-1]-sorted(x)[-2])/(sorted(x)[-1]) for x in prob]
+        uncertain=np.argsort(certainty)[:step]
+        add=list(np.array(testing)[uncertain])
+        pool=pool+add
+        testing=list(set(testing)-set(add))
+
+    return result
+
+"input=[{},{},...], output={[]}"
+def listin(x):
+
+    def dictadd(a,b):
+        if type(a)==type({}):
+            return {x: dictadd(a[x],b[x]) for x in a}
+        else:
+            if type(a)!=type([]):
+                a=[a]
+            if type(b)!=type([]):
+                b=[b]
+            return a+b
+
+    out={}
+    for a in x:
+        if not out:
+            out=a
+        else:
+            out=dictadd(out,a)
+    return out
+
+

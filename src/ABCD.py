@@ -20,17 +20,17 @@ class counter():
         pass
   def stats(self):
     try:
-      Sen = self.TP / (self.TP + self.FN)
+      Rec = self.TP / (self.TP + self.FN)
       Spec = self.TN / (self.TN + self.FP)
       Prec = self.TP / (self.TP + self.FP)
       Acc = (self.TP + self.TN) / (self.TP + self.FN + self.TN + self.FP)
-      F = 2 * (Prec*Sen) / (Prec+Sen)
+      F = 2 * (Prec*Rec) / (Prec+Rec)
       F1 = 2 * self.TP / (2 * self.TP + self.FP + self.FN)
-      G = 2 * Sen * Spec / (Sen + Spec)
-      G1 = Sen * Spec / (Sen + Spec)
-      return Sen, Spec, Prec, Acc, F, G
+      G = 2 * Rec * Spec / (Rec + Spec)
+      G1 = Rec * Spec / (Rec + Spec)
+      return [Rec, Spec, Prec, Acc, F, G, self.TP, self.FP, self.TN, self.FN]
     except ZeroDivisionError:
-      return 0, 0, 0, 0, 0, 0
+      return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
 class ABCD():
@@ -40,8 +40,14 @@ class ABCD():
   def __init__(self, before, after):
     self.actual = before
     self.predicted = after
+    self.result={}
 
-  def __call__(self):
-    uniques = set(self.actual)
-    for u in list(uniques):
-      yield counter(self.actual, self.predicted, indx=u)
+  def __call__(self,type):
+    typelist=["Rec", "Spec", "Prec", "Acc", "F", "G", "TP", "FP", "TN", "FN"]
+    typeid=typelist.index(type)
+    if not self.result:
+      uniques = set(self.actual)
+      for u in list(uniques):
+        self.result[u] = counter(self.actual, self.predicted, indx=u).stats()
+    result_tmp={x : self.result[x][typeid] for x in self.result}
+    return result_tmp

@@ -15,6 +15,7 @@ from hierarchical_sample import *
 # __author__ = 'Zhe Yu'
 
 def get_data(filename):
+    # filepath='/Users/zhe/PycharmProjects/Datasets/StackExchange/SE/made/'
     filepath='/Users/zhe/PycharmProjects/Datasets/StackExchange/'
     #filepath='/share2/zyu9/Datasets/StackExchange/'
     thres=[0.01,0.05]
@@ -36,7 +37,7 @@ def get_data(filename):
 
 
 
-def draw(F):
+def draw(result,filename):
     font = {'family' : 'normal',
             'weight' : 'bold',
             'size'   : 20}
@@ -45,11 +46,26 @@ def draw(F):
     paras={'lines.linewidth': 5,'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,'figure.autolayout': True,'figure.figsize': (16,8)}
     plt.rcParams.update(paras)
 
-    seq=np.argsort(F.keys())
-    x=F.keys()[seq]
-    y=F.values()[seq]
-    plt.plot(x,y)
-    plt.savefig("../figure/test.png")
+
+    metrics=['F_M','F_u','acc']
+    k=0
+    for metric in metrics:
+        plt.figure(k)
+        for method in result:
+            x=result[method][metric]
+            seq=np.argsort(x.keys())
+            xx=np.array(x.keys())[seq]
+            y=np.array(x.values())[seq]
+            y_median=map(np.median,y)
+            y_iqr=map(iqr,y)
+            line,=plt.plot(xx,y_median,label="median "+method)
+            plt.plot(xx,y_iqr,"-.",color=line.get_color(),label="iqr "+method)
+        plt.ylabel(metric)
+        plt.xlabel("Training Size")
+        plt.legend(bbox_to_anchor=(0.35, 1), loc=1, ncol = 1, borderaxespad=0.)
+        plt.savefig("../figure/"+filename+"_"+metric+".eps")
+        plt.savefig("../figure/"+filename+"_"+metric+".png")
+        k=k+1
 
 def getpool_pc(data,label,num):
     samples=10
@@ -138,6 +154,8 @@ def getpool_random(data,label,num):
     return pool
 
 
+
+
 def test(filename):
     methods=[getpool_random,getpool_kmeans_iter,getpool_kmeans,getpool_pc,getpool_pc_sel,getpool_pc_unc,getpool_pc_sel_unc]
 
@@ -147,23 +165,24 @@ def test(filename):
     repeats=25
 
 
-    result={}
-    for method in methods:
-        result[method.__name__ ]=[]
-        for i in xrange(repeats):
-            pool1=getpool_random(data,label,100)
-            result[method.__name__ ].append(entropy(label[pool1]))
-            print("%s: %d" %(method.__name__ ,i))
-        print(method.__name__)
-        print(Counter(label[pool1]))
-
+    result=[]
+    entr=[]
+    for i in xrange(repeats):
+        result_tmp={}
+        entr_tmp={}
+        for method in methods:
+            pool=getpool_random(data,label,100)
+            entr_tmp[method.__name__ ]=entropy(label[pool])
+            result_tmp[method.__name__ ]=active_learning(data,label,pool,step=10,last=10)
+        result.append(result_tmp)
+        entr.append(entr_tmp)
+    entr=listin(entr)
+    result=listin(result)
     with open('../dump/init_'+filename+'.pickle', 'wb') as handle:
+        pickle.dump(entr, handle)
+    with open('../dump/result_'+filename+'.pickle', 'wb') as handle:
         pickle.dump(result, handle)
-
-    for method in methods:
-        print(method.__name__ +":")
-        print(np.median(result[method.__name__ ]))
-        print(iqr(result[method.__name__ ]))
+    set_trace()
 
 
 
@@ -171,12 +190,15 @@ def show(filename):
     methods=[getpool_random,getpool_kmeans_iter,getpool_kmeans,getpool_pc,getpool_pc_sel,getpool_pc_unc,getpool_pc_sel_unc]
 
     with open('../dump/init_'+filename+'.pickle', 'rb') as handle:
+        entr=pickle.load(handle)
+    with open('../dump/result_'+filename+'.pickle', 'rb') as handle:
         result=pickle.load(handle)
 
     for method in methods:
         print(method.__name__ +":")
-        print(np.median(result[method.__name__ ]))
-        print(iqr(result[method.__name__ ]))
+        print(np.median(entr[method.__name__ ]))
+        print(iqr(entr[method.__name__ ]))
 
+    draw(result,filename)
 if __name__ == '__main__':
     eval(cmd())

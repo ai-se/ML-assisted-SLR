@@ -99,6 +99,10 @@ class Hierarchical_cluster(object):
     def getpool(self):
         return self.pool
 
+    def getclusters(self):
+        self.bottom()
+        return self.clusters
+
     def eval_inertia(self):
         return self.tree.inertia(self.data)
 
@@ -125,6 +129,7 @@ class Hierarchical_cluster(object):
     def bottom(self):
 
         def iter_bottom(part,tree,route=[]):
+            self.clusters=self.clusters+1
             if tree.root:
                 tmp=[]
                 routenew=[]
@@ -141,12 +146,64 @@ class Hierarchical_cluster(object):
             else:
                 return [part],[route]
 
+        self.clusters=0
         indices,route=iter_bottom(np.array(range(self.data.shape[0])),self.tree)
         return indices,route
 
     "will be defined in children classes"
-    def split(self,data):
+    def split(self,indices):
         return 0,0
+
+    def split_on(self, indices, axis):
+
+        csrmat = self.data[indices]
+
+        if csrmat.shape[0] < 2:
+            return 0, 0
+            # return 0,0,0
+
+        one = one_dimension(csrmat, axis)
+
+        split = KMeans(n_clusters=2)
+        split.fit(one)
+        splitpoint = (split.cluster_centers_[1, 0] + split.cluster_centers_[0, 0]) / 2
+
+        return splitpoint
+
+    def browse(self, route):
+        tree = self.tree
+        part = range(len(self.label))
+        for dir in route:
+            west, east = tree.split(self.data[part])
+            west = np.array(part[west])
+            east = np.array(part[east])
+            if dir == 0:
+                tree = tree.left
+                part = west
+            else:
+                tree = tree.right
+                part = east
+        return tree, part
+
+    def get_axis(self, route):
+        tree, part = browse(route)
+        std = csr_stds(self.data[part])
+        return np.argsort(-std)
+
+    def addcluster_at(self, route, axis=[]):
+        tree, part = browse(route)
+        if not axis:
+            axis, splitpoint = self.split(part)
+        else:
+            splitpoint = self.split_on(part,axis)
+        tree.root = {'axis': axis, 'splitpoint': splitpoint}
+        tree.left = b_tree()
+        tree.right = b_tree()
+
+    def greedy_addcluster_at(self,route):
+        at=self.get_axis(route)[0]
+        axis=csr_matrix(([1],([0],[at])),shape=(1,self.data.shape[1]))
+        self.addcluster_at(route,axis)
 
     def clustering(self):
 
@@ -173,19 +230,14 @@ class Hierarchical_cluster(object):
 
                 if ispure>self.thres:
                     axis,splitpoint=self.split(self.data[indices[i]])
-                    tree=self.tree
-                    for dir in route[i]:
-                        if dir==0:
-                            tree=tree.left
-                        else:
-                            tree=tree.right
+                    tree, _=self.browse(route[i])
                     tree.root={'axis':axis,'splitpoint':splitpoint}
                     tree.left=b_tree()
                     tree.right=b_tree()
-                    self.clusters=self.clusters+1
                     self.clustering()
                     return self.pool
         return self.pool
+
 
     def addcluster(self):
 
@@ -220,16 +272,10 @@ class Hierarchical_cluster(object):
             loc=random_pro(best)
 
         axis,splitpoint=self.split(indices[loc])
-        tree=self.tree
-        for dir in route[loc]:
-            if dir==0:
-                tree=tree.left
-            else:
-                tree=tree.right
+        tree, _ = self.browse(route[i])
         tree.root={'axis':axis,'splitpoint':splitpoint}
         tree.left=b_tree()
         tree.right=b_tree()
-        self.clusters=self.clusters+1
         return False
 
     def addclusters(self,num):
@@ -266,14 +312,54 @@ class Hierarchical_cluster(object):
                 leaf.insert(indexlist[len(route_a)-1],list(leaf_a)+list(leaf_b))
         return result_tree
 
+"Split on feature, DT like"
+class Dt_cluster(Hierarchical_cluster):
+    def addcluster(self):
+
+        indices, route = self.bottom()
+
+        current = []
+        for i in xrange(len(indices)):
+            already = list(set(indices[i]) & set(self.pool))
+            if len(already) < self.samples & len(indices[i]) > already:
+                num = self.samples - len(already)
+                can = list(set(indices[i]) - set(already))
+                try:
+                    sel = list(np.random.choice(can, num, replace=False))
+                except:
+                    sel = can
+
+                self.addlabel(sel)
+
+                already = already + sel
+            current.append(already)
+
+        Q = Counter(self.label[self.pool])
+        N = sum(Q.values())
+        risk = []
+        for i in xrange(len(indices)):
+            P = Counter(current[i])
+            M = sum(P.values())
+            if M == 0:
+                risk.append(0)
+                continue
+            pro = 0
+            for key in P.keys():
+                pro += np.log2(Q[key] / N) * P[key] / M
+            risk.append(-pro)
+
+        if self.iscertain:
+            loc = np.argmax(risk)
+        else:
+            loc = random_pro(risk)
+
+        self.greedy_addcluster_at(route[loc])
+        return False
 
 "principal component"
 class Pc_cluster(Hierarchical_cluster):
 
     def split(self,indices):
-
-        def one_dimension(csrmat,axis):
-            return csrmat*axis.transpose()
 
         csrmat=self.data[indices]
 
@@ -380,7 +466,6 @@ class Pc_cluster_sel(Hierarchical_cluster):
         tree.root={'axis':axis,'splitpoint':splitpoint}
         tree.left=b_tree()
         tree.right=b_tree()
-        self.clusters=self.clusters+1
         return False
 
 

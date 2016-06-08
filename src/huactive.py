@@ -15,25 +15,47 @@ from hierarchical_sample import *
 # __author__ = 'Zhe Yu'
 
 def get_data(filename):
+    filepath = 'C:/Datasets/StackExchange/SE//made/'
     # filepath='/Users/zhe/PycharmProjects/Datasets/StackExchange/SE/made/'
-    filepath='/Users/zhe/PycharmProjects/Datasets/StackExchange/'
-    #filepath='/share2/zyu9/Datasets/StackExchange/'
-    thres=[0.01,0.05]
+    # filepath='/Users/zhe/PycharmProjects/Datasets/StackExchange/'
+    # filepath='/share2/zyu9/Datasets/StackExchange/'
+    thres=[0.02,0.07]
     filetype=".txt"
     pre="stem"
     sel="hash"
     fea="tf"
     norm="l2row"
     n_feature=4000
-    # label,dict=readfile_binary(filename=filepath+filename+filetype,thres=thres,pre=pre)
-    label,dict=readfile_topN(filename=filepath+filename+filetype,pre=pre,num=20)
+    label,dict=readfile_binary(filename=filepath+filename+filetype,thres=thres,pre=pre)
+    # label,dict=readfile_topN(filename=filepath+filename+filetype,pre=pre,num=20)
     dict=np.array(dict)
 
-    if not sel=="supervised":
-        dict=make_feature(dict,sel=sel,fea=fea,norm=norm,n_features=n_feature)
+
+    dict=make_feature(dict,sel=sel,fea=fea,norm=norm,n_features=n_feature)
 
 
     return dict,label
+
+
+def get_data_voc(filename):
+    filepath = 'C:/Datasets/StackExchange/SE//made/'
+    # filepath='/Users/zhe/PycharmProjects/Datasets/StackExchange/SE/made/'
+    # filepath='/Users/zhe/PycharmProjects/Datasets/StackExchange/'
+    # filepath='/share2/zyu9/Datasets/StackExchange/'
+    thres = [0.02, 0.07]
+    filetype = ".txt"
+    pre = "stem"
+    sel = "tfidf"
+    fea = "tf"
+    norm = "l2row"
+    n_feature = 4000
+    label, dict = readfile_binary(filename=filepath + filename + filetype, thres=thres, pre=pre)
+    # label,dict=readfile_topN(filename=filepath+filename+filetype,pre=pre,num=20)
+    dict = np.array(dict)
+
+    dict, voc = make_feature_voc(dict, sel=sel, fea=fea, norm=norm, n_features=n_feature)
+
+    return dict, label, voc
 
 
 
@@ -47,7 +69,8 @@ def draw(result,filename):
     plt.rcParams.update(paras)
 
 
-    metrics=['F_M','F_u','acc']
+    # metrics=['F_M','F_u','acc']
+    metrics=["F_pos"]
     k=0
     for metric in metrics:
         plt.figure(k)
@@ -97,6 +120,22 @@ def getpool_pc_sel_unc(data,label,num):
     pos=[i for i in xrange(len(label)) if label[i]=="pos"]
     cluster.addlabel(random.choice(pos))
     cluster.addclusters(int(num/samples))
+    return cluster.getpool()
+
+def getpool_dt(data,label,num):
+    samples = 10
+    cluster = Dt_cluster(data, label, samples=samples, thres=-0.05, iscertain=False)
+    # pos = [i for i in xrange(len(label)) if label[i] == "pos"]
+    # cluster.addlabel(random.choice(pos))
+    cluster.addclusters(int(num / samples))
+    return cluster.getpool()
+
+def getpool_dt_unc(data,label,num):
+    samples = 10
+    cluster = Dt_cluster(data, label, samples=samples, thres=-0.05, iscertain=True)
+    # pos = [i for i in xrange(len(label)) if label[i] == "pos"]
+    # cluster.addlabel(random.choice(pos))
+    cluster.addclusters(int(num / samples))
     return cluster.getpool()
 
 def getpool_kmeans(data,label,num):
@@ -157,7 +196,7 @@ def getpool_random(data,label,num):
 
 
 def test(filename):
-    methods=[getpool_random,getpool_kmeans_iter,getpool_kmeans,getpool_pc,getpool_pc_sel,getpool_pc_unc,getpool_pc_sel_unc]
+    methods=[getpool_dt,getpool_dt_unc,getpool_random,getpool_kmeans_iter,getpool_kmeans]
 
     data,label=get_data(filename)
     print(Counter(label))
@@ -171,27 +210,28 @@ def test(filename):
         result_tmp={}
         entr_tmp={}
         for method in methods:
-            pool=getpool_random(data,label,100)
+            pool=getpool_random(data,label,500)
             entr_tmp[method.__name__ ]=entropy(label[pool])
-            result_tmp[method.__name__ ]=active_learning(data,label,pool,step=10,last=10)
+            result_tmp[method.__name__ ]=active_learning(data,label,pool,issmote="smote",step=50,last=10)
         result.append(result_tmp)
         entr.append(entr_tmp)
     entr=listin(entr)
     result=listin(result)
-    with open('../dump/init_'+filename+'.pickle', 'wb') as handle:
+    with open('../dump/init_dt_'+filename+'.pickle', 'wb') as handle:
         pickle.dump(entr, handle)
-    with open('../dump/result_'+filename+'.pickle', 'wb') as handle:
+    with open('../dump/result_dt_'+filename+'.pickle', 'wb') as handle:
         pickle.dump(result, handle)
     set_trace()
 
 
 
 def show(filename):
-    methods=[getpool_random,getpool_kmeans_iter,getpool_kmeans,getpool_pc,getpool_pc_sel,getpool_pc_unc,getpool_pc_sel_unc]
+    # methods=[getpool_random,getpool_kmeans_iter,getpool_kmeans,getpool_pc,getpool_pc_sel,getpool_pc_unc,getpool_pc_sel_unc]
+    methods = [getpool_dt, getpool_dt_unc, getpool_random, getpool_kmeans_iter, getpool_kmeans]
 
-    with open('../dump/init_'+filename+'.pickle', 'rb') as handle:
+    with open('../dump/init_dt_'+filename+'.pickle', 'rb') as handle:
         entr=pickle.load(handle)
-    with open('../dump/result_'+filename+'.pickle', 'rb') as handle:
+    with open('../dump/result_dt_'+filename+'.pickle', 'rb') as handle:
         result=pickle.load(handle)
 
     for method in methods:
@@ -200,5 +240,14 @@ def show(filename):
         print(iqr(entr[method.__name__ ]))
 
     draw(result,filename)
+
+def options(filename):
+    data, label, voc = get_data_voc(filename)
+    std=csr_stds(data)
+    voc_order=voc[np.argsort(-std)]
+    set_trace()
+    print()
+
+
 if __name__ == '__main__':
     eval(cmd())

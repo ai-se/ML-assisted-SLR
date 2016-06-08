@@ -212,7 +212,7 @@ def test(filename):
         for method in methods:
             pool=getpool_random(data,label,500)
             entr_tmp[method.__name__ ]=entropy(label[pool])
-            result_tmp[method.__name__ ]=active_learning(data,label,pool,issmote="smote",step=50,last=10)
+            result_tmp[method.__name__ ]=active_learning(data,label,pool,issmote="no_smote",step=50,last=10)
         result.append(result_tmp)
         entr.append(entr_tmp)
     entr=listin(entr)

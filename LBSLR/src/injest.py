@@ -193,7 +193,7 @@ class xml2elastic:
                 yield idx, conference, year, title, abstract, filter(None, authors)
 
     @staticmethod
-    def decode_acm(dir):
+    def decode_acm():
         dir = '../data/five/acm.csv'
         with open(dir, 'rb') as f:
             spamreader = f.readlines()
@@ -207,6 +207,25 @@ class xml2elastic:
                 if not ft_url:
                     continue
                 ft = unicodedata.normalize('NFKD', parser.from_file(ft_url)["content"].strip()).encode('ascii', 'ignore')
+
+                yield idx, title, filter(None, authors), year, citedCount, ft
+
+    @staticmethod
+    def decode_ieee():
+        dir = '../data/five/ieee.csv'
+        with open(dir, 'rb') as f:
+            spamreader = f.readlines()
+            for idx, row in enumerate(spamreader[2:]):
+                row = row.strip().split("\",\"")
+                title = str(row[0].encode('ascii', 'ignore'))
+                authors = row[1].encode('ascii', 'ignore').split(';')
+                year = str(row[5].encode('ascii', 'ignore'))
+                citedCount = str(row[21].encode('ascii', 'ignore'))
+                ft_url = row[15]
+                if not ft_url:
+                    continue
+                ft = unicodedata.normalize('NFKD', parser.from_file(ft_url)["content"].strip()).encode('ascii',
+                                                                                                       'ignore')
 
                 yield idx, title, filter(None, authors), year, citedCount, ft
 
@@ -224,7 +243,7 @@ class xml2elastic:
         MAX_IRRELEVANT = 250
         MAX_CONTROL = 1500
 
-        for (idx, title, authors, year, citedCount, ft_url) in self.decode_acm(dir):
+        for (idx, title, authors, year, citedCount, ft_url) in self.decode_acm():
             # CONTROL = True if random() < 0.1 and MAX_CONTROL > 0 else False
             # if CONTROL: MAX_CONTROL -= 1
             CONTROL = False

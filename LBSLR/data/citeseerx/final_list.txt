@@ -1,0 +1,71 @@
+Classification-tree models of software-quality over multiple releases
+Software quality prediction using mixture models with EM algorithm
+Evaluating capture-recapture models with two inspectors
+A Probabilistic Model for Software Defect Prediction
+Comparing software prediction techniques using simulation
+Software quality prediction using median-adjusted class labels
+Tree-based software quality estimation models for fault prediction
+Predicting fault prone modules by the Dempster-Shafer belief networks
+Application of neural networks for software quality prediction using object-oriented metrics
+An empirical comparison and characterization of high defect and high complexity modules
+Assessing predictors of software defects
+Extract rules from software quality prediction model based on neural network
+Object oriented software quality prediction using general regression neural networks
+Empirical Assessment of Machine Learning based Software Defect Prediction Techniques
+Assessment of a New Three-Group Software Quality Classification Technique: An Empirical Case Study
+A Novel Method for Early Software Quality Prediction Based on Support Vector Machine
+An investigation of the effect of module size on defect prediction using static measures
+Predicting the location and number of faults in large software systems
+Software defect association mining and defect correction effort prediction
+An empirical study of predicting software faults with case-based reasoning
+A Unified Framework for Defect Data Analysis Using the MBR Technique
+Empirical Analysis of Object-Oriented Design Metrics for Predicting High and Low Severity Faults
+A Statistical Framework for the Prediction of Fault-Proneness
+Data Mining Static Code Attributes to Learn Defect Predictors
+A practical method for the software fault-prediction
+A Statistical Framework for the Prediction of Fault-Proneness
+Empirical Analysis of Software Fault Content and Fault Proneness Using Bayesian Methods
+Software Quality Analysis of Unlabeled Program Modules With Semisupervised Clustering
+Predicting software defects in varying development lifecycles using Bayesian nets
+Identifying and characterizing change-prone classes in two large-scale open-source products
+Benchmarking Classification Models for Software Defect Prediction: A Proposed Framework and Novel Findings
+Regression via Classification applied on software defect estimation
+Applying machine learning to software fault-proneness prediction
+Mining software repositories for comprehensible software fault prediction models
+Predicting defect-prone software modules using support vector machines
+A systematic review of software fault prediction studies
+Data mining source code for locating software bugs: A case study in telecommunication industry
+Empirical Case Studies in Attribute Noise Detection
+Feature Selection with Imbalanced Data for Software Defect Prediction
+Investigating the effect of dataset size, metrics sets, and feature selection techniques on software fault prediction problem
+On the relative value of cross-company and within-company data for defect prediction
+Defect prediction from static code features: current results, limitations, new approaches
+Cost-sensitive boosting neural networks for software defect prediction
+Evolutionary Optimization of Software Quality Modeling with Multiple Repositories
+A Comparative Study of Ensemble Feature Selection Techniques for Software Defect Prediction
+Feature Selection Using Decision Tree Induction in Class level Metrics Dataset for Software Defect Predictions
+A systematic and comprehensive investigation of methods to build and evaluate fault prediction models
+Practical development of an Eclipse-based software fault prediction tool using Naive Bayes algorithm
+A General Software Defect-Proneness Prediction Framework
+Comparing Boosting and Bagging Techniques With Noisy and Imbalanced Data
+Class noise detection based on software metrics and ROC curves
+Software Defect Prediction Using Non-Negative Matrix Factorization
+An industrial case study of classifier ensembles for locating software defects
+An ant colony optimization algorithm to improve software quality prediction models: Case of class stability
+Reflections on the NASA MDP data sets
+Transfer learning for cross-company software defect prediction
+Simulated Annealing Neural Network for Software Failure Prediction
+Effective Software Fault Localization Using an RBF Neural Network
+User preferences based software defect detection algorithms selection using MCDM
+Software fault prediction based on grey neural network
+Software Fault Prediction Using Quad Tree-Based K-Means Clustering Algorithm
+Using Coding-Based Ensemble Learning to Improve Software Defect Prediction
+Evaluating Stratification Alternatives to Improve Software Defect Prediction
+Artificial neural network-based metric selection for software fault-prone prediction model
+A Novel PCA-BP Fuzzy Neural Network Model for Software Defect Prediction
+The design of polynomial function-based neural network predictors for detection of software defects
+Toward Comprehensible Software Fault Prediction Models Using Bayesian Network Classifiers
+Data Quality: Some Comments on the NASA Software Defect Datasets
+Using Class Imbalance Learning for Software Defect Prediction
+Balancing Privacy and Utility in Cross-Company Defect Prediction
+Software fault prediction metrics: A systematic literature review

@@ -83,6 +83,7 @@ class Hierarchical_cluster(object):
         self.thres=thres
         self.pool=[]
         self.iscertain=iscertain
+        self.eps=0.0000000001
 
     def set_samples(self,samples):
         self.samples=samples
@@ -172,7 +173,7 @@ class Hierarchical_cluster(object):
 
     def browse(self, route):
         tree = self.tree
-        part = range(len(self.label))
+        part = np.array(range(len(self.label)))
         for dir in route:
             west, east = tree.split(self.data[part])
             west = np.array(part[west])
@@ -186,16 +187,19 @@ class Hierarchical_cluster(object):
         return tree, part
 
     def get_axis(self, route):
-        tree, part = browse(route)
-        std = csr_stds(self.data[part])
-        return np.argsort(-std)
+        tree, part = self.browse(route)
+        # std = csr_stds(self.data[part])
+        tmp=self.data[part]
+        div=[np.abs(tmp.shape[0]-2*len(tmp.getcol(i).data)) for i in xrange(tmp.shape[1])]
+
+        return np.argsort(div)
 
     def addcluster_at(self, route, axis=[]):
-        tree, part = browse(route)
-        if not axis:
+        tree, part = self.browse(route)
+        if not list(axis):
             axis, splitpoint = self.split(part)
         else:
-            splitpoint = self.split_on(part,axis)
+            splitpoint = self.eps
         tree.root = {'axis': axis, 'splitpoint': splitpoint}
         tree.left = b_tree()
         tree.right = b_tree()
@@ -240,14 +244,13 @@ class Hierarchical_cluster(object):
 
 
     def addcluster(self):
-
         indices,route=self.bottom()
 
         best=[]
 
         for i in xrange(len(indices)):
             already=list(set(indices[i])&set(self.pool))
-            if len(already)<self.samples:
+            if len(already)<self.samples&len(indices[i])>len(already):
                 num=self.samples-len(already)
                 can=list(set(indices[i])-set(already))
                 try:
@@ -263,7 +266,11 @@ class Hierarchical_cluster(object):
                 continue
 
             ispure=entropy(self.label[already])
+            if ispure==0:
+                ispure=self.eps
             best.append(ispure)
+
+
 
         loc=np.argmax(best)
         if best[loc]<self.thres:
@@ -279,7 +286,7 @@ class Hierarchical_cluster(object):
         return False
 
     def addclusters(self,num):
-        for i in xrange(num):
+        while(len(self.pool)<num):
             flag=self.addcluster()
             if flag:
                 return
@@ -321,14 +328,13 @@ class Dt_cluster(Hierarchical_cluster):
         current = []
         for i in xrange(len(indices)):
             already = list(set(indices[i]) & set(self.pool))
-            if len(already) < self.samples & len(indices[i]) > already:
+            if len(already) < self.samples & len(indices[i]) > len(already):
                 num = self.samples - len(already)
                 can = list(set(indices[i]) - set(already))
                 try:
                     sel = list(np.random.choice(can, num, replace=False))
                 except:
                     sel = can
-
                 self.addlabel(sel)
 
                 already = already + sel
@@ -338,21 +344,21 @@ class Dt_cluster(Hierarchical_cluster):
         N = sum(Q.values())
         risk = []
         for i in xrange(len(indices)):
-            P = Counter(current[i])
+            P = Counter(self.label[current[i]])
             M = sum(P.values())
             if M == 0:
-                risk.append(0)
+                risk.append(self.eps)
                 continue
             pro = 0
             for key in P.keys():
                 pro += np.log2(Q[key] / N) * P[key] / M
+            if pro==0:
+                pro=-self.eps
             risk.append(-pro)
-
         if self.iscertain:
             loc = np.argmax(risk)
         else:
             loc = random_pro(risk)
-
         self.greedy_addcluster_at(route[loc])
         return False
 
@@ -424,7 +430,7 @@ class Pc_cluster_sel(Hierarchical_cluster):
         current=[]
         for i in xrange(len(indices)):
             already=list(set(indices[i])&set(self.pool))
-            if len(already)<self.samples & len(indices[i])>already:
+            if len(already)<self.samples & len(indices[i])>len(already):
                 num=self.samples-len(already)
                 can=list(set(indices[i])-set(already))
                 try:
@@ -440,21 +446,23 @@ class Pc_cluster_sel(Hierarchical_cluster):
         Q=Counter(self.label[self.pool])
         N=sum(Q.values())
         risk=[]
-        for i in xrange(len(indices)):
-            P=Counter(current[i])
-            M=sum(P.values())
-            if M==0:
-                risk.append(0)
-                continue
-            pro=0
-            for key in P.keys():
-                pro+=np.log2(Q[key]/N)*P[key]/M
-            risk.append(-pro)
 
+        for i in xrange(len(indices)):
+            P = Counter(self.label[current[i]])
+            M = sum(P.values())
+            if M == 0:
+                risk.append(self.eps)
+                continue
+            pro = 0
+            for key in P.keys():
+                pro += np.log2(Q[key] / N) * P[key] / M
+            if pro == 0:
+                pro = -self.eps
+            risk.append(-pro)
         if self.iscertain:
-            loc=np.argmax(risk)
+            loc = np.argmax(risk)
         else:
-            loc=random_pro(risk)
+            loc = random_pro(risk)
 
         axis,splitpoint=self.split(indices[loc])
         tree=self.tree

@@ -939,9 +939,9 @@ def readfile_topN(filename='',pre='stem',num=9):
 
 
 "Active Learning standard"
-def active_learning(data,label,pool,Classify=do_SVM,issmote="no_smote",neighbors=5,step=50,last=10):
+def active_learning(data,label,pool,Classify=do_SVM,sampling="uncertainty",issmote="no_smote",neighbors=5,step=50,last=10):
     pool=list(pool)
-    x=list(len(pool)+np.array(range(last+1))*step)
+    x=range(last+1)
 
     testing=list(set(range(len(label)))-set(pool))
 
@@ -950,8 +950,9 @@ def active_learning(data,label,pool,Classify=do_SVM,issmote="no_smote",neighbors
     result['F_u']={}
     result['acc']={}
     result['F_pos'] = {}
+    result['prog'] = {}
     for i in x:
-
+        prog = Counter(label[pool])['pos'] / Counter(label)["pos"]
         print(issmote+'_active_'+str(i))
         clf=Classify(data[pool],label[pool],issmote=issmote,neighbors=neighbors)
         prediction=clf.predict(data[testing])
@@ -972,9 +973,16 @@ def active_learning(data,label,pool,Classify=do_SVM,issmote="no_smote",neighbors
         result['F_u'][i]=F_u
         result['acc'][i]=acc
         result['F_pos'][i] = F_1["pos"]
+        result['prog'][i] = prog
 
         prob=clf.predict_proba(data[testing])
-        certainty = [(sorted(x)[-1]-sorted(x)[-2])/(sorted(x)[-1]) for x in prob]
+        if sampling=="uncertainty":
+            certainty = [(sorted(x)[-1]-sorted(x)[-2])/(sorted(x)[-1]) for x in prob]
+        elif sampling=="pos":
+            certainty = [x[list(clf.classes_).index("pos")] for x in prob]
+        else:
+            print("Unknown sampling type")
+            exit()
         uncertain=np.argsort(certainty)[:step]
         add=list(np.array(testing)[uncertain])
         pool=pool+add

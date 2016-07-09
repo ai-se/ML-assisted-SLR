@@ -102,3 +102,30 @@ def csr_inertia(csrmat):
 "iqr"
 def csr_iqr(csrvec):
     return np.percentile(csrvec.toarray(),75)-np.percentile(csrvec.toarray(),25)
+
+"projection"
+def one_dimension(csrmat, axis):
+    return csrmat * axis.transpose()
+
+"variance"
+def csr_std(csrvec):
+    xbar=csrvec.mean()
+    values=csrvec.data
+    n=csrvec.shape[1]
+    if n<2:
+        return 0
+    y=(n-len(values))*(xbar**2)
+    for x in values:
+        y=y+(x-xbar)**2
+    return np.sqrt(y/(n-1))
+
+def csr_stds(csrmat,axis=1):
+    if axis==1:
+        tmp=csrmat.transpose()
+    else:
+        tmp=csrmat
+    return np.array([csr_std(x) for x in tmp])
+
+"diameter"
+def csr_diameters(csrmat):
+    return (csrmat.max(0)-csrmat.min(0)).toarray()[0]

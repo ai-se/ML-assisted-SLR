@@ -16,7 +16,7 @@ def name(file):
   return file[:-4]
 
 def explore(dir='/Users/zhe/PycharmProjects/Datasets/StackExchange/SE/'):
-  risk=[0.01,0.01,0.1,0.3,0.58]
+  risk=[0.01,0.05,0.1,0.3,0.54]
   num=len(risk)
   for (dirpath, dirnames, filenames) in walk(dir): break
   filenames=[f for f in filenames if f[-3:]=='txt']
@@ -29,25 +29,25 @@ def explore(dir='/Users/zhe/PycharmProjects/Datasets/StackExchange/SE/'):
       with open(dir+file) as fp:
         for n, line in enumerate(fp):
           b.append(line.split(' >>> ')[0])
-      print(file)
-      print(len(b))
       tmp=range(len(b))
       random.shuffle(tmp)
       b=list(np.array(b)[tmp])
       body.update({file:b})
 
-    tot=5000*i
+    tot=5000*(i+1)
     x=""
     for j in xrange(tot):
       which=random_pro(risk)
       x = x + body[sample[which]].pop() + " >>> "+name(sample[which])+"\n"
 
-    with open('/Users/zhe/PycharmProjects/Datasets/StackExchange/SE/made/SE%d.txt'%(int(i)), 'w') as writer:
+    with open(dir+'/made/SE%d.txt'%(int(i)), 'w') as writer:
       writer.write(x)
+    print(sample)
 
 
 
   # ----- Debug -----
 
 if __name__=="__main__":
-  explore()
+  dir="C:/Datasets/StackExchange/SE/"
+  explore(dir)

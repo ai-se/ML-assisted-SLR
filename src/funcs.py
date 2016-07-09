@@ -8,6 +8,7 @@ from sklearn.feature_extraction import FeatureHasher
 from sklearn import naive_bayes
 from sklearn import tree
 import random
+from random import randint
 from time import time
 from scipy.sparse import csr_matrix
 from nltk.corpus import stopwords
@@ -207,7 +208,6 @@ def make_feature_super(dict,label,i_minor,fea='tf',norm="l2row",n_features=10000
 "make feature matrix"
 def make_feature(corpus,sel="tfidf",fea='tf',norm="l2row",n_features=10000):
 
-
     if sel=="hash":
         if fea=='tfidf_fea':
             corpus=tfidf_fea(corpus)
@@ -259,7 +259,7 @@ def make_feature(corpus,sel="tfidf",fea='tf',norm="l2row",n_features=10000):
 "make feature matrix and also return vocabulary"
 def make_feature_voc(corpus,sel="tfidf",fea='tf',norm="l2row",n_features=10000):
 
-    keys=[]
+    keys=np.array([])
     if sel=="hash":
         if fea=='tfidf_fea':
             corpus=tfidf_fea(corpus)
@@ -443,7 +443,7 @@ def smote_most(data,label,k=5):
                 indx=list(set(list(sub[mid].indices)+list(sub[nn].indices)))
                 datamade=[]
                 for j in indx:
-                    gap=random()
+                    gap=random.random()
                     datamade.append((sub[nn,j]-sub[mid,j])*gap+sub[mid,j])
                 row.extend([i]*len(indx))
                 column.extend(indx)
@@ -820,7 +820,7 @@ def do_NB(train_data,train_label,issmote='smote',neighbors=5):
 
 
 "Load data from file to list of lists"
-def readfile_binary(filename='',thres=[0.02,0.05],pre='stem'):
+def readfile_binary(filename='',thres=[0.02,0.07],pre='stem'):
     dict=[]
     label=[]
     targetlabel=[]
@@ -862,7 +862,7 @@ def readfile_binary(filename='',thres=[0.02,0.05],pre='stem'):
         else:
             label[i]='neg'
     label=np.array(label)
-
+    print("Target Label: %s" %targetlabel)
     return label, dict
 
 "Load data, multi-label"
@@ -939,9 +939,9 @@ def readfile_topN(filename='',pre='stem',num=9):
 
 
 "Active Learning standard"
-def active_learning(data,label,pool,Classify=do_SVM,issmote="no_smote",neighbors=5,step=50,last=10):
+def active_learning(data,label,pool,Classify=do_SVM,sampling="uncertainty",issmote="no_smote",neighbors=5,step=50,last=10):
     pool=list(pool)
-    x=list(len(pool)+np.array(range(last+1))*step)
+    x=range(last+1)
 
     testing=list(set(range(len(label)))-set(pool))
 
@@ -949,8 +949,10 @@ def active_learning(data,label,pool,Classify=do_SVM,issmote="no_smote",neighbors
     result['F_M']={}
     result['F_u']={}
     result['acc']={}
+    result['F_pos'] = {}
+    result['prog'] = {}
     for i in x:
-
+        prog = Counter(label[pool])['pos'] / Counter(label)["pos"]
         print(issmote+'_active_'+str(i))
         clf=Classify(data[pool],label[pool],issmote=issmote,neighbors=neighbors)
         prediction=clf.predict(data[testing])
@@ -958,6 +960,7 @@ def active_learning(data,label,pool,Classify=do_SVM,issmote="no_smote",neighbors
         prec = abcd("Prec")
         rec = abcd("Rec")
         TP = abcd("TP")
+        F_1 = abcd("F")
         acc = sum(TP.values())/len(testing)
         pop = Counter(label[testing])
         prec_M = np.mean(prec.values())
@@ -969,9 +972,17 @@ def active_learning(data,label,pool,Classify=do_SVM,issmote="no_smote",neighbors
         result['F_M'][i]=F_M
         result['F_u'][i]=F_u
         result['acc'][i]=acc
+        result['F_pos'][i] = F_1["pos"]
+        result['prog'][i] = prog
 
         prob=clf.predict_proba(data[testing])
-        certainty = [(sorted(x)[-1]-sorted(x)[-2])/(sorted(x)[-1]) for x in prob]
+        if sampling=="uncertainty":
+            certainty = [(sorted(x)[-1]-sorted(x)[-2])/(sorted(x)[-1]) for x in prob]
+        elif sampling=="pos":
+            certainty = [x[list(clf.classes_).index("pos")] for x in prob]
+        else:
+            print("Unknown sampling type")
+            exit()
         uncertain=np.argsort(certainty)[:step]
         add=list(np.array(testing)[uncertain])
         pool=pool+add

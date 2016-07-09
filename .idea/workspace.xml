@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c66b0489-06e0-49bd-b63b-bb63100c41d9" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ABCD.py" afterPath="$PROJECT_DIR$/src/ABCD.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/funcs.py" afterPath="$PROJECT_DIR$/src/funcs.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/huactive.py" afterPath="$PROJECT_DIR$/src/huactive.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Hierarchical-Uncertainty-Sampling.iws" />
@@ -65,7 +62,7 @@
       <file leaf-file-name="huactive.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/huactive.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.28907922">
+            <state vertical-scroll-proportion="-1.8747324">
               <caret line="18" column="64" selection-start-line="18" selection-start-column="64" selection-end-line="18" selection-end-column="64" />
               <folding>
                 <element signature="e#0#47#0" expanded="true" />
@@ -605,7 +602,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/huactive.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.28907922">
+        <state vertical-scroll-proportion="-1.8747324">
           <caret line="18" column="64" selection-start-line="18" selection-start-column="64" selection-end-line="18" selection-end-column="64" />
           <folding>
             <element signature="e#0#47#0" expanded="true" />

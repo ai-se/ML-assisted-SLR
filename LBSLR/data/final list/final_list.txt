@@ -1,0 +1,70 @@
+Classification-tree models of software-quality over multiple releases $|$ 10.1109/ISSRE.1999.809316 $|$ 0-7695-0443-4
+Software quality prediction using mixture models with EM algorithm $|$ 10.1109/APAQ.2000.883780 $|$ 0-7695-0825-1
+Evaluating capture-recapture models with two inspectors $|$ 10.1109/32.950319 $|$
+A Probabilistic Model for Software Defect Prediction $|$ $|$
+Comparing software prediction techniques using simulation $|$ 10.1109/32.965341 $|$
+Software quality prediction using median-adjusted class labels $|$ 10.1109/ijcnn.2002.1007518 $|$
+Tree-based software quality estimation models for fault prediction $|$ 10.1109/METRIC.2002.1011339 $|$ 0-7695-1339-5
+Predicting fault prone modules by the Dempster-Shafer belief networks $|$ 10.1109/ASE.2003.1240314 $|$ 0-7695-2035-9
+Application of neural networks for software quality prediction using object-oriented metrics $|$ 10.1109/ICSM.2003.1235412 $|$ 0-7695-1905-9
+An empirical comparison and characterization of high defect and high complexity modules $|$ 10.1016/S0164-1212(02)00126-7 $|$
+Assessing predictors of software defects $|$ $|$
+Extract rules from software quality prediction model based on neural network $|$ 10.1109/ICTAI.2004.62 $|$ 0-7695-2236-X
+Object oriented software quality prediction using general regression neural networks $|$ 10.1145/1022494.1022515 $|$
+Empirical Assessment of Machine Learning based Software Defect Prediction Techniques $|$ 10.1109/WORDS.2005.32 $|$ 0-7695-2347-1
+Assessment of a New Three-Group Software Quality Classification Technique: An Empirical Case Study $|$ 10.1007/s10664-004-6191-x $|$
+A Novel Method for Early Software Quality Prediction Based on Support Vector Machine $|$ 10.1109/ISSRE.2005.6 $|$ 0-7695-2482-6
+An investigation of the effect of module size on defect prediction using static measures $|$ 10.1145/1083165.1083172 $|$ 159593-125-2
+Predicting the location and number of faults in large software systems $|$ 10.1109/TSE.2005.49 $|$
+Software defect association mining and defect correction effort prediction $|$ 10.1109/TSE.2006.1599417 $|$
+An empirical study of predicting software faults with case-based reasoning $|$ 10.1007/s11219-006-7597-z $|$
+A Unified Framework for Defect Data Analysis Using the MBR Technique $|$ 10.1109/ICTAI.2006.23 $|$ 0-7695-2728-0
+Empirical Analysis of Object-Oriented Design Metrics for Predicting High and Low Severity Faults $|$ 10.1109/TSE.2006.102 $|$
+A Statistical Framework for the Prediction of Fault-Proneness $|$ 10.4018/978-1-59140-941-1.ch010 $|$ 1591409411
+Data Mining Static Code Attributes to Learn Defect Predictors $|$ 10.1109/TSE.2007.256941 $|$
+A practical method for the software fault-prediction $|$ 10.1109/IRI.2007.4296695 $|$ 1-4244-1500-4
+Empirical Analysis of Software Fault Content and Fault Proneness Using Bayesian Methods $|$ 10.1109/TSE.2007.70722 $|$
+Software Quality Analysis of Unlabeled Program Modules With Semisupervised Clustering $|$ 10.1109/TSMCA.2006.889473 $|$
+Predicting software defects in varying development lifecycles using Bayesian nets $|$ 10.1016/j.infsof.2006.09.001 $|$
+Identifying and characterizing change-prone classes in two large-scale open-source products $|$ 10.1016/j.jss.2006.05.017 $|$
+Benchmarking Classification Models for Software Defect Prediction: A Proposed Framework and Novel Findings $|$ 10.1109/TSE.2008.35 $|$
+Regression via Classification applied on software defect estimation $|$ 10.1016/j.eswa.2007.02.012 $|$
+Applying machine learning to software fault-proneness prediction $|$ 10.1016/j.jss.2007.05.035 $|$
+Mining software repositories for comprehensible software fault prediction models $|$ 10.1016/j.jss.2007.07.034 $|$
+Predicting defect-prone software modules using support vector machines $|$ 10.1016/j.jss.2007.07.040 $|$
+A systematic review of software fault prediction studies $|$ 10.1016/j.eswa.2008.10.027 $|$
+Data mining source code for locating software bugs: A case study in telecommunication industry $|$ 10.1016/j.eswa.2008.12.028 $|$
+Empirical Case Studies in Attribute Noise Detection $|$ 10.1109/TSMCC.2009.2013815 $|$
+Feature Selection with Imbalanced Data for Software Defect Prediction $|$ 10.1109/ICMLA.2009.18 $|$
+Investigating the effect of dataset size, metrics sets, and feature selection techniques on software fault prediction problem $|$ 10.1016/j.ins.2008.12.001 $|$
+On the relative value of cross-company and within-company data for defect prediction $|$ 10.1007/s10664-008-9103-7 $|$
+Defect prediction from static code features: current results, limitations, new approaches $|$ 10.1007/s10515-010-0069-5 $|$
+Cost-sensitive boosting neural networks for software defect prediction $|$ 10.1016/j.eswa.2009.12.056 $|$
+Evolutionary Optimization of Software Quality Modeling with Multiple Repositories $|$ 10.1109/TSE.2010.51 $|$
+A Comparative Study of Ensemble Feature Selection Techniques for Software Defect Prediction $|$ 10.1109/ICMLA.2010.27 $|$
+Feature Selection Using Decision Tree Induction in Class level Metrics Dataset for Software Defect Predictions $|$ $|$
+A systematic and comprehensive investigation of methods to build and evaluate fault prediction models $|$ 10.1016/j.jss.2009.06.055 $|$
+Practical development of an Eclipse-based software fault prediction tool using Naive Bayes algorithm $|$ 10.1016/j.eswa.2010.08.022 $|$
+A General Software Defect-Proneness Prediction Framework $|$ 10.1109/TSE.2010.90 $|$
+Comparing Boosting and Bagging Techniques With Noisy and Imbalanced Data $|$ 10.1109/tsmca.2010.2084081 $|$
+Class noise detection based on software metrics and ROC curves $|$ 10.1016/j.ins.2011.06.017 $|$
+Software Defect Prediction Using Non-Negative Matrix Factorization $|$ 10.4304/jsw.6.11.2114-2120 $|$
+An industrial case study of classifier ensembles for locating software defects $|$ 10.1007/s11219-010-9128-1 $|$
+An ant colony optimization algorithm to improve software quality prediction models: Case of class stability $|$ 10.1016/j.infsof.2010.11.013 $|$
+Reflections on the NASA MDP data sets $|$ 10.1049/iet-sen.2011.0132 $|$
+Transfer learning for cross-company software defect prediction $|$ 10.1016/j.infsof.2011.09.007 $|$
+Simulated Annealing Neural Network for Software Failure Prediction $|$ $|$
+Effective Software Fault Localization Using an RBF Neural Network $|$ 10.1109/TR.2011.2172031 $|$
+User preferences based software defect detection algorithms selection using MCDM $|$ 10.1016/j.ins.2010.04.019 $|$
+Software fault prediction based on grey neural network $|$ 10.1109/ICNC.2012.6234505 $|$
+Software Fault Prediction Using Quad Tree-Based K-Means Clustering Algorithm $|$ 10.1109/TKDE.2011.163 $|$
+Using Coding-Based Ensemble Learning to Improve Software Defect Prediction $|$ 10.1109/TSMCC.2012.2226152 $|$
+Evaluating Stratification Alternatives to Improve Software Defect Prediction $|$ 10.1109/TR.2012.2183912 $|$
+Artificial neural network-based metric selection for software fault-prone prediction model $|$ 10.1049/iet-sen.2011.0138 $|$
+A Novel PCA-BP Fuzzy Neural Network Model for Software Defect Prediction $|$ 10.1166/asl.2012.2556 $|$
+The design of polynomial function-based neural network predictors for detection of software defects $|$ 10.1016/j.ins.2011.01.026 $|$
+Toward Comprehensible Software Fault Prediction Models Using Bayesian Network Classifiers $|$ 10.1109/TSE.2012.20 $|$
+Data Quality: Some Comments on the NASA Software Defect Datasets $|$ 10.1109/TSE.2013.11 $|$
+Using Class Imbalance Learning for Software Defect Prediction $|$ 10.1109/TR.2013.2259203 $|$
+Balancing Privacy and Utility in Cross-Company Defect Prediction $|$ 10.1109/TSE.2013.6 $|$
+Software fault prediction metrics: A systematic literature review $|$ 10.1016/j.infsof.2013.02.009 $|$

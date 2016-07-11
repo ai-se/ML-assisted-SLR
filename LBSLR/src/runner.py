@@ -8,7 +8,7 @@ from injest import Vessel
 import numpy as np
 from pdb import set_trace
 from demos import cmd
-from crawler import crawl_acm
+from crawler import crawl_acm_doi
 
 
 ESHandler = ESHandler(force_injest=False)
@@ -36,8 +36,11 @@ def tag_user():
             ESHandler.set_user(res["hits"]["hits"][0]["_id"])
 
 def parse_acm():
-    url="http://dl.acm.org/results.cfm?query=(software%20OR%20applicati*%20OR%20systems%20)%20AND%20(fault*%20OR%20defect*%20OR%20quality%20OR%20error-prone)%20AND%20(predict*%20OR%20prone*%20OR%20probability%20OR%20assess*%20OR%20detect*%20OR%20estimat*%20OR%20classificat*)&within=owners.owner=HOSTED&filtered=&dte=2000&bfr=2013"
-    crawl_acm(url)
+    url="http://dl.acm.org/results.cfm?query=%28software%20OR%20applicati%2A%20OR%20systems%20%29%20AND%20%28fault%2A%20OR%20defect%2A%20OR%20quality%20OR%20error-prone%29%20AND%20%28predict%2A%20OR%20prone%2A%20OR%20probability%20OR%20assess%2A%20OR%20detect%2A%20OR%20estimat%2A%20OR%20classificat%2A%29&filtered=resources%2Eft%2EresourceFormat=PDF&within=owners%2Eowner%3DHOSTED&dte=2000&bfr=2013&srt=_score"
+    crawl_acm_doi(url)
+
+def inject_acm():
+    ESHandler.injest(force=True)
 
 
 

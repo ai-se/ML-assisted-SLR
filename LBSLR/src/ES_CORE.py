@@ -3,7 +3,7 @@ from __future__ import division, print_function
 
 from pdb import set_trace
 
-from subprocess import Popen, CREATE_NEW_CONSOLE
+# from subprocess import Popen, CREATE_NEW_CONSOLE
 from injest import xml2elastic, defaults
 
 
@@ -32,7 +32,7 @@ class ESHandler:
             self.__status_check_()
         except self.es.ES_EXCEPTIONS.ConnectionError:
             print("ES Server not started. Now starting ... ")
-            Popen('elasticsearch.bat', creationflags=CREATE_NEW_CONSOLE)
+            # Popen('elasticsearch.bat', creationflags=CREATE_NEW_CONSOLE)
             self.__status_check_()
 
 
@@ -41,7 +41,7 @@ class ESHandler:
                     'ESHandler: Database not ready (or) Force injest '
                     'requested. Now indexing...')
             dir="../data/citeseerx/citemap.csv"
-            xml2es = xml2elastic(renew=True)
+            xml2es = xml2elastic(renew=True,verbose=True)
             self.es = xml2es.parse(dir)
 
     def query_string(self, keystring):

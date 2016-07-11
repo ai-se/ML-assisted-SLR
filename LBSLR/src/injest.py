@@ -4,6 +4,8 @@ from elasticsearch import Elasticsearch, exceptions
 import unicodedata
 from tika import parser
 from pdb import set_trace
+import urllib2
+import time
 
 class Vessel(object):
     id = -1
@@ -195,27 +197,40 @@ class xml2elastic:
     @staticmethod
     def decode_acm():
         dir = '../data/five/acm.csv'
+        temp_pdf="../temp/temp.pdf"
         with open(dir, 'rb') as f:
             spamreader = f.readlines()
-            for idx, row in enumerate(spamreader[1:]):
+            for row in spamreader[1:]:
                 row = row.strip().split("$|$")
                 title = str(row[0].encode('ascii', 'ignore'))
                 authors = row[1].encode('ascii', 'ignore').split(',')
                 year = str(row[2].encode('ascii', 'ignore'))
                 citedCount = str(row[3].encode('ascii', 'ignore'))
-                ft_url = row[3]
+                ft_url = row[4]
+
                 if not ft_url:
                     continue
-                ft = unicodedata.normalize('NFKD', parser.from_file(ft_url)["content"].strip()).encode('ascii', 'ignore')
+                try:
+                    req = urllib2.Request(ft_url, headers={'User-Agent': "Magic Browser"})
+                    con = urllib2.urlopen(req)
+                    page = con.read()
+                    con.close()
+                    time.sleep(1)
+                except:
+                    time.sleep(3600)
 
-                yield idx, title, filter(None, authors), year, citedCount, ft
+                with open(temp_pdf,'w') as f:
+                    f.write(page)
+                ft = unicodedata.normalize('NFKD', parser.from_file(temp_pdf)["content"].strip()).encode('ascii', 'ignore')
+
+                yield title, filter(None, authors), year, citedCount, ft
 
     @staticmethod
     def decode_ieee():
         dir = '../data/five/ieee.csv'
         with open(dir, 'rb') as f:
             spamreader = f.readlines()
-            for idx, row in enumerate(spamreader[2:]):
+            for row in spamreader[2:]:
                 row = row.strip().split("\",\"")
                 title = str(row[0].encode('ascii', 'ignore'))
                 authors = row[1].encode('ascii', 'ignore').split(';')
@@ -227,7 +242,7 @@ class xml2elastic:
                 ft = unicodedata.normalize('NFKD', parser.from_file(ft_url)["content"].strip()).encode('ascii',
                                                                                                        'ignore')
 
-                yield idx, title, filter(None, authors), year, citedCount, ft
+                yield title, filter(None, authors), year, citedCount, ft
 
 
 
@@ -243,7 +258,7 @@ class xml2elastic:
         MAX_IRRELEVANT = 250
         MAX_CONTROL = 1500
 
-        for (idx, title, authors, year, citedCount, ft_url) in self.decode_acm():
+        for idx, (title, authors, year, citedCount, ft_url) in enumerate(self.decode_acm()):
             # CONTROL = True if random() < 0.1 and MAX_CONTROL > 0 else False
             # if CONTROL: MAX_CONTROL -= 1
             CONTROL = False

@@ -16,7 +16,7 @@ import cPickle
 import numpy as np
 from scipy.sparse import csr_matrix
 from ES_CORE import ESHandler
-from subprocess import Popen, CREATE_NEW_CONSOLE
+# from subprocess import Popen, CREATE_NEW_CONSOLE
 
 
 class Pickle:
@@ -78,7 +78,7 @@ class TermFrequency:
 
         except self.es.ES_EXCEPTIONS.ConnectionError:
             print("Starting ES Server ... ")
-            Popen('elasticsearch.bat', creationflags=CREATE_NEW_CONSOLE)
+            # Popen('elasticsearch.bat', creationflags=CREATE_NEW_CONSOLE)
             return False
 
     def injest(self):

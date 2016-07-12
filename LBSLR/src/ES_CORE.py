@@ -12,7 +12,7 @@ from injest import xml2elastic, defaults
 
 class ESHandler:
     def __init__(self, es=None, force_injest=False):
-        self.es = es if es else defaults(TYPE_NAME='acm')
+        self.es = es if es else defaults(TYPE_NAME='ieee')
         self.injest(force=force_injest)
         self.target="shriram krishnamurthi"
 

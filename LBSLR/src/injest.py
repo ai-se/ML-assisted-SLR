@@ -223,26 +223,29 @@ class xml2elastic:
                 with open(temp_pdf,'w') as f:
                     f.write(page)
                 ft = unicodedata.normalize('NFKD', parser.from_file(temp_pdf)["content"].strip()).encode('ascii', 'ignore')
-                yield title, filter(None, authors), year, citedCount, ft
+                yield title, filter(None, authors), year, citedCount, ft_url, ft
 
     @staticmethod
     def decode_ieee():
         dir = '../data/five/ieee.csv'
+        temp_pdf="../temp/temp.pdf"
         with open(dir, 'rb') as f:
             spamreader = f.readlines()
-            for row in spamreader[2:]:
-                row = row.strip().split("\",\"")
-                title = str(row[0].encode('ascii', 'ignore'))
-                authors = row[1].encode('ascii', 'ignore').split(';')
-                year = str(row[5].encode('ascii', 'ignore'))
-                citedCount = str(row[21].encode('ascii', 'ignore'))
-                ft_url = row[15]
-                if not ft_url:
+            for row in spamreader[1:]:
+                row = row.strip()[1:-1].split("\",\"")
+                # title = unicodedata.normalize('NFKD', row[0].strip()).encode('ascii', 'ignore')
+                # authors = unicodedata.normalize('NFKD', row[1].strip()).encode('ascii', 'ignore').split(';')
+                title = str(row[0])
+                if not title:
                     continue
-                ft = unicodedata.normalize('NFKD', parser.from_file(ft_url)["content"].strip()).encode('ascii',
-                                                                                                       'ignore')
+                authors = row[1].split(';')
+                year = str(row[5])
+                citedCount = str(row[21])
+                doi = row[14]
+                ft_url = row[15]
+                abstract = row[10]
 
-                yield title, filter(None, authors), year, citedCount, ft_url, ft
+                yield title, filter(None, authors), year, citedCount, ft_url, abstract , doi
 
 
 
@@ -253,12 +256,12 @@ class xml2elastic:
         if self.verbose: print("Injesting: {}\r".format(dir), end='\n')
 
         # Create Mapping
-        self.init_mapping(doc_type="acm")
+        self.init_mapping(doc_type="ieee")
         MAX_RELEVANT = 250
         MAX_IRRELEVANT = 250
         MAX_CONTROL = 1500
 
-        for idx, (title, authors, year, citedCount, ft_url, ft) in enumerate(self.decode_acm()):
+        for idx, (title, authors, year, citedCount, ft_url, abstract, doi) in enumerate(self.decode_ieee()):
             # CONTROL = True if random() < 0.1 and MAX_CONTROL > 0 else False
             # if CONTROL: MAX_CONTROL -= 1
             CONTROL = False
@@ -268,8 +271,9 @@ class xml2elastic:
                 "year": year,
                 "title": title,
                 "ft_url":  ft_url,
-                "ft":  ft,
+                "abstract":  abstract,
                 "authors":  authors,
+                "doi":  doi,
                 "label": REAL_TAG  if CONTROL else 'none',
                 "is_control":"yes" if CONTROL else "no",
                 "user": "no"

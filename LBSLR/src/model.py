@@ -7,6 +7,7 @@ import os
 root = os.getcwd().split('src')[0] + 'src'
 sys.path.append(os.path.abspath(root))
 import click
+from collections import Counter
 import numpy as np
 from sklearn import svm
 from injest import Vessel
@@ -42,6 +43,7 @@ class FeatureMap:
     def __init__(self, raw_data, n=1000, scroll=None, features=None):
         self.data = raw_data
         self._class = list()
+        self.user=list()
         self.doc_id = list()
         self.mappings = list()
         self.features = features if features is not None else range(
@@ -60,6 +62,7 @@ class FeatureMap:
             # instance = self.data["matrix"][idx]
             # self.mappings = csr_vstack(self.mappings, instance)
             self._class.append(self.data["meta"][idx]['label'])
+            self.user.append(self.data["meta"][idx]['user'])
             self.doc_id.append(self.data["meta"][idx]['doc_id'])
         ### masking ###
         self.mappings = self.mappings[:, self.features]
@@ -96,7 +99,7 @@ class SVM:
             OPT = opt
 
         self.disp = disp
-        self.TF = TermFrequency(site='english',
+        self.TF = TermFrequency(site='ieee',
                                 force_injest=OPT.FORCE_INJEST,
                                 verbose=OPT.VERBOSE_MODE)
         self.helper = ESHandler(es=self.TF.es, force_injest=False)
@@ -115,6 +118,7 @@ class SVM:
     def fselect(all_docs, n_features=4000):
         transformer = TfidfTransformer(norm='l2', use_idf=True
                                        , smooth_idf=True, sublinear_tf=True)
+
         tfidf_mtx = transformer.fit_transform(all_docs)
         key_features = np.argsort(tfidf_mtx.sum(axis=0)).tolist()[0][
                        -n_features:]
@@ -124,6 +128,7 @@ class SVM:
         t = time()
         train_tfm = self.TF.matrix(CONTROL=False, LABELED=True)
         all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)
+
         self.vprint("Get TFM. {} seconds elapsed".format(time() - t))
         t = time()
         self.top_feat = self.fselect(all_docs=all_tfm["matrix"])
@@ -138,6 +143,96 @@ class SVM:
 
     def update_matrix(self):
         pass
+
+
+
+####################################################
+
+    def simple_active(self, step=10 ,initial=200, pos_limit=5, mask=[]):
+        all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)
+        collection = FeatureMap(raw_data=all_tfm,
+                                features=self.top_feat).tf(mask=mask)
+        csr_mat=collection._ifeatures
+        labels=np.array(collection.user)
+        num=len(labels)
+        pool=range(num)
+        train=[]
+        steps = np.array(range(int(num / step))) * step
+
+        pos=0
+        pos_track=[0]
+        is_stable=False
+        clf = svm.SVC(kernel='linear', probability=True)
+        start=0
+        stable=0
+        begin=0
+        for idx, round in enumerate(steps[:-1]):
+            if round < initial or pos<pos_limit:
+                can = np.random.choice(pool,step,replace=False)
+
+            else:
+                if not is_stable:
+                    if not begin:
+                        begin=idx
+                    clf.fit(csr_mat[train], labels[train])
+                    pred_proba = clf.predict_proba(csr_mat[pool])
+                    sort_order_uncertain = np.argsort(np.abs(pred_proba[:,0] - 0.5))
+                    can = [pool[i] for i in sort_order_uncertain[:step]]
+                    if abs(pred_proba[sort_order_uncertain[0],0]-0.5)>0.4:
+                        is_stable=True
+                else:
+                    if start==0:
+                        stable=idx
+                        freeze = pool
+                        pred_proba = clf.predict_proba(csr_mat[pool])
+                        pos_at = list(clf.classes_).index("yes")
+                        proba=pred_proba[:,pos_at]
+                        sort_order_certain = np.argsort(1-proba)
+                    can = [freeze[i] for i in sort_order_certain[start:start+step]]
+                    start=start+step
+
+            train.extend(can)
+            pool = list(set(pool) - set(can))
+            try:
+                pos = Counter(labels[train])["yes"]
+            except:
+                pos = 0
+            pos_track.append(pos)
+            print("Round #{id} passed\r".format(id=round), end="")
+        return steps, pos_track, begin, stable
+
+    def linear_review(self, step=10, mask=[]):
+        all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)
+        collection = FeatureMap(raw_data=all_tfm,
+                                features=self.top_feat).tf(mask=mask)
+        csr_mat = collection._ifeatures
+        labels = np.array(collection.user)
+        num = len(labels)
+        pool = range(num)
+        train = []
+        steps = np.array(range(int(num / step))) * step
+        pos = 0
+        pos_track = [0]
+        for round in steps[:-1]:
+            can = np.random.choice(pool, step, replace=False)
+
+            train.extend(can)
+            pool = list(set(pool) - set(can))
+            try:
+                pos = Counter(labels[train])["yes"]
+            except:
+                pos = 0
+            pos_track.append(pos)
+            print("Round #{id} passed\r".format(id=round), end="")
+        return steps, pos_track
+
+
+
+
+
+
+
+######################################################
 
     def rerun(self, mask=list()):
         "Masking"

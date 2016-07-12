@@ -30,7 +30,7 @@ class Pickle:
             print("Loading: {filename}".format(filename=self.fname))
 
         with open(
-                os.path.abspath("{root}/picklejar/{site}/{filename}.pkl".format(
+                os.path.abspath("../dump/{filename}.pkl".format(
                         root=root,
                         site=self.site,
                         filename=self.fname)), "rb") as f:
@@ -39,7 +39,7 @@ class Pickle:
     def brew(self, dat):
         try:
             cPickle.dump(dat, open(os.path.abspath(
-                    "{root}/picklejar/{site}/{filename}.pkl".format(
+                    "../dump/{filename}.pkl".format(
                             root=root,
                             site=self.site,
                             filename=self.fname)), "wb"))
@@ -57,6 +57,7 @@ class TermFrequency:
         self.force_injest = force_injest
         self.verbose = verbose
         self.es = defaults(TYPE_NAME=site)
+        self.field_analyze="abstract._analyzed"
 
     def __status_check_(self):
         try:
@@ -120,6 +121,7 @@ class TermFrequency:
         ""
         self.injest()
         pkl = Pickle(site=self.es.TYPE_NAME, fname='vocabulary')
+
         try:
             return pkl.load()
         except:
@@ -145,12 +147,12 @@ class TermFrequency:
                 doc_type=self.es.TYPE_NAME,
                 id=doc_id,
                 field_statistics=True,
-                fields=["text._analyzed"],
+                fields=[self.field_analyze],
                 term_statistics=True)
         try:
             termVect_now = post[
                 "term_vectors"][
-                "text._analyzed"][
+                self.field_analyze][
                 "terms"]
             tokens = termVect_now.keys()
             for token in tokens:
@@ -253,9 +255,8 @@ class TermFrequency:
                                  shape=(N_rows, N_cols)),
             "meta"  : [{
                            "doc_id": _id,
-                           "tags"  :
-                               MY_ES_DSL.get_document(_id)["_source"][
-                                   "tags"],
+                           "user": MY_ES_DSL.get_document(_id)["_source"][
+                                   "user"],
                            "label" :
                                MY_ES_DSL.get_document(_id)["_source"][
                                    "label"]

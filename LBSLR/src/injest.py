@@ -162,11 +162,27 @@ class xml2elastic:
                         "type": "string",
                         "index": "not_analyzed"
                     },
-                    "conference": {
+                    "doi": {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "ft_url": {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "citedCount": {
                         "type": "string",
                         "index": "not_analyzed"
                     },
                     "label": {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "user": {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    },
+                    "is_control": {
                         "type": "string",
                         "index": "not_analyzed"
                     }
@@ -238,14 +254,33 @@ class xml2elastic:
                 title = str(row[0])
                 if not title:
                     continue
-                authors = row[1].split(';')
+                authors = row[1].split('; ')
                 year = str(row[5])
                 citedCount = str(row[21])
-                doi = row[14]
+                doi = row[14].strip().lower()
                 ft_url = row[15]
-                abstract = row[10]
+                abstract = row[10].strip()
 
                 yield title, filter(None, authors), year, citedCount, ft_url, abstract , doi
+
+    @staticmethod
+    def decode_final_list():
+        dir = '../data/final_list/final_list.csv'
+        with open(dir, 'rb') as f:
+            spamreader = f.readlines()
+            for row in spamreader[0:]:
+                row = row.strip().split("$|$")
+                # title = unicodedata.normalize('NFKD', row[0].strip()).encode('ascii', 'ignore')
+                # authors = unicodedata.normalize('NFKD', row[1].strip()).encode('ascii', 'ignore').split(';')
+                source = row[0].strip()
+                if not (source=="ieee" or source=="acm"):
+                    continue
+                title = str(row[1].strip())
+                doi = row[2].strip().lower()
+                citedCount = str(row[3].strip())
+                abstract = str(row[4].strip())
+
+                yield title, doi, citedCount, abstract
 
 
 
@@ -293,6 +328,52 @@ class xml2elastic:
             if self.verbose:
                 print("Post #{id} injested\r".format(id=idx), end="")
 
+        total=idx
 
-        if self.verbose: print('Step 3 of 3: Site injested. Total Documents injested: {}.\n'.format(idx))
+
+        for (title, doi, citedCount, abstract) in self.decode_final_list():
+
+            BODY={
+                "query": {
+                    "term": {
+                        "doi": doi
+                    }
+                }
+            }
+            req=self.es.ES_CLIENT.search(index=self.es.INDEX_NAME,
+                doc_type=self.es.TYPE_NAME,body=BODY,size=1)
+            if req["hits"]["total"]>0:
+                UPDATE = {
+                    "doc": {
+                        "user": "yes"
+                    }
+                }
+                self.es.ES_CLIENT.update(index=self.es.INDEX_NAME,
+                                         doc_type=self.es.TYPE_NAME, id=req["hits"]["hits"][0]["_id"],
+                                         body=UPDATE)
+            else:
+                idx=idx+1
+                content = {
+                    "citedCount": citedCount,
+                    "year": "",
+                    "title": title,
+                    "ft_url": "",
+                    "abstract": abstract,
+                    "authors": [],
+                    "doi": doi,
+                    "label": 'none',
+                    "is_control": "no",
+                    "user": "yes"
+                }
+                self.es.ES_CLIENT.index(
+                    index=self.es.INDEX_NAME,
+                    doc_type=self.es.TYPE_NAME,
+                    id=idx,
+                    body=content)
+
+        self.es.ES_CLIENT.indices.refresh(index=self.es.INDEX_NAME)
+        print("new: %d" %(idx-total))
+
+
+        if self.verbose: print('Step 3 of 3: Site injested. Total Documents injested: {}.\n'.format(idx+1))
         return self.es

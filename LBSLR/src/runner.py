@@ -72,7 +72,7 @@ def simple_draw():
     plt.plot(result['x'], result["linear_review"], label="linear_review")
     plt.plot(result['x'], result["simple_active"], label="simple_active")
     plt.plot(result['x'], result["continuous_active"], label="continuous_active")
-    plt.plot(result['x'][result['stable']], result["simple_active"][result['stable']], color="red",marker='o')
+    plt.plot(result['x'][result['stable']], result["simple_active"][result['stable']], color="yellow",marker='o')
     plt.plot(result['x'][result['begin']], result["simple_active"][result['begin']], color="black", marker='o')
     plt.ylabel("Relevant Found")
     plt.xlabel("Documents Reviewed")

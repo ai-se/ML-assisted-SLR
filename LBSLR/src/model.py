@@ -166,31 +166,9 @@ class SVM:
         start=0
         stable=0
         begin=0
+        result={}
         for idx, round in enumerate(steps[:-1]):
-            if round < initial or pos<pos_limit:
-                can = np.random.choice(pool,step,replace=False)
-
-            else:
-                if not is_stable:
-                    if not begin:
-                        begin=idx
-                    clf.fit(csr_mat[train], labels[train])
-                    pred_proba = clf.predict_proba(csr_mat[pool])
-                    sort_order_uncertain = np.argsort(np.abs(pred_proba[:,0] - 0.5))
-                    can = [pool[i] for i in sort_order_uncertain[:step]]
-                    if abs(pred_proba[sort_order_uncertain[0],0]-0.5)>0.4:
-                        is_stable=True
-                else:
-                    if start==0:
-                        stable=idx
-                        freeze = pool
-                        pred_proba = clf.predict_proba(csr_mat[pool])
-                        pos_at = list(clf.classes_).index("yes")
-                        proba=pred_proba[:,pos_at]
-                        sort_order_certain = np.argsort(1-proba)
-                    can = [freeze[i] for i in sort_order_certain[start:start+step]]
-                    start=start+step
-
+            can = np.random.choice(pool, step, replace=False)
             train.extend(can)
             pool = list(set(pool) - set(can))
             try:
@@ -198,8 +176,75 @@ class SVM:
             except:
                 pos = 0
             pos_track.append(pos)
+
+            if not begin:
+                pool2=pool[:]
+                train2=train[:]
+                pos_track2=pos_track[:]
+                pool3 = pool2[:]
+                train3 = train2[:]
+                pos_track3 = pos_track2[:]
+                if round >= initial and pos>=pos_limit:
+                    begin=idx+1
+            else:
+                if not is_stable:
+                    clf.fit(csr_mat[train2], labels[train2])
+                    pred_proba = clf.predict_proba(csr_mat[pool2])
+                    sort_order_uncertain = np.argsort(np.abs(pred_proba[:,0] - 0.5))
+                    if abs(pred_proba[sort_order_uncertain[0], 0] - 0.5) > 0.4:
+                        is_stable = True
+
+                        stable=idx
+                        pos_at = list(clf.classes_).index("yes")
+                        proba = pred_proba[:, pos_at]
+                        sort_order_certain = np.argsort(1 - proba)
+                        can = [pool2[i] for i in sort_order_certain[start:start + step]]
+                        start = start + step
+                        train3.extend(can)
+                        pool3 = list(set(pool3) - set(can))
+                        pos = Counter(labels[train3])["yes"]
+                        pos_track3.append(pos)
+
+                        train2=train3[:]
+                        pos_track2=pos_track3[:]
+                    else:
+                        can2 = [pool2[i] for i in sort_order_uncertain[:step]]
+                        train2.extend(can2)
+                        pool2 = list(set(pool2) - set(can2))
+                        pos = Counter(labels[train2])["yes"]
+                        pos_track2.append(pos)
+
+                        pool3 = pool2[:]
+                        train3 = train2[:]
+                        pos_track3 = pos_track2[:]
+                else:
+                    clf.fit(csr_mat[train3], labels[train3])
+                    pred_proba3 = clf.predict_proba(csr_mat[pool3])
+                    pos_at = list(clf.classes_).index("yes")
+                    proba3=pred_proba3[:,pos_at]
+                    sort_order_certain3 = np.argsort(1-proba3)
+                    can3 = [pool3[i] for i in sort_order_certain3[:step]]
+                    can2 = [pool2[i] for i in sort_order_certain[start:start + step]]
+                    start=start+step
+                    train3.extend(can3)
+                    pool3 = list(set(pool3) - set(can3))
+                    pos = Counter(labels[train3])["yes"]
+                    pos_track3.append(pos)
+                    train2.extend(can2)
+                    pos = Counter(labels[train2])["yes"]
+                    pos_track2.append(pos)
+
+
             print("Round #{id} passed\r".format(id=round), end="")
-        return steps, pos_track, begin, stable
+
+        result["begin"] = begin
+        result["stable"] = stable
+        result["x"] = steps
+        result["linear_review"] = pos_track
+        result["simple_active"] = pos_track2
+        result["continuous_active"] = pos_track3
+
+        return result
 
     def linear_review(self, step=10, mask=[]):
         all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)

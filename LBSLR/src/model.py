@@ -18,7 +18,7 @@ from ES_CORE import ESHandler
 from ABCD import ABCD
 from sklearn.feature_extraction.text import TfidfTransformer
 from scipy.sparse import csr_matrix
-from funcs import csr_dot
+from funcs import *
 from pdb import set_trace
 
 __author__ = 'Rahul Krishna'
@@ -184,31 +184,90 @@ class SVM:
                 pool3 = pool2[:]
                 train3 = train2[:]
                 pos_track3 = pos_track2[:]
+                pool4 = pool2[:]
+                train4 = train2[:]
+                pos_track4 = pos_track2[:]
                 if round >= initial and pos>=pos_limit:
                     begin=idx+1
             else:
+                clf.fit(csr_mat[train4], labels[train4])
+                pred_proba4 = clf.predict_proba(csr_mat[pool4])
+                pos_at = list(clf.classes_).index("yes")
+                proba4 = pred_proba4[:, pos_at]
+                sort_order_certain4 = np.argsort(1 - proba4)
+                can4 = [pool4[i] for i in sort_order_certain4[:step]]
+                train4.extend(can4)
+                pool4 = list(set(pool4) - set(can4))
+                pos = Counter(labels[train3])["yes"]
+                pos_track4.append(pos)
+
+
                 if not is_stable:
                     clf.fit(csr_mat[train2], labels[train2])
                     pred_proba = clf.predict_proba(csr_mat[pool2])
-                    sort_order_uncertain = np.argsort(np.abs(pred_proba[:,0] - 0.5))
-                    if abs(pred_proba[sort_order_uncertain[0], 0] - 0.5) > 0.4:
+                    # sort_order_uncertain = np.argsort(np.abs(pred_proba[:,0] - 0.5))
+                    dist = clf.decision_function(csr_mat[pool2])
+                    sort_order_dist = np.argsort(np.abs(dist))
+                    if abs(dist[sort_order_dist[0]]) > 1:
                         is_stable = True
-
                         stable=idx
+
+
+                        train5 = train2[:]
+                        pos_track5 = pos_track2[:]
+                        train6 = train2[:]
+                        pos_track6 = pos_track2[:]
+
+
                         pos_at = list(clf.classes_).index("yes")
                         proba = pred_proba[:, pos_at]
-                        sort_order_certain = np.argsort(1 - proba)
-                        can = [pool2[i] for i in sort_order_certain[start:start + step]]
-                        start = start + step
-                        train3.extend(can)
-                        pool3 = list(set(pool3) - set(can))
+                        sort_order_certain2 = np.argsort(1 - proba)
+                        can2 = [pool2[i] for i in sort_order_certain2[start:start + step]]
+
+                        train3.extend(can2)
+                        pool3 = list(set(pool3) - set(can2))
                         pos = Counter(labels[train3])["yes"]
                         pos_track3.append(pos)
 
                         train2=train3[:]
                         pos_track2=pos_track3[:]
+
+                        ### data balancing ###
+                        ### Agressive undersampling ####
+                        poses=np.where(labels[train5] == "yes")[0]
+                        negs=np.where(labels[train5] == "no")[0]
+                        train_dist = clf.decision_function(csr_mat[train5][negs])
+                        negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
+                        sample5 = np.array(train5)[poses].tolist()+np.array(train5)[negs][negs_sel].tolist()
+                        clf.fit(csr_mat[sample5], labels[sample5])
+                        pred_proba5 = clf.predict_proba(csr_mat[pool2])
+                        pos_at5 = list(clf.classes_).index("yes")
+                        proba5 = pred_proba5[:, pos_at5]
+                        sort_order_certain5 = np.argsort(1 - proba5)
+                        can5 = [pool2[i] for i in sort_order_certain5[start:start + step]]
+                        train5.extend(can5)
+                        pos = Counter(labels[train5])["yes"]
+                        pos_track5.append(pos)
+
+                        ### SMOTE ####
+                        negs_sel = np.argsort(np.abs(train_dist))[::-1][:int(0.5*len(train6))]
+                        sample6 = np.array(train6)[poses].tolist() + np.array(train6)[negs][negs_sel].tolist()
+                        csr_train6, label_train6 = smote_most(csr_mat[sample6], labels[sample6])
+                        clf.fit(csr_train6, label_train6)
+                        pred_proba6 = clf.predict_proba(csr_mat[pool2])
+                        pos_at6 = list(clf.classes_).index("yes")
+                        proba6 = pred_proba6[:, pos_at6]
+                        sort_order_certain6 = np.argsort(1 - proba6)
+                        can6 = [pool2[i] for i in sort_order_certain6[start:start + step]]
+                        train6.extend(can6)
+                        pos = Counter(labels[train6])["yes"]
+                        pos_track6.append(pos)
+
+                        #####################
+                        start = start + step
                     else:
-                        can2 = [pool2[i] for i in sort_order_uncertain[:step]]
+                        # can2 = [pool2[i] for i in sort_order_uncertain[:step]]
+                        can2 = [pool2[i] for i in sort_order_dist[:step]]
                         train2.extend(can2)
                         pool2 = list(set(pool2) - set(can2))
                         pos = Counter(labels[train2])["yes"]
@@ -224,8 +283,8 @@ class SVM:
                     proba3=pred_proba3[:,pos_at]
                     sort_order_certain3 = np.argsort(1-proba3)
                     can3 = [pool3[i] for i in sort_order_certain3[:step]]
-                    can2 = [pool2[i] for i in sort_order_certain[start:start + step]]
-                    start=start+step
+                    can2 = [pool2[i] for i in sort_order_certain2[start:start + step]]
+
                     train3.extend(can3)
                     pool3 = list(set(pool3) - set(can3))
                     pos = Counter(labels[train3])["yes"]
@@ -235,6 +294,19 @@ class SVM:
                     pos_track2.append(pos)
 
 
+                    can5 = [pool2[i] for i in sort_order_certain5[start:start + step]]
+                    train5.extend(can5)
+                    pos = Counter(labels[train5])["yes"]
+                    pos_track5.append(pos)
+
+                    can6 = [pool2[i] for i in sort_order_certain6[start:start + step]]
+                    train6.extend(can6)
+                    pos = Counter(labels[train6])["yes"]
+                    pos_track6.append(pos)
+
+                    start = start + step
+
+
             print("Round #{id} passed\r".format(id=round), end="")
 
         result["begin"] = begin
@@ -242,7 +314,10 @@ class SVM:
         result["x"] = steps
         result["linear_review"] = pos_track
         result["simple_active"] = pos_track2
-        result["continuous_active"] = pos_track3
+        result["semi_continuous_active"] = pos_track3
+        result["continuous_active"] = pos_track4
+        result["aggressive_undersampling"] = pos_track5
+        result["smote"] = pos_track6
 
         return result
 
@@ -373,26 +448,7 @@ class SVM:
         self.vprint("TURNOVERS. {} seconds elapsed".format(time() - t))
         t = time()
         #######
-        # Determinants (Nearest neighbors to turnovers in training set)
-        self.bests=[]
-        self.best_dists=[]
-        for i in self.real_order:
-            for j, can in enumerate(self.TRAIN._ifeatures):
-                if not j:
-                    best=j
-                    best_dist=csr_dot(self.CONTROL._ifeatures[i],can)
-                else:
-                    dist=csr_dot(self.CONTROL._ifeatures[i], can)
-                    if dist>best_dist:
-                        best_dist=dist
-                        best=j
-            self.bests.append(best)
-            self.best_dists.append(best_dist)
-        self.determinants = [self.helper.get_document(_id=self.TRAIN.doc_id[i]) for i in self.bests]
-        self.vprint("DETERMINENTS. {} seconds elapsed".format(time() - t))
-        t = time()
 
-        #######
 
         # Stats
         self.abcd = ABCD(before=self.CONTROL._class, after=preds)

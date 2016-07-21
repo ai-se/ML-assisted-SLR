@@ -44,19 +44,19 @@ def parse_acm():
 def inject():
     ESHandler.injest(force=True)
 
-def simple_exp():
+def simple_exp(id):
     stepsize=10
     if container.SVM is None:
         container.also(SVM=SVM(disp=stepsize, opt=container.OPT).featurize())
 
-    result = container.SVM.simple_active(step=stepsize, initial=200, pos_limit=5)
+    result = container.SVM.simple_active(step=stepsize, initial=100, pos_limit=1)
 
-    with open("../dump/simple_exp3.pickle","w") as f:
+    with open("../dump/simple_exp" + str(id) + ".pickle","w") as f:
         pickle.dump(result,f)
 
     set_trace()
 
-def simple_draw():
+def simple_draw(id):
     font = {'family': 'normal',
             'weight': 'bold',
             'size': 20}
@@ -67,18 +67,20 @@ def simple_draw():
              'figure.autolayout': True, 'figure.figsize': (16, 8)}
     plt.rcParams.update(paras)
 
-    with open("../dump/simple_exp3.pickle", "r") as f:
+    with open("../dump/simple_exp"+str(id)+".pickle", "r") as f:
         result=pickle.load(f)
     plt.plot(result['x'], result["linear_review"], label="linear_review")
     plt.plot(result['x'], result["simple_active"], label="simple_active")
+    plt.plot(result['x'], result["aggressive_undersampling"], label="aggressive_undersampling")
+    plt.plot(result['x'], result["smote"], label="smote")
     plt.plot(result['x'], result["continuous_active"], label="continuous_active")
     plt.plot(result['x'][result['stable']], result["simple_active"][result['stable']], color="yellow",marker='o')
     plt.plot(result['x'][result['begin']], result["simple_active"][result['begin']], color="black", marker='o')
     plt.ylabel("Relevant Found")
     plt.xlabel("Documents Reviewed")
     plt.legend(bbox_to_anchor=(0.35, 1), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/simple_exp3" + ".eps")
-    plt.savefig("../figure/simple_exp3" + ".png")
+    plt.savefig("../figure/simple_exp" + str(id) + ".eps")
+    plt.savefig("../figure/simple_exp" + str(id) + ".png")
 
 
 

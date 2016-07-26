@@ -187,6 +187,9 @@ class SVM:
                 pool4 = pool2[:]
                 train4 = train2[:]
                 pos_track4 = pos_track2[:]
+                pool7 = pool2[:]
+                train7 = train2[:]
+                pos_track7 = pos_track2[:]
                 if round >= initial and pos>=pos_limit:
                     begin=idx+1
             else:
@@ -198,8 +201,27 @@ class SVM:
                 can4 = [pool4[i] for i in sort_order_certain4[:step]]
                 train4.extend(can4)
                 pool4 = list(set(pool4) - set(can4))
-                pos = Counter(labels[train3])["yes"]
+                pos = Counter(labels[train4])["yes"]
                 pos_track4.append(pos)
+
+                ### continuous aggressive
+                clf.fit(csr_mat[train7], labels[train7])
+                poses = np.where(labels[train7] == "yes")[0]
+                negs = np.where(labels[train7] == "no")[0]
+                train_dist = clf.decision_function(csr_mat[train7][negs])
+                negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
+                sample7 = np.array(train7)[poses].tolist() + np.array(train7)[negs][negs_sel].tolist()
+
+                clf.fit(csr_mat[sample7], labels[sample7])
+                pred_proba7 = clf.predict_proba(csr_mat[pool7])
+                pos_at = list(clf.classes_).index("yes")
+                proba7 = pred_proba7[:, pos_at]
+                sort_order_certain7 = np.argsort(1 - proba7)
+                can7 = [pool7[i] for i in sort_order_certain7[:step]]
+                train7.extend(can7)
+                pool7 = list(set(pool7) - set(can7))
+                pos = Counter(labels[train7])["yes"]
+                pos_track7.append(pos)
 
 
                 if not is_stable:
@@ -224,13 +246,10 @@ class SVM:
                         sort_order_certain2 = np.argsort(1 - proba)
                         can2 = [pool2[i] for i in sort_order_certain2[start:start + step]]
 
-                        train3.extend(can2)
-                        pool3 = list(set(pool3) - set(can2))
-                        pos = Counter(labels[train3])["yes"]
-                        pos_track3.append(pos)
+                        train2.extend(can2)
+                        pos = Counter(labels[train2])["yes"]
+                        pos_track2.append(pos)
 
-                        train2=train3[:]
-                        pos_track2=pos_track3[:]
 
                         ### data balancing ###
                         ### Agressive undersampling ####
@@ -264,6 +283,11 @@ class SVM:
                         pos_track6.append(pos)
 
                         #####################
+
+                        pool3 = list(set(pool3) - set(can5))
+                        train3 = train5[:]
+                        pos_track3 = pos_track5[:]
+
                         start = start + step
                     else:
                         # can2 = [pool2[i] for i in sort_order_uncertain[:step]]
@@ -272,6 +296,27 @@ class SVM:
                         pool2 = list(set(pool2) - set(can2))
                         pos = Counter(labels[train2])["yes"]
                         pos_track2.append(pos)
+
+                        #### semi_continuous_aggressive
+                        clf.fit(csr_mat[train3], labels[train3])
+                        poses = np.where(labels[train3] == "yes")[0]
+                        negs = np.where(labels[train3] == "no")[0]
+                        train_dist = clf.decision_function(csr_mat[train3][negs])
+                        negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
+                        sample3 = np.array(train3)[poses].tolist() + np.array(train3)[negs][negs_sel].tolist()
+
+                        clf.fit(csr_mat[sample3], labels[sample3])
+                        pred_proba3 = clf.predict_proba(csr_mat[pool3])
+                        pos_at = list(clf.classes_).index("yes")
+                        proba3 = pred_proba3[:, pos_at]
+                        sort_order_certain3 = np.argsort(1 - proba3)
+                        can3 = [pool3[i] for i in sort_order_certain3[:step]]
+                        train3.extend(can3)
+                        pool3 = list(set(pool3) - set(can3))
+                        pos = Counter(labels[train3])["yes"]
+                        pos_track3.append(pos)
+
+
 
                         pool3 = pool2[:]
                         train3 = train2[:]
@@ -314,10 +359,11 @@ class SVM:
         result["x"] = steps
         result["linear_review"] = pos_track
         result["simple_active"] = pos_track2
-        result["semi_continuous_active"] = pos_track3
+        result["semi_continuous_aggressive"] = pos_track3
         result["continuous_active"] = pos_track4
         result["aggressive_undersampling"] = pos_track5
         result["smote"] = pos_track6
+        result["continuous_aggressive"] = pos_track7
 
         return result
 
@@ -403,7 +449,6 @@ class SVM:
             self.coef = -self.coef
             self.dual_coef = -self.dual_coef
 
-        support = self.clf.support_
         self.prob = pred_proba[:, pos_at]
         self.sort_order_uncertain = np.argsort(np.abs(pred_proba[:, 0] - 0.5))
         self.sort_order_certain = np.argsort(1 - self.prob)

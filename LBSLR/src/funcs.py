@@ -429,7 +429,15 @@ def smote_most(data,label,k=5):
     for l in labelCont:
         id=[i for i,x in enumerate(label) if x==l]
         sub=data[id]
+        if labelCont[l] < 2:
+            labelmade+=[l]
+            if balanced == []:
+                balanced = sub
+            else:
+                balanced = csr_vstack(balanced, sub)
+            continue
         labelmade+=[l]*num
+
         if labelCont[l]<num:
             num_s=num-labelCont[l]
             nbrs = NearestNeighbors(n_neighbors=k+1, algorithm='brute').fit(sub)

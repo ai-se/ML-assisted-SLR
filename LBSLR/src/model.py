@@ -284,7 +284,7 @@ class SVM:
 
                         #####################
 
-                        pool3 = list(set(pool3) - set(can5))
+                        pool3 = list(set(pool2) - set(can5))
                         train3 = train5[:]
                         pos_track3 = pos_track5[:]
 
@@ -297,43 +297,41 @@ class SVM:
                         pos = Counter(labels[train2])["yes"]
                         pos_track2.append(pos)
 
-                        #### semi_continuous_aggressive
-                        clf.fit(csr_mat[train3], labels[train3])
-                        poses = np.where(labels[train3] == "yes")[0]
-                        negs = np.where(labels[train3] == "no")[0]
-                        train_dist = clf.decision_function(csr_mat[train3][negs])
-                        negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
-                        sample3 = np.array(train3)[poses].tolist() + np.array(train3)[negs][negs_sel].tolist()
-
-                        clf.fit(csr_mat[sample3], labels[sample3])
-                        pred_proba3 = clf.predict_proba(csr_mat[pool3])
-                        pos_at = list(clf.classes_).index("yes")
-                        proba3 = pred_proba3[:, pos_at]
-                        sort_order_certain3 = np.argsort(1 - proba3)
-                        can3 = [pool3[i] for i in sort_order_certain3[:step]]
-                        train3.extend(can3)
-                        pool3 = list(set(pool3) - set(can3))
-                        pos = Counter(labels[train3])["yes"]
-                        pos_track3.append(pos)
-
-
-
-                        pool3 = pool2[:]
-                        train3 = train2[:]
-                        pos_track3 = pos_track2[:]
                 else:
+                    #### semi_continuous_aggressive
                     clf.fit(csr_mat[train3], labels[train3])
+                    poses = np.where(labels[train3] == "yes")[0]
+                    negs = np.where(labels[train3] == "no")[0]
+                    train_dist = clf.decision_function(csr_mat[train3][negs])
+                    negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
+                    sample3 = np.array(train3)[poses].tolist() + np.array(train3)[negs][negs_sel].tolist()
+
+                    clf.fit(csr_mat[sample3], labels[sample3])
                     pred_proba3 = clf.predict_proba(csr_mat[pool3])
                     pos_at = list(clf.classes_).index("yes")
-                    proba3=pred_proba3[:,pos_at]
-                    sort_order_certain3 = np.argsort(1-proba3)
+                    proba3 = pred_proba3[:, pos_at]
+                    sort_order_certain3 = np.argsort(1 - proba3)
                     can3 = [pool3[i] for i in sort_order_certain3[:step]]
-                    can2 = [pool2[i] for i in sort_order_certain2[start:start + step]]
-
                     train3.extend(can3)
                     pool3 = list(set(pool3) - set(can3))
                     pos = Counter(labels[train3])["yes"]
                     pos_track3.append(pos)
+
+
+                    # clf.fit(csr_mat[train3], labels[train3])
+                    # pred_proba3 = clf.predict_proba(csr_mat[pool3])
+                    # pos_at = list(clf.classes_).index("yes")
+                    # proba3=pred_proba3[:,pos_at]
+                    # sort_order_certain3 = np.argsort(1-proba3)
+                    # can3 = [pool3[i] for i in sort_order_certain3[:step]]
+                    # train3.extend(can3)
+                    # pool3 = list(set(pool3) - set(can3))
+                    # pos = Counter(labels[train3])["yes"]
+                    # pos_track3.append(pos)
+
+                    #################################
+
+                    can2 = [pool2[i] for i in sort_order_certain2[start:start + step]]
                     train2.extend(can2)
                     pos = Counter(labels[train2])["yes"]
                     pos_track2.append(pos)

@@ -84,6 +84,70 @@ def simple_draw(id):
     plt.savefig("../figure/simple_exp" + str(id) + ".eps")
     plt.savefig("../figure/simple_exp" + str(id) + ".png")
 
+def repeat_exp(id):
+    repeats=10
+    stepsize=10
+    if container.SVM is None:
+        container.also(SVM=SVM(disp=stepsize, opt=container.OPT).featurize())
+
+    results=[]
+    for j in xrange(repeats):
+        result = container.SVM.simple_active(step=stepsize, initial=10, pos_limit=1)
+        results.append(result)
+
+    with open("../dump/repeat_exp" + str(id) + ".pickle","w") as f:
+        pickle.dump(results,f)
+
+    set_trace()
+
+def wrap_repeat(results):
+    medians={}
+    iqrs={}
+    medians['x'] = results[0]['x']
+    iqrs['x'] = results[0]['x']
+    for key in results[0].keys():
+        if key == 'x' or key == 'stable' or key == 'begin':
+            continue
+        else:
+            tmp = np.array([what[key] for what in results])
+            medians[key] = np.median(tmp,axis=0)
+            iqrs[key] = np.percentile(tmp,75,axis=0) - np.percentile(tmp,25,axis=0)
+    return medians, iqrs
+
+def repeat_draw(id):
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 5, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 8)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/repeat_exp"+str(id)+".pickle", "r") as f:
+        results=pickle.load(f)
+
+    medians, iqrs = wrap_repeat(results)
+    medians = rescale(medians)
+    iqrs = rescale(iqrs)
+
+
+    line, = plt.plot(medians['x'], medians["linear_review"], label="linear_review")
+    plt.plot(iqrs['x'], iqrs["linear_review"], "-.", color=line.get_color())
+    line, = plt.plot(medians['x'], medians["aggressive_undersampling"], label="aggressive_undersampling")
+    plt.plot(iqrs['x'], iqrs["aggressive_undersampling"], "-.", color=line.get_color())
+    line, = plt.plot(medians['x'], medians["continuous_active"], label="continuous_active")
+    plt.plot(iqrs['x'], iqrs["continuous_active"], "-.", color=line.get_color())
+    line, = plt.plot(medians['x'], medians["continuous_aggressive"], label="continuous_aggressive")
+    plt.plot(iqrs['x'], iqrs["continuous_aggressive"], "-.", color=line.get_color())
+    plt.ylabel("Relevant Found")
+    plt.xlabel("Documents Reviewed")
+    plt.legend(bbox_to_anchor=(0.95, 0.45), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/repeat_exp" + str(id) + ".eps")
+    plt.savefig("../figure/repeat_exp" + str(id) + ".png")
+
+
 
 def rescale(result):
     for key in result:
@@ -124,14 +188,14 @@ def comp_draw(id):
     plt.plot(result8['x'], result8["continuous_aggressive"], label="patient_continuous_aggressive")
     plt.plot(result10['x'], result10["aggressive_undersampling"], label="hasty_aggressive_undersampling")
     plt.plot(result10['x'], result10["continuous_aggressive"], label="hasty_continuous_aggressive")
-    # plt.plot(result['x'], result["semi_continuous_aggressive"], label="semi_continuous_aggressive")
+    plt.plot(result10['x'], result10["semi_continuous_aggressive"], label="hasty_semi_continuous_aggressive")
     plt.plot(result8['x'][result8['stable']], result8["simple_active"][result8['stable']], color="yellow",marker='o')
-    plt.plot(result8['x'][result8['begin']], result8["simple_active"][result8['begin']], color="black", marker='o')
+    plt.plot(result8['x'][result8['begin']], result8["simple_active"][result8['begin']], color="white", marker='o')
     plt.plot(result10['x'][result10['stable']], result10["simple_active"][result10['stable']], color="yellow", marker='o')
-    plt.plot(result10['x'][result10['begin']], result10["simple_active"][result10['begin']], color="black", marker='o')
+    plt.plot(result10['x'][result10['begin']], result10["simple_active"][result10['begin']], color="white", marker='o')
     plt.ylabel("Relevant Found")
     plt.xlabel("Documents Reviewed")
-    plt.legend(bbox_to_anchor=(0.95, 0.40), loc=1, ncol=1, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.95, 0.50), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/comp_exp" + str(id) + ".eps")
     plt.savefig("../figure/comp_exp" + str(id) + ".png")
 

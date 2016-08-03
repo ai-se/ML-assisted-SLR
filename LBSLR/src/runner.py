@@ -92,7 +92,7 @@ def repeat_exp(id):
 
     results=[]
     for j in xrange(repeats):
-        result = container.SVM.simple_active(step=stepsize, initial=10, pos_limit=5)
+        result = container.SVM.simple_active(step=stepsize, initial=70, pos_limit=2)
         results.append(result)
 
     with open("../dump/repeat_exp" + str(id) + ".pickle","w") as f:
@@ -198,6 +198,51 @@ def comp_draw(id):
     plt.legend(bbox_to_anchor=(0.95, 0.50), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/comp_exp" + str(id) + ".eps")
     plt.savefig("../figure/comp_exp" + str(id) + ".png")
+
+def comp_repeat_draw(id):
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 5, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 8)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/repeat_exp0.pickle", "r") as f:
+        result0=pickle.load(f)
+    with open("../dump/repeat_exp1.pickle", "r") as f:
+        result1 = pickle.load(f)
+
+    ##wrap and normalize ##
+    medians0, iqrs0 = wrap_repeat(result0)
+    medians0 = rescale(medians0)
+    iqrs0 = rescale(iqrs0)
+    medians1, iqrs1 = wrap_repeat(result1)
+    medians1 = rescale(medians1)
+    iqrs1 = rescale(iqrs1)
+    #################
+
+    line, = plt.plot(medians0['x'], medians0["linear_review"], label="linear_review")
+    plt.plot(iqrs0['x'], iqrs0["linear_review"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="patient_aggressive_undersampling")
+    plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="hasty_continuous_active")
+    plt.plot(iqrs0['x'], iqrs0["continuous_active"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["continuous_aggressive"], label="patient_continuous_aggressive")
+    plt.plot(iqrs1['x'], iqrs1["continuous_aggressive"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["aggressive_undersampling"], label="hasty_aggressive_undersampling")
+    plt.plot(iqrs0['x'], iqrs0["aggressive_undersampling"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["continuous_aggressive"], label="hasty_continuous_aggressive")
+    plt.plot(iqrs0['x'], iqrs0["continuous_aggressive"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="hasty_semi_continuous_aggressive")
+    plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
+    plt.ylabel("Relevant Found")
+    plt.xlabel("Documents Reviewed")
+    plt.legend(bbox_to_anchor=(0.95, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/comp_repeat_exp" + str(id) + ".eps")
+    plt.savefig("../figure/comp_repeat_exp" + str(id) + ".png")
 
 
 

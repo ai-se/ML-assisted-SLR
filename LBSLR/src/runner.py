@@ -92,7 +92,7 @@ def repeat_exp(id):
 
     results=[]
     for j in xrange(repeats):
-        result = container.SVM.simple_active(step=stepsize, initial=70, pos_limit=2)
+        result = container.SVM.simple_active(step=stepsize, initial=700, pos_limit=2)
         results.append(result)
 
     with open("../dump/repeat_exp" + str(id) + ".pickle","w") as f:

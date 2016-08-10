@@ -11,8 +11,8 @@ from injest import xml2elastic, defaults
 
 
 class ESHandler:
-    def __init__(self, es=None, force_injest=False):
-        self.es = es if es else defaults(TYPE_NAME='ieee')
+    def __init__(self, typeName, es=None, force_injest=False,):
+        self.es = es if es else defaults(TYPE_NAME=typeName)
         self.injest(force=force_injest)
         self.target="shriram krishnamurthi"
 

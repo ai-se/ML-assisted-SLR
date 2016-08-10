@@ -13,7 +13,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 
-ESHandler = ESHandler(force_injest=False)
+ESHandler = ESHandler("Hall", force_injest=False)
 container = Vessel(
         OPT=None,
         SVM=None,

@@ -243,15 +243,15 @@ class xml2elastic:
 
     @staticmethod
     def decode_ieee():
-        dir = '../data/five/ieee.csv'
-        temp_pdf="../temp/temp.pdf"
+        dir = '../data/Hall/Hall.txt'
         with open(dir, 'rb') as f:
             spamreader = f.readlines()
             for row in spamreader[1:]:
-                row = row.strip()[1:-1].split("\",\"")
+                set_trace()
+                row = row.strip().split("\t")
                 # title = unicodedata.normalize('NFKD', row[0].strip()).encode('ascii', 'ignore')
                 # authors = unicodedata.normalize('NFKD', row[1].strip()).encode('ascii', 'ignore').split(';')
-                title = str(row[0])
+                title = str(row[0].strip())
                 if not title:
                     continue
                 authors = row[1].split('; ')

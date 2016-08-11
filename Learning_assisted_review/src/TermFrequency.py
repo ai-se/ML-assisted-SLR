@@ -199,6 +199,7 @@ class TermFrequency:
 
         res = self.es.ES_CLIENT.search(
                 index=self.es.INDEX_NAME,
+                doc_type = self.es.TYPE_NAME,
                 scroll="1m",
                 size=10,
                 body=Q_ALL if all else Q_LABELED if labeled else Q_UNLABELED)

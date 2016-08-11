@@ -242,12 +242,11 @@ class xml2elastic:
                 yield title, filter(None, authors), year, citedCount, ft_url, ft
 
     @staticmethod
-    def decode_ieee():
+    def decode_Hall():
         dir = '../data/Hall/Hall.txt'
         with open(dir, 'rb') as f:
             spamreader = f.readlines()
             for row in spamreader[1:]:
-                set_trace()
                 row = row.strip().split("\t")
                 # title = unicodedata.normalize('NFKD', row[0].strip()).encode('ascii', 'ignore')
                 # authors = unicodedata.normalize('NFKD', row[1].strip()).encode('ascii', 'ignore').split(';')
@@ -264,8 +263,29 @@ class xml2elastic:
                 yield title, filter(None, authors), year, citedCount, ft_url, abstract , doi
 
     @staticmethod
+    def decode_ieee():
+        dir = '../data/five/ieee.csv'
+        with open(dir, 'rb') as f:
+            spamreader = f.readlines()
+            for row in spamreader[1:]:
+                row = row.strip()[1:-1].split("\",\"")
+                # title = unicodedata.normalize('NFKD', row[0].strip()).encode('ascii', 'ignore')
+                # authors = unicodedata.normalize('NFKD', row[1].strip()).encode('ascii', 'ignore').split(';')
+                title = str(row[0].strip())
+                if not title:
+                    continue
+                authors = row[1].split('; ')
+                year = str(row[5])
+                citedCount = str(row[21])
+                doi = row[14].strip().lower()
+                ft_url = row[15]
+                abstract = row[10].strip()
+
+                yield title, filter(None, authors), year, citedCount, ft_url, abstract, doi
+
+    @staticmethod
     def decode_final_list():
-        dir = '../data/final_list/final_list.csv'
+        dir = '../data/Hall/contain.txt'
         with open(dir, 'rb') as f:
             spamreader = f.readlines()
             for row in spamreader[0:]:
@@ -282,21 +302,30 @@ class xml2elastic:
 
                 yield title, doi, citedCount, abstract
 
+    @staticmethod
+    def decode_contain():
+        dir = '../data/Hall/contain.txt'
+        with open(dir, 'rb') as f:
+            spamreader = f.readlines()
+            for row in spamreader:
+                doi = row.strip().lower()
+                yield doi
 
 
-    def parse(self, dir, fresh=True):
+
+    def parse_Hall(self, dir, fresh=True):
 
         target="shriram krishnamurthi"
         "Parse XML to ES Database"
         if self.verbose: print("Injesting: {}\r".format(dir), end='\n')
 
         # Create Mapping
-        self.init_mapping(doc_type="ieee")
+        self.init_mapping(doc_type="Hall")
         MAX_RELEVANT = 250
         MAX_IRRELEVANT = 250
         MAX_CONTROL = 1500
 
-        for idx, (title, authors, year, citedCount, ft_url, abstract, doi) in enumerate(self.decode_ieee()):
+        for idx, (title, authors, year, citedCount, ft_url, abstract, doi) in enumerate(self.decode_Hall()):
             # CONTROL = True if random() < 0.1 and MAX_CONTROL > 0 else False
             # if CONTROL: MAX_CONTROL -= 1
             CONTROL = False
@@ -329,6 +358,82 @@ class xml2elastic:
                 print("Post #{id} injested\r".format(id=idx), end="")
 
         total=idx
+
+        for doi in self.decode_contain():
+            BODY = {
+                "query": {
+                    "term": {
+                        "doi": doi
+                    }
+                }
+            }
+            req = self.es.ES_CLIENT.search(index=self.es.INDEX_NAME,
+                                           doc_type=self.es.TYPE_NAME, body=BODY, size=1)
+            if req["hits"]["total"] > 0:
+                UPDATE = {
+                    "doc": {
+                        "user": "yes"
+                    }
+                }
+                self.es.ES_CLIENT.update(index=self.es.INDEX_NAME,
+                                         doc_type=self.es.TYPE_NAME, id=req["hits"]["hits"][0]["_id"],
+                                         body=UPDATE)
+
+
+
+        self.es.ES_CLIENT.indices.refresh(index=self.es.INDEX_NAME)
+
+
+
+        if self.verbose: print('Step 3 of 3: Site injested. Total Documents injested: {}.\n'.format(idx+1))
+        return self.es
+
+    def parse_ieee(self, dir, fresh=True):
+
+        target = "shriram krishnamurthi"
+        "Parse XML to ES Database"
+        if self.verbose: print("Injesting: {}\r".format(dir), end='\n')
+
+        # Create Mapping
+        self.init_mapping(doc_type="ieee")
+        MAX_RELEVANT = 250
+        MAX_IRRELEVANT = 250
+        MAX_CONTROL = 1500
+
+        for idx, (title, authors, year, citedCount, ft_url, abstract, doi) in enumerate(self.decode_ieee()):
+            # CONTROL = True if random() < 0.1 and MAX_CONTROL > 0 else False
+            # if CONTROL: MAX_CONTROL -= 1
+            CONTROL = False
+            REAL_TAG = 'pos' if target in authors else 'neg'
+            content = {
+                "citedCount": citedCount,
+                "year": year,
+                "title": title,
+                "ft_url": ft_url,
+                "abstract": abstract,
+                "authors": authors,
+                "doi": doi,
+                "label": REAL_TAG if CONTROL else 'none',
+                "is_control": "yes" if CONTROL else "no",
+                "user": "no"
+            }
+            self.es.ES_CLIENT.index(
+                index=self.es.INDEX_NAME,
+                doc_type=self.es.TYPE_NAME,
+                id=idx,
+                body=content)
+
+            self.es.ES_CLIENT_ORIG.index(
+                index=self.es.INDEX_NAME,
+                doc_type=self.es.TYPE_NAME,
+                id=idx,
+                body=content)
+
+            if self.verbose:
+                print("Post #{id} injested\r".format(id=idx), end="")
+
+        total = idx
+
 
 
         for (title, doi, citedCount, abstract) in self.decode_final_list():
@@ -375,5 +480,5 @@ class xml2elastic:
         print("new: %d" %(idx-total))
 
 
-        if self.verbose: print('Step 3 of 3: Site injested. Total Documents injested: {}.\n'.format(idx+1))
+        if self.verbose: print('Step 3 of 3: Site injested. Total Documents injested: {}.\n'.format(idx + 1))
         return self.es

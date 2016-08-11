@@ -11,8 +11,8 @@ from injest import xml2elastic, defaults
 
 
 class ESHandler:
-    def __init__(self, typeName, es=None, force_injest=False,):
-        self.es = es if es else defaults(TYPE_NAME=typeName)
+    def __init__(self, es=None, force_injest=False,):
+        self.es = es if es else defaults(doc_type="")
         self.injest(force=force_injest)
         self.target="shriram krishnamurthi"
 
@@ -20,9 +20,10 @@ class ESHandler:
         self.es.INDEX_NAMEed = self.es.ES_CLIENT.indices.exists(
                 index=self.es.INDEX_NAME)
 
-        self.mapped = self.es.ES_CLIENT.indices.exists_type(
-                index=self.es.INDEX_NAME,
-                doc_type=self.es.TYPE_NAME)
+        # self.mapped = self.es.ES_CLIENT.indices.exists_type(
+        #         index=self.es.INDEX_NAME,
+        #         doc_type=self.es.TYPE_NAME)
+        self.mapped = True
 
         self.ready = self.es.INDEX_NAMEed and self.mapped
 
@@ -40,9 +41,10 @@ class ESHandler:
             print(
                     'ESHandler: Database not ready (or) Force injest '
                     'requested. Now indexing...')
-            dir="../data/citeseerx/citemap.csv"
+            # dir="../data/citeseerx/citemap.csv"
             xml2es = xml2elastic(renew=True,verbose=True)
-            self.es = xml2es.parse(dir)
+            self.es = xml2es.parse_Hall(dir)
+            self.es = xml2es.parse_ieee(dir)
 
     def query_string(self, keystring):
         DIS_MAX_QUERY ={

@@ -13,7 +13,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 
-ESHandler = ESHandler("Hall", force_injest=False)
+ESHandler = ESHandler(force_injest=False)
 container = Vessel(
         OPT=None,
         SVM=None,
@@ -88,11 +88,11 @@ def repeat_exp(id):
     repeats=10
     stepsize=10
     if container.SVM is None:
-        container.also(SVM=SVM(disp=stepsize, opt=container.OPT).featurize())
+        container.also(SVM=SVM(disp=stepsize, set="Hall", opt=container.OPT).featurize())
 
     results=[]
     for j in xrange(repeats):
-        result = container.SVM.simple_active(step=stepsize, initial=700, pos_limit=2)
+        result = container.SVM.simple_active(step=stepsize, initial=10, pos_limit=1)
         results.append(result)
 
     with open("../dump/repeat_exp" + str(id) + ".pickle","w") as f:

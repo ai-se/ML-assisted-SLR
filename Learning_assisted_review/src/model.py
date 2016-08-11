@@ -92,14 +92,15 @@ class FeatureMap:
 class SVM:
     "Classifiers"
 
-    def __init__(self, disp, opt=None):
+    def __init__(self, disp, set = 'Hall', opt=None):
 
         if opt:
             global OPT
             OPT = opt
 
+        self.set = set
         self.disp = disp
-        self.TF = TermFrequency(site='ieee',
+        self.TF = TermFrequency(site=self.set,
                                 force_injest=OPT.FORCE_INJEST,
                                 verbose=OPT.VERBOSE_MODE)
         self.helper = ESHandler(es=self.TF.es, force_injest=False)

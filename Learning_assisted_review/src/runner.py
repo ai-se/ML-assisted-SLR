@@ -92,7 +92,7 @@ def repeat_exp(id):
 
     results=[]
     for j in xrange(repeats):
-        result = container.SVM.simple_active(step=stepsize, initial=10, pos_limit=1)
+        result = container.SVM.simple_active(step=stepsize, initial=500, pos_limit=2)
         results.append(result)
 
     with open("../dump/repeat_exp" + str(id) + ".pickle","w") as f:
@@ -152,11 +152,11 @@ def repeat_draw(id):
 def rescale(result):
     for key in result:
         if key == 'x':
-            result[key] = np.array(result[key])/7002
+            result[key] = np.array(result[key])/result[key][-1]
             continue
         if key == 'stable' or key == 'begin':
             continue
-        result[key] = np.array(result[key]) / 62
+        result[key] = np.array(result[key]) / 106
     return result
 
 
@@ -210,9 +210,9 @@ def comp_repeat_draw(id):
              'figure.autolayout': True, 'figure.figsize': (16, 8)}
     plt.rcParams.update(paras)
 
-    with open("../dump/repeat_exp0.pickle", "r") as f:
+    with open("../dump/repeat_exp5.pickle", "r") as f:
         result0=pickle.load(f)
-    with open("../dump/repeat_exp1.pickle", "r") as f:
+    with open("../dump/repeat_exp6.pickle", "r") as f:
         result1 = pickle.load(f)
 
     ##wrap and normalize ##

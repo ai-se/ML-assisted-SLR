@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "runner_hpc.py", line 434, in <module>
+    eval(cmd())
+  File "<string>", line 1, in <module>
+  File "runner_hpc.py", line 55, in repeat_exp
+    result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=500, pos_limit=2, margin=float(margin))
+  File "runner_hpc.py", line 334, in simple_active_hpc
+    csr_train6, label_train6 = smote_most(csr_mat[sample6], labels[sample6])
+  File "/home/zyu9/projects/ML-assisted-SLR/Learning_assisted_review/src/funcs.py", line 444, in smote_most
+    distances, indices = nbrs.kneighbors(sub)
+  File "/share2/zyu9/miniconda/lib/python2.7/site-packages/sklearn/neighbors/base.py", line 361, in kneighbors
+    (train_size, n_neighbors)
+ValueError: Expected n_neighbors <= n_samples,  but n_samples = 4, n_neighbors = 6

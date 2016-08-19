@@ -17,14 +17,26 @@ from funcs import *
 from mpi4py import MPI
 
 
+def simple_exp(margin):
+    repeats=10
+    stepsize=10
+    set="Hall"
+    with open("../dump/"+set+".pickle","rb") as handle:
+    # with open("/share2/zyu9/Datasets/SLR/dump/"+set+".pickle","r") as handle:
+        csr_mat = pickle.load(handle)
+        labels = pickle.load(handle)
+
+    result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=500, pos_limit=2, margin=float(margin))
+
+
 
 
 def repeat_exp(margin):
     repeats=10
     stepsize=10
-    set="ieee"
-    # with open("../dump/"+set+".pickle","r") as handle:
-    with open("/share2/zyu9/Datasets/SLR/dump/"+set+".pickle","r") as handle:
+    set="Hall"
+    # with open("../dump/"+set+".pickle","rb") as handle:
+    with open("/share2/zyu9/Datasets/SLR/dump/"+set+".pickle","rb") as handle:
         csr_mat = pickle.load(handle)
         labels = pickle.load(handle)
 

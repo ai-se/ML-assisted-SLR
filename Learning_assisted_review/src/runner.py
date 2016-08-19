@@ -172,27 +172,27 @@ def comp_draw(id):
              'figure.autolayout': True, 'figure.figsize': (16, 8)}
     plt.rcParams.update(paras)
 
-    with open("../dump/simple_exp8.pickle", "r") as f:
-        result8=pickle.load(f)
-    with open("../dump/simple_exp10.pickle", "r") as f:
-        result10 = pickle.load(f)
+    with open("../dump/repeat_exp6.pickle", "r") as f:
+        result1=pickle.load(f)[0]
+    with open("../dump/repeat_exp5.pickle", "r") as f:
+        result2 = pickle.load(f)[0]
 
     ### normalize ###
-    result8 = rescale(result8)
-    result10 = rescale(result10)
+    result1 = rescale(result1)
+    result2 = rescale(result2)
     #################
 
-    plt.plot(result8['x'], result8["linear_review"], label="linear_review")
-    plt.plot(result8['x'], result8["aggressive_undersampling"], label="patient_aggressive_undersampling")
-    plt.plot(result10['x'], result10["continuous_active"], label="hasty_continuous_active")
-    plt.plot(result8['x'], result8["continuous_aggressive"], label="patient_continuous_aggressive")
-    plt.plot(result10['x'], result10["aggressive_undersampling"], label="hasty_aggressive_undersampling")
-    plt.plot(result10['x'], result10["continuous_aggressive"], label="hasty_continuous_aggressive")
-    plt.plot(result10['x'], result10["semi_continuous_aggressive"], label="hasty_semi_continuous_aggressive")
-    plt.plot(result8['x'][result8['stable']], result8["simple_active"][result8['stable']], color="yellow",marker='o')
-    plt.plot(result8['x'][result8['begin']], result8["simple_active"][result8['begin']], color="white", marker='o')
-    plt.plot(result10['x'][result10['stable']], result10["simple_active"][result10['stable']], color="yellow", marker='o')
-    plt.plot(result10['x'][result10['begin']], result10["simple_active"][result10['begin']], color="white", marker='o')
+    plt.plot(result1['x'], result1["linear_review"], label="linear_review")
+    plt.plot(result1['x'], result1["aggressive_undersampling"], label="patient_aggressive_undersampling")
+    plt.plot(result2['x'], result2["continuous_active"], label="hasty_continuous_active")
+    plt.plot(result1['x'], result1["continuous_aggressive"], label="patient_continuous_aggressive")
+    plt.plot(result2['x'], result2["aggressive_undersampling"], label="hasty_aggressive_undersampling")
+    plt.plot(result2['x'], result2["continuous_aggressive"], label="hasty_continuous_aggressive")
+    plt.plot(result2['x'], result2["semi_continuous_aggressive"], label="hasty_semi_continuous_aggressive")
+    plt.plot(result1['x'][result1['stable']], result1["simple_active"][result1['stable']], color="yellow",marker='o')
+    plt.plot(result1['x'][result1['begin']], result1["simple_active"][result1['begin']], color="white", marker='o')
+    plt.plot(result2['x'][result2['stable']], result2["simple_active"][result2['stable']], color="yellow", marker='o')
+    plt.plot(result2['x'][result2['begin']], result2["simple_active"][result2['begin']], color="white", marker='o')
     plt.ylabel("Relevant Found")
     plt.xlabel("Documents Reviewed")
     plt.legend(bbox_to_anchor=(0.95, 0.50), loc=1, ncol=1, borderaxespad=0.)

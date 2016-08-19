@@ -20,6 +20,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from scipy.sparse import csr_matrix
 from funcs import *
 from pdb import set_trace
+import pickle
 
 __author__ = 'Rahul Krishna'
 
@@ -149,7 +150,7 @@ class SVM:
 
 ####################################################
 
-    def simple_active(self, step=10 ,initial=200, pos_limit=5, mask=[]):
+    def simple_active(self, step=10 ,initial=200, pos_limit=5, margin=1, mask=[]):
         all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)
         collection = FeatureMap(raw_data=all_tfm,
                                 features=self.top_feat).tf(mask=mask)
@@ -231,7 +232,7 @@ class SVM:
                     # sort_order_uncertain = np.argsort(np.abs(pred_proba[:,0] - 0.5))
                     dist = clf.decision_function(csr_mat[pool2])
                     sort_order_dist = np.argsort(np.abs(dist))
-                    if abs(dist[sort_order_dist[0]]) > 1:
+                    if abs(dist[sort_order_dist[0]]) > margin:
                         is_stable = True
                         stable=idx
 
@@ -366,6 +367,20 @@ class SVM:
 
         return result
 
+
+
+    def saveData(self):
+        all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)
+        collection = FeatureMap(raw_data=all_tfm,
+                                features=self.top_feat).tf()
+        csr_mat=collection._ifeatures
+        labels=np.array(collection.user)
+        with open("../dump/"+self.set+".pickle","w") as handle:
+            pickle.dump(csr_mat, handle)
+            pickle.dump(labels, handle)
+
+
+
     def linear_review(self, step=10, mask=[]):
         all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)
         collection = FeatureMap(raw_data=all_tfm,
@@ -399,144 +414,7 @@ class SVM:
 
 ######################################################
 
-    def rerun(self, mask=list()):
-        "Masking"
-        tmp = np.identity(len(self.vocab))
-        for x in mask:
-            tmp[x, x] = 0;
-        my_mask = csr_matrix(tmp)
-        TO_REVIEW = [self.TEST.pop(idx) for idx in
-                     self.sort_order_uncertain[:50]]
-        self.TRAIN.update_mapping(TO_REVIEW)
-        return self
 
-    def run(self, mask=[]):
-        self.round += 1
-        self.clf = svm.SVC(kernel='linear', probability=True)
-
-        # Update training matrix
-        t = time()
-        train_tfm = self.TF.matrix(CONTROL=False, LABELED=True)
-        # self.TRAIN = self.TRAIN.refresh(data=train_tfm)
-        self.TRAIN = FeatureMap(raw_data=train_tfm,
-                   features=self.top_feat).tf(mask=mask)
-
-        self.vprint("UPDATE TFM for TRAIN. {} seconds elapsed".format(time() - t))
-        t = time()
-
-        self.clf.fit(self.TRAIN._ifeatures, self.TRAIN._class)
-
-        self.vprint("TRAIN SVM. {} seconds elapsed".format(time() - t))
-        t = time()
-
-        # Update test matrix
-        test_tfm = self.TF.matrix(CONTROL=False, LABELED=False)
-        self.vprint("Load from ES for TEST. {} seconds elapsed".format(time() - t))
-        t = time()
-        self.TEST = FeatureMap(raw_data=test_tfm,
-                               features=self.top_feat).tf(mask=mask)
-
-        self.vprint("Get TFM for TEST. {} seconds elapsed".format(time() - t))
-        t = time()
-
-        pred_proba = self.clf.predict_proba(self.TEST._ifeatures)
-        pos_at = list(self.clf.classes_).index("pos")
-        self.coef = self.clf.coef_.toarray()[0]
-        self.dual_coef = self.clf.dual_coef_.toarray()[0]
-
-        if not pos_at:
-            self.coef = -self.coef
-            self.dual_coef = -self.dual_coef
-
-        self.prob = pred_proba[:, pos_at]
-        self.sort_order_uncertain = np.argsort(np.abs(pred_proba[:, 0] - 0.5))
-        self.sort_order_certain = np.argsort(1 - self.prob)
-        self.sort_order_support = np.argsort(1 - np.abs(self.dual_coef))
-
-        self.certain = [self.helper.get_document(
-                _id=self.TEST.doc_id[i]) for i in
-                        self.sort_order_certain[:self.disp]]
-        self.uncertain = [self.helper.get_document(
-                _id=self.TEST.doc_id[i]) for i in
-                          self.sort_order_uncertain[:self.disp]]
-        self.support_vec = [self.helper.get_document(
-                _id=self.TRAIN.doc_id[i]) for i in
-                            support[self.sort_order_support[:self.disp]]]
-
-        self.vprint("SUMMARIZED. {} seconds elapsed".format(time() - t))
-        t = time()
-
-        return self.stats()
-
-    def stats(self):
-        t = time()
-
-        # --Stats--
-
-        self.CONTROL = FeatureMap(raw_data=self.TF.matrix(CONTROL=True, LABELED=True), features=self.top_feat).tf()
-
-        self.vprint("Get TFM for CONTROL. {} seconds elapsed".format(time() - t))
-        t = time()
-
-
-        # Turnovers
-        preds = self.clf.predict(self.CONTROL._ifeatures)
-        pred_proba = self.clf.predict_proba(self.CONTROL._ifeatures)
-        pos_at = list(self.clf.classes_).index("pos")
-        self.proba=pred_proba[:, pos_at]
-        turnover = [i for i in xrange(len(self.proba)) if not self.CONTROL._class[i]==preds[i]]
-        sort_order = np.argsort(0.5-np.abs(self.proba[turnover]-0.5))
-        self.real_order = np.array(turnover)[sort_order][:self.disp]
-        self.turnovers = [self.helper.get_document(_id=self.CONTROL.doc_id[i]) for i in self.real_order]
-
-        self.vprint("TURNOVERS. {} seconds elapsed".format(time() - t))
-        t = time()
-        #######
-
-
-        # Stats
-        self.abcd = ABCD(before=self.CONTROL._class, after=preds)
-        self.STATS = [k.stats() for k in self.abcd()]
-
-        self.vprint("Get STATS. {} seconds elapsed".format(time() - t))
-        t = time()
-        ###########
-
-        self.result.append({
-            "the_round" : self.round,
-            "consistency": 0,
-            "turnover_prob": ','.join(
-                    map(str, self.proba[self.real_order])),
-            "turnover"  : self.turnovers,
-            "pos"        : self.STATS[1],
-            "neg"        : self.STATS[0]
-        })
-        return self
-
-    def get_response(self):
-        return {
-            "the_round"     : self.round,
-            "coef"          : ','.join(map(str, self.coef)),
-            "support"       : self.support_vec,
-            "dual_coef"     : ','.join(
-                    map(str, self.dual_coef[self.sort_order_support])),
-            "certain_prob"  : ','.join(
-                map(str, self.prob[self.sort_order_certain])),
-            "uncertain_prob": ','.join(
-                    map(str, self.prob[self.sort_order_uncertain])),
-            "certain"       : self.certain,
-            "uncertain"     : self.uncertain[::-1],
-            "vocab"         : self.vocab,
-            "the_round": self.round,
-            "consistency"   : 0,
-            "turnover_prob" : ','.join(
-                map(str, self.proba[self.real_order])),
-            "turnover"      : self.turnovers,
-            "pos"           : self.STATS[1],
-            "neg"           : self.STATS[0],
-            "determinant"   : self.determinants,
-            "determinant_dist": ','.join(map(str, self.best_dists))
-        }
 
 
 # ----Command Line Interface----

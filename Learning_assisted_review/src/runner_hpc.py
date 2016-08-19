@@ -10,6 +10,10 @@ import pickle
 import matplotlib.pyplot as plt
 from collections import Counter
 from sklearn import svm
+
+
+from funcs import *
+
 from mpi4py import MPI
 
 
@@ -36,7 +40,7 @@ def repeat_exp(margin):
         k=era*proc_num+rank
         if k+1 > repeats:
             break
-        result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=500, pos_limit=2, margin=int(margin))
+        result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=500, pos_limit=2, margin=float(margin))
         results.append(result)
         era+=1
 

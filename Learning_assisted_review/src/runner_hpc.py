@@ -10,7 +10,7 @@ import pickle
 import matplotlib.pyplot as plt
 from collections import Counter
 from sklearn import svm
-from mpi4py import MPI
+# from mpi4py import MPI
 
 
 
@@ -18,10 +18,13 @@ from mpi4py import MPI
 def repeat_exp(margin):
     repeats=10
     stepsize=10
-    set="Hall"
-    with open("/share2/zyu9/Datasets/SLR/dump/"+set+".pickle","w") as handle:
+    set="ieee"
+    # with open("../dump/"+set+".pickle","r") as handle:
+    with open("/share2/zyu9/Datasets/SLR/dump/"+set+".pickle","r") as handle:
         csr_mat = pickle.load(handle)
         labels = pickle.load(handle)
+
+
 
     results=[]
 

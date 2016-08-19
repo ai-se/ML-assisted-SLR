@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from collections import Counter
 from sklearn import svm
 from funcs import *
-# from mpi4py import MPI
+from mpi4py import MPI
 
 
 def simple_exp(margin):

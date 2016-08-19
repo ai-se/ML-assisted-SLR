@@ -22,6 +22,13 @@ container = Vessel(
 
 stepsize = 50
 
+def saveData(set):
+    stepsize = 10
+
+    if container.SVM is None:
+        container.also(SVM=SVM(disp=stepsize, set=set, opt=container.OPT).featurize())
+    container.SVM.saveData()
+
 def tag_can():
     search_string="(software OR applicati* OR systems ) AND (fault* OR defect* OR quality OR error-prone) AND (predict* OR prone* OR probability OR assess* OR detect* OR estimat* OR classificat*)"
     res=ESHandler.query_string(search_string)

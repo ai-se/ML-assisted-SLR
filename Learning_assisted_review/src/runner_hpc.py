@@ -2,9 +2,7 @@ from __future__ import division, print_function
 
 
 
-from ES_CORE import ESHandler
-from model import SVM
-from injest import Vessel
+
 import numpy as np
 from pdb import set_trace
 from demos import cmd
@@ -15,20 +13,6 @@ from sklearn import svm
 from mpi4py import MPI
 
 
-ESHandler = ESHandler(force_injest=False)
-container = Vessel(
-        OPT=None,
-        SVM=None,
-        round=0
-)
-
-
-def saveData(set):
-    stepsize = 10
-
-    if container.SVM is None:
-        container.also(SVM=SVM(disp=stepsize, set=set, opt=container.OPT).featurize())
-    container.SVM.saveData()
 
 
 def repeat_exp(margin):

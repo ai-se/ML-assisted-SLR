@@ -11,7 +11,19 @@ import matplotlib.pyplot as plt
 from collections import Counter
 from sklearn import svm
 from funcs import *
-from mpi4py import MPI
+# from mpi4py import MPI
+
+
+def simple_exp(margin):
+    repeats=10
+    stepsize=10
+    set="Hall"
+    with open("../dump/"+set+".pickle","rb") as handle:
+    # with open("/share2/zyu9/Datasets/SLR/dump/"+set+".pickle","r") as handle:
+        csr_mat = pickle.load(handle)
+        labels = pickle.load(handle)
+
+    result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=500, pos_limit=2, margin=float(margin))
 
 
 
@@ -19,7 +31,7 @@ from mpi4py import MPI
 def repeat_exp(margin):
     repeats=10
     stepsize=10
-    set="ieee"
+    set="Hall"
     # with open("../dump/"+set+".pickle","r") as handle:
     with open("/share2/zyu9/Datasets/SLR/dump/"+set+".pickle","r") as handle:
         csr_mat = pickle.load(handle)

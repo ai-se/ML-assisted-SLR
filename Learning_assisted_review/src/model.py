@@ -375,9 +375,13 @@ class SVM:
                                 features=self.top_feat).tf()
         csr_mat=collection._ifeatures
         labels=np.array(collection.user)
-        with open("../dump/"+self.set+".pickle","w") as handle:
+        with open("../dump/"+self.set+".pickle","wb") as handle:
             pickle.dump(csr_mat, handle)
             pickle.dump(labels, handle)
+        with open("../dump/"+self.set+".pickle","rb") as f:
+            csr = pickle.load(f)
+            lb = pickle.load(f)
+            set_trace()
 
 
 

@@ -1,0 +1,43 @@
+ES Server not started. Now starting ... 
+ES Server not started. Now starting ... 
+ES Server not started. Now starting ... 
+ES Server not started. Now starting ... 
+ES Server not started. Now starting ... 
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@n2e1-13>
+Subject: Job 266484: <mpiexec -n 5 /share2/zyu9/miniconda/bin/python2.7 runner_hpc.py repeat_exp 1.2> Exited
+
+Job <mpiexec -n 5 /share2/zyu9/miniconda/bin/python2.7 runner_hpc.py repeat_exp 1.2> was submitted from host <login01.hpc.ncsu.edu> by user <zyu9> in cluster <henry2>.
+Job was executed on host(s) <4*n2e1-13>, in queue <single_chassis>, as user <zyu9> in cluster <henry2>.
+</home/zyu9> was used as the home directory.
+</home/zyu9/projects/ML-assisted-SLR/Learning_assisted_review/src> was used as the working directory.
+Started at Fri Aug 19 15:17:59 2016
+Results reported at Fri Aug 19 15:20:29 2016
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+mpiexec -n 5 /share2/zyu9/miniconda/bin/python2.7 runner_hpc.py repeat_exp 1.2
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time   :     15.74 sec.
+    Max Memory :       444 MB
+    Max Swap   :      3053 MB
+
+    Max Processes  :         9
+    Max Threads    :        10
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <./err/1.2.err.266484> for stderr output of this job.
+

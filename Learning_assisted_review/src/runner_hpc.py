@@ -10,7 +10,7 @@ import pickle
 import matplotlib.pyplot as plt
 from collections import Counter
 from sklearn import svm
-# from mpi4py import MPI
+from mpi4py import MPI
 
 
 

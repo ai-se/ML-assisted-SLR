@@ -46,13 +46,16 @@ def repeat_exp(margin):
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
+    print("rank: %d" %rank)
     proc_num = 5
     era=0
     while True:
         k=era*proc_num+rank
         if k+1 > repeats:
             break
-        result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=500, pos_limit=2, margin=float(margin))
+        result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=10, pos_limit=1, margin=float(margin))
+        print("repeat: %d" %k)
+
         results.append(result)
         era+=1
 
@@ -60,10 +63,12 @@ def repeat_exp(margin):
         for i in range(proc_num-1):
             tmp=comm.recv(source=i+1)
             results.extend(tmp)
-            with open("../dump/repeat_margin_" + margin + ".pickle","w") as handle:
-                pickle.dump(results, handle)
+            print("rand %d received" %i)
+        with open("../dump/repeat_margin_" + margin + ".pickle","w") as handle:
+            pickle.dump(results, handle)
     else:
         comm.send(results,dest=0)
+        print("rank %d sent" %rank)
 
 
 def wrap_repeat(results):

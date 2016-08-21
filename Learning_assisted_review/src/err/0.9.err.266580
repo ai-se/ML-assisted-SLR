@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "runner_hpc.py", line 434, in <module>
+    eval(cmd())
+  File "<string>", line 1, in <module>
+  File "runner_hpc.py", line 63, in repeat_exp
+    with open("../dump/repeat_margin_" + margin + ".pickle","w") as handle:
+TypeError: cannot concatenate 'str' and 'float' objects
+Assertion failed in file socksm.c at line 362: sc->pg_is_set
+internal ABORT - process 0
+User defined signal 2

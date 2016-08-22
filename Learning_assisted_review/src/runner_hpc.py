@@ -64,7 +64,7 @@ def repeat_exp(margin):
             tmp=comm.recv(source=i+1)
             results.extend(tmp)
             print("rand %d received" %i)
-        with open("../dump/repeat_margin_" + margin + ".pickle","w") as handle:
+        with open("../dump/repeat_margin_" + str(margin) + ".pickle","w") as handle:
             pickle.dump(results, handle)
     else:
         comm.send(results,dest=0)

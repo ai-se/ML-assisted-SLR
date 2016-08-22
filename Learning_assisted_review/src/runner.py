@@ -242,11 +242,11 @@ def comp_repeat_draw(id):
 
     ##wrap and normalize ##
     medians0, iqrs0 = wrap_repeat(result0)
-    medians0 = rescale(medians0)
-    iqrs0 = rescale(iqrs0)
     medians1, iqrs1 = wrap_repeat(result1)
-    medians1 = rescale(medians1)
-    iqrs1 = rescale(iqrs1)
+    # medians0 = rescale(medians0)
+    # iqrs0 = rescale(iqrs0)
+    # medians1 = rescale(medians1)
+    # iqrs1 = rescale(iqrs1)
     #################
 
     indices = range(N)

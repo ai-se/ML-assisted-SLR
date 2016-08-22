@@ -11,6 +11,8 @@ from demos import cmd
 from crawler import crawl_acm_doi
 import pickle
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
+import matplotlib.cm as cmx
 
 
 ESHandler = ESHandler(force_injest=False)
@@ -21,6 +23,16 @@ container = Vessel(
 )
 
 stepsize = 50
+
+
+
+
+
+def colorcode(N):
+    jet = plt.get_cmap('jet')
+    cNorm  = colors.Normalize(vmin=0, vmax=N-1, clip=True)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    return scalarMap
 
 def saveData(set):
     stepsize = 10
@@ -208,6 +220,9 @@ def comp_draw(id):
     plt.savefig("../figure/comp_exp" + str(id) + ".png")
 
 def comp_repeat_draw(id):
+
+    N= 10
+
     font = {'family': 'normal',
             'weight': 'bold',
             'size': 20}
@@ -217,6 +232,8 @@ def comp_repeat_draw(id):
     paras = {'lines.linewidth': 5, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
              'figure.autolayout': True, 'figure.figsize': (16, 8)}
     plt.rcParams.update(paras)
+
+    scalarMap = colorcode(N)
 
     with open("../dump/repeat_exp5.pickle", "r") as f:
         result0=pickle.load(f)
@@ -232,23 +249,25 @@ def comp_repeat_draw(id):
     iqrs1 = rescale(iqrs1)
     #################
 
-    line, = plt.plot(medians0['x'], medians0["linear_review"], label="linear_review")
+    indices = range(N)
+
+    line, = plt.plot(medians0['x'], medians0["linear_review"], label="linear_review", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs0["linear_review"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="H_C_C_N")
+    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="H_C_C_N", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs0["continuous_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["continuous_aggressive"], label="P_C_C_A")
+    line, = plt.plot(medians1['x'], medians1["continuous_aggressive"], label="P_C_C_A", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs1['x'], iqrs1["continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["aggressive_undersampling"], label="H_U_S_A")
+    line, = plt.plot(medians0['x'], medians0["aggressive_undersampling"], label="H_U_S_A", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs0["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["continuous_aggressive"], label="H_C_C_A")
+    line, = plt.plot(medians0['x'], medians0["continuous_aggressive"], label="H_C_C_A", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs0["continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="H_U_C_A")
+    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="H_U_C_A", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["continuous_active"], label="P_C_C_N", color = "orange")
+    line, = plt.plot(medians1['x'], medians1["continuous_active"], label="P_C_C_N", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs1["continuous_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A", color='brown')
+    line, = plt.plot(medians0['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
     plt.ylabel("Relevant Found")
     plt.xlabel("Documents Reviewed")

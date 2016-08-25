@@ -223,6 +223,8 @@ def comp_repeat_draw(id):
 
     N= 10
 
+    indices = range(N)
+
     font = {'family': 'normal',
             'weight': 'bold',
             'size': 20}
@@ -249,7 +251,7 @@ def comp_repeat_draw(id):
     # iqrs1 = rescale(iqrs1)
     #################
 
-    indices = range(N)
+
 
     line, = plt.plot(medians0['x'], medians0["linear_review"], label="linear_review", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs0["linear_review"], "-.", color=line.get_color())
@@ -274,6 +276,49 @@ def comp_repeat_draw(id):
     plt.legend(bbox_to_anchor=(0.95, 0.70), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/comp_repeat_exp" + str(id) + ".eps")
     plt.savefig("../figure/comp_repeat_exp" + str(id) + ".png")
+
+
+def draw_margin(id):
+    margins = ["0.8", "0.9", "1.0", "1.2", "1.5", "2.0"]
+
+    N=len(margins)
+
+
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 5, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 8)}
+    plt.rcParams.update(paras)
+
+    scalarMap = colorcode(N)
+    result={}
+    medians={}
+    iqrs={}
+    for margin in margins:
+        with open("../dump/repeat_margin_"+margin+".pickle", "r") as f:
+            result[margin]=pickle.load(f)
+        ##wrap and normalize ##
+        medians[margin], iqrs[margin] = wrap_repeat(result[margin])
+        # medians[margin] = rescale(medians[margin])
+        # iqrs[margin] = rescale(iqrs[margin])
+        #################
+
+    for ind,margin in enumerate(margins):
+        line, = plt.plot(medians[margin]['x'], medians[margin]["semi_continuous_aggressive"], label=margin, color = scalarMap.to_rgba(ind))
+        plt.plot(iqrs[margin]['x'], iqrs[margin]["linear_review"], "-.", color=line.get_color())
+
+    plt.ylabel("Relevant Found")
+    plt.xlabel("Documents Reviewed")
+    plt.legend(bbox_to_anchor=(0.95, 0.70), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/margin_exp" + str(id) + ".eps")
+    plt.savefig("../figure/margin_exp" + str(id) + ".png")
+
+
+
 
 
 

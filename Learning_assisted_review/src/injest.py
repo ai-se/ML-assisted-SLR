@@ -285,7 +285,7 @@ class xml2elastic:
 
     @staticmethod
     def decode_final_list():
-        dir = '../data/Hall/contain.txt'
+        dir = '../data/final_list/final_list.csv'
         with open(dir, 'rb') as f:
             spamreader = f.readlines()
             for row in spamreader[0:]:
@@ -315,7 +315,6 @@ class xml2elastic:
 
     def parse_Hall(self, dir, fresh=True):
 
-        target="shriram krishnamurthi"
         "Parse XML to ES Database"
         if self.verbose: print("Injesting: {}\r".format(dir), end='\n')
 
@@ -329,7 +328,6 @@ class xml2elastic:
             # CONTROL = True if random() < 0.1 and MAX_CONTROL > 0 else False
             # if CONTROL: MAX_CONTROL -= 1
             CONTROL = False
-            REAL_TAG = 'pos' if target in authors else 'neg'
             content = {
                 "citedCount": citedCount,
                 "year": year,
@@ -338,7 +336,7 @@ class xml2elastic:
                 "abstract":  abstract,
                 "authors":  authors,
                 "doi":  doi,
-                "label": REAL_TAG  if CONTROL else 'none',
+                "label": 'none',
                 "is_control":"yes" if CONTROL else "no",
                 "user": "no"
             }
@@ -390,7 +388,6 @@ class xml2elastic:
 
     def parse_ieee(self, dir, fresh=True):
 
-        target = "shriram krishnamurthi"
         "Parse XML to ES Database"
         if self.verbose: print("Injesting: {}\r".format(dir), end='\n')
 
@@ -404,7 +401,6 @@ class xml2elastic:
             # CONTROL = True if random() < 0.1 and MAX_CONTROL > 0 else False
             # if CONTROL: MAX_CONTROL -= 1
             CONTROL = False
-            REAL_TAG = 'pos' if target in authors else 'neg'
             content = {
                 "citedCount": citedCount,
                 "year": year,
@@ -413,7 +409,7 @@ class xml2elastic:
                 "abstract": abstract,
                 "authors": authors,
                 "doi": doi,
-                "label": REAL_TAG if CONTROL else 'none',
+                "label": 'none',
                 "is_control": "yes" if CONTROL else "no",
                 "user": "no"
             }

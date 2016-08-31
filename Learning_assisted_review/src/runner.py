@@ -60,7 +60,7 @@ def parse_acm():
     url="http://dl.acm.org/results.cfm?query=%28software%20OR%20applicati%2A%20OR%20systems%20%29%20AND%20%28fault%2A%20OR%20defect%2A%20OR%20quality%20OR%20error-prone%29%20AND%20%28predict%2A%20OR%20prone%2A%20OR%20probability%20OR%20assess%2A%20OR%20detect%2A%20OR%20estimat%2A%20OR%20classificat%2A%29&filtered=resources%2Eft%2EresourceFormat=PDF&within=owners%2Eowner%3DHOSTED&dte=2000&bfr=2013&srt=_score"
     crawl_acm_doi(url)
 
-def inject():
+def injest():
     ESHandler.injest(force=True)
 
 def simple_exp(id):
@@ -111,7 +111,7 @@ def repeat_exp(id):
 
     results=[]
     for j in xrange(repeats):
-        result = container.SVM.simple_active(step=stepsize, initial=500, pos_limit=2)
+        result = container.SVM.simple_active(step=stepsize, initial=10, pos_limit=5)
         results.append(result)
 
     with open("../dump/repeat_exp" + str(id) + ".pickle","w") as f:

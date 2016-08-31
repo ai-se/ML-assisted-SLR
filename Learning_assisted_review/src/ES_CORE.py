@@ -43,8 +43,8 @@ class ESHandler:
                     'requested. Now indexing...')
             # dir="../data/citeseerx/citemap.csv"
             xml2es = xml2elastic(renew=True,verbose=True)
-            self.es = xml2es.parse_Hall(dir)
             self.es = xml2es.parse_ieee(dir)
+            self.es = xml2es.parse_Hall(dir)
 
     def query_string(self, keystring):
         DIS_MAX_QUERY ={

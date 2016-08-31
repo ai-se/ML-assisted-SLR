@@ -71,150 +71,83 @@ def repeat_exp(margin):
         print("rank %d sent" %rank)
 
 
-def wrap_repeat(results):
-    medians={}
-    iqrs={}
-    medians['x'] = results[0]['x']
-    iqrs['x'] = results[0]['x']
-    for key in results[0].keys():
-        if key == 'x' or key == 'stable' or key == 'begin':
-            continue
-        else:
-            tmp = np.array([what[key] for what in results])
-            medians[key] = np.median(tmp,axis=0)
-            iqrs[key] = np.percentile(tmp,75,axis=0) - np.percentile(tmp,25,axis=0)
-    return medians, iqrs
-
-def repeat_draw(id):
-    font = {'family': 'normal',
-            'weight': 'bold',
-            'size': 20}
-
-
-    plt.rc('font', **font)
-    paras = {'lines.linewidth': 5, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
-             'figure.autolayout': True, 'figure.figsize': (16, 8)}
-    plt.rcParams.update(paras)
-
-    with open("../dump/repeat_exp"+str(id)+".pickle", "r") as f:
-        results=pickle.load(f)
-
-    medians, iqrs = wrap_repeat(results)
-    medians = rescale(medians)
-    iqrs = rescale(iqrs)
-
-
-    line, = plt.plot(medians['x'], medians["linear_review"], label="linear_review")
-    plt.plot(iqrs['x'], iqrs["linear_review"], "-.", color=line.get_color())
-    line, = plt.plot(medians['x'], medians["aggressive_undersampling"], label="aggressive_undersampling")
-    plt.plot(iqrs['x'], iqrs["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians['x'], medians["continuous_active"], label="continuous_active")
-    plt.plot(iqrs['x'], iqrs["continuous_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians['x'], medians["continuous_aggressive"], label="continuous_aggressive")
-    plt.plot(iqrs['x'], iqrs["continuous_aggressive"], "-.", color=line.get_color())
-    plt.ylabel("Relevant Found")
-    plt.xlabel("Documents Reviewed")
-    plt.legend(bbox_to_anchor=(0.95, 0.45), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/repeat_exp" + str(id) + ".eps")
-    plt.savefig("../figure/repeat_exp" + str(id) + ".png")
+def repeat_Hall(pos_limit):
+    repeats=10
+    stepsize=10
+    set="Hall"
+    # with open("../dump/"+set+".pickle","rb") as handle:
+    with open("/share2/zyu9/Datasets/SLR/dump/"+set+".pickle","rb") as handle:
+        csr_mat = pickle.load(handle)
+        labels = pickle.load(handle)
 
 
 
-def rescale(result):
-    for key in result:
-        if key == 'x':
-            result[key] = np.array(result[key])/result[key][-1]
-            continue
-        if key == 'stable' or key == 'begin':
-            continue
-        result[key] = np.array(result[key]) / 106
-    return result
+    results=[]
+
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    print("rank: %d" %rank)
+    proc_num = 5
+    era=0
+    while True:
+        k=era*proc_num+rank
+        if k+1 > repeats:
+            break
+        result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=10, pos_limit=int(pos_limit))
+        print("repeat: %d" %k)
+
+        results.append(result)
+        era+=1
+
+    if rank == 0:
+        for i in range(proc_num-1):
+            tmp=comm.recv(source=i+1)
+            results.extend(tmp)
+            print("rand %d received" %i)
+        with open("../dump/repeat_Hall_" + str(pos_limit) + ".pickle","w") as handle:
+            pickle.dump(results, handle)
+    else:
+        comm.send(results,dest=0)
+        print("rank %d sent" %rank)
+
+def repeat_ieee(pos_limit):
+    repeats=10
+    stepsize=10
+    set="ieee"
+    # with open("../dump/"+set+".pickle","rb") as handle:
+    with open("/share2/zyu9/Datasets/SLR/dump/"+set+".pickle","rb") as handle:
+        csr_mat = pickle.load(handle)
+        labels = pickle.load(handle)
 
 
 
-def comp_draw(id):
-    font = {'family': 'normal',
-            'weight': 'bold',
-            'size': 20}
+    results=[]
 
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    print("rank: %d" %rank)
+    proc_num = 5
+    era=0
+    while True:
+        k=era*proc_num+rank
+        if k+1 > repeats:
+            break
+        result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=10, pos_limit=int(pos_limit))
+        print("repeat: %d" %k)
 
-    plt.rc('font', **font)
-    paras = {'lines.linewidth': 5, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
-             'figure.autolayout': True, 'figure.figsize': (16, 8)}
-    plt.rcParams.update(paras)
+        results.append(result)
+        era+=1
 
-    with open("../dump/repeat_exp6.pickle", "r") as f:
-        result1=pickle.load(f)[0]
-    with open("../dump/repeat_exp5.pickle", "r") as f:
-        result2 = pickle.load(f)[0]
-
-    ### normalize ###
-    result1 = rescale(result1)
-    result2 = rescale(result2)
-    #################
-
-    plt.plot(result1['x'], result1["linear_review"], label="linear_review")
-    plt.plot(result1['x'], result1["aggressive_undersampling"], label="patient_aggressive_undersampling")
-    plt.plot(result2['x'], result2["continuous_active"], label="hasty_continuous_active")
-    plt.plot(result1['x'], result1["continuous_aggressive"], label="patient_continuous_aggressive")
-    plt.plot(result2['x'], result2["aggressive_undersampling"], label="hasty_aggressive_undersampling")
-    plt.plot(result2['x'], result2["continuous_aggressive"], label="hasty_continuous_aggressive")
-    plt.plot(result2['x'], result2["semi_continuous_aggressive"], label="hasty_semi_continuous_aggressive")
-    plt.plot(result1['x'][result1['stable']], result1["simple_active"][result1['stable']], color="yellow",marker='o')
-    plt.plot(result1['x'][result1['begin']], result1["simple_active"][result1['begin']], color="white", marker='o')
-    plt.plot(result2['x'][result2['stable']], result2["simple_active"][result2['stable']], color="yellow", marker='o')
-    plt.plot(result2['x'][result2['begin']], result2["simple_active"][result2['begin']], color="white", marker='o')
-    plt.ylabel("Relevant Found")
-    plt.xlabel("Documents Reviewed")
-    plt.legend(bbox_to_anchor=(0.95, 0.50), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/comp_exp" + str(id) + ".eps")
-    plt.savefig("../figure/comp_exp" + str(id) + ".png")
-
-def comp_repeat_draw(id):
-    font = {'family': 'normal',
-            'weight': 'bold',
-            'size': 20}
-
-
-    plt.rc('font', **font)
-    paras = {'lines.linewidth': 5, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
-             'figure.autolayout': True, 'figure.figsize': (16, 8)}
-    plt.rcParams.update(paras)
-
-    with open("../dump/repeat_exp5.pickle", "r") as f:
-        result0=pickle.load(f)
-    with open("../dump/repeat_exp6.pickle", "r") as f:
-        result1 = pickle.load(f)
-
-    ##wrap and normalize ##
-    medians0, iqrs0 = wrap_repeat(result0)
-    medians0 = rescale(medians0)
-    iqrs0 = rescale(iqrs0)
-    medians1, iqrs1 = wrap_repeat(result1)
-    medians1 = rescale(medians1)
-    iqrs1 = rescale(iqrs1)
-    #################
-
-    line, = plt.plot(medians0['x'], medians0["linear_review"], label="linear_review")
-    plt.plot(iqrs0['x'], iqrs0["linear_review"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="patient_aggressive_undersampling")
-    plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="hasty_continuous_active")
-    plt.plot(iqrs0['x'], iqrs0["continuous_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["continuous_aggressive"], label="patient_continuous_aggressive")
-    plt.plot(iqrs1['x'], iqrs1["continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["aggressive_undersampling"], label="hasty_aggressive_undersampling")
-    plt.plot(iqrs0['x'], iqrs0["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["continuous_aggressive"], label="hasty_continuous_aggressive")
-    plt.plot(iqrs0['x'], iqrs0["continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="hasty_semi_continuous_aggressive")
-    plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
-    plt.ylabel("Relevant Found")
-    plt.xlabel("Documents Reviewed")
-    plt.legend(bbox_to_anchor=(0.95, 0.50), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/comp_repeat_exp" + str(id) + ".eps")
-    plt.savefig("../figure/comp_repeat_exp" + str(id) + ".png")
-
+    if rank == 0:
+        for i in range(proc_num-1):
+            tmp=comm.recv(source=i+1)
+            results.extend(tmp)
+            print("rand %d received" %i)
+        with open("../dump/repeat_ieee_" + str(pos_limit) + ".pickle","w") as handle:
+            pickle.dump(results, handle)
+    else:
+        comm.send(results,dest=0)
+        print("rank %d sent" %rank)
 
 
 def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin=1):

@@ -181,15 +181,17 @@ def rescale(result):
         # result[key] = np.array(result[key]) / 62
     return result
 
-def rescaleY(result):
+def rescaleY(result,doc):
     for key in result:
         if key == 'x':
             continue
         if key == 'stable' or key == 'begin':
             continue
-        result[key] = np.array(result[key]) / 106
-        # result[key] = np.array(result[key]) / 62
+        result[key] = np.array(result[key]) / doc
     return result
+
+def cutListinDict(dict, Display):
+    return {key:dict[key][:Display] if (key!="begin" and key!="stable") else dict[key] for key in dict.keys()}
 
 
 
@@ -333,7 +335,7 @@ def draw_margin(id):
 
 
 
-def IST_comp_draw(id):
+def IST_comp_draw(set):
 
     N= 13
 
@@ -351,25 +353,39 @@ def IST_comp_draw(id):
 
     scalarMap = colorcode(N)
 
-    with open("../dump/repeat_exp5.pickle", "r") as f:
+    with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
         result0=pickle.load(f)
-    with open("../dump/repeat_exp6.pickle", "r") as f:
+    with open("../dump/repeat_"+set+"_5.pickle", "r") as f:
         result1 = pickle.load(f)
 
 
     ##wrap and normalize ##
+
+
     medians0, iqrs0 = wrap_repeat(result0)
     medians1, iqrs1 = wrap_repeat(result1)
-    medians0 = rescaleY(medians0)
-    iqrs0 = rescaleY(iqrs0)
-    medians1 = rescaleY(medians1)
-    iqrs1 = rescaleY(iqrs1)
+
+    posmum = medians0['simple_active'][-1]
+    docnum = medians0['x'][-1]
+
+    medians0 = rescaleY(medians0,posmum)
+    iqrs0 = rescaleY(iqrs0,posmum)
+    medians1 = rescaleY(medians1,posmum)
+    iqrs1 = rescaleY(iqrs1,posmum)
+    #################
+
+    ###### cut ######
+    Display = 250
+    medians0 = cutListinDict(medians0,Display)
+    medians1 = cutListinDict(medians1,Display)
+    iqrs0 = cutListinDict(iqrs0,Display)
+    iqrs1 = cutListinDict(iqrs1,Display)
+
     #################
 
 
 
-    line, = plt.plot(medians0['x'], medians0["linear_review"], label="linear_review", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs0['x'], iqrs0["linear_review"], "-.", color=line.get_color())
+
 
 
     line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N", color = scalarMap.to_rgba(indices.pop()))
@@ -384,6 +400,9 @@ def IST_comp_draw(id):
     plt.plot(iqrs0['x'], iqrs1["semi_contunuous"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
+
+    line, = plt.plot(medians1['x'], medians1["linear_review"], label="linear_review", color = scalarMap.to_rgba(indices.pop()))
+    plt.plot(iqrs1['x'], iqrs1["linear_review"], "-.", color=line.get_color())
 
 
     line, = plt.plot(medians0['x'], medians0["simple_active"], label="H_U_S_N", color = scalarMap.to_rgba(indices.pop()))
@@ -400,15 +419,27 @@ def IST_comp_draw(id):
     plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
 
 
-    plt.plot(medians0['x'][medians0['stable']-1], medians0["simple_active"][medians0['stable']-1], color="yellow",marker='o')
-    plt.plot(medians0['x'][medians0['begin']-1], medians0["simple_active"][medians0['begin']-1], color="white", marker='o')
-    plt.plot(medians1['x'][medians1['stable']-1], medians1["simple_active"][medians1['stable']-1], color="yellow",marker='o')
-    plt.plot(medians1['x'][medians1['begin']-1], medians1["simple_active"][medians1['begin']-1], color="white", marker='o')
-    plt.ylabel("Relevant Found")
-    plt.xlabel("Documents Reviewed")
-    plt.legend(bbox_to_anchor=(0.95, 0.70), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/IST_comp" + str(id) + ".eps")
-    plt.savefig("../figure/IST_comp" + str(id) + ".png")
+
+
+    plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="red",marker='o')
+    plt.plot(medians0['x'][medians0['begin']], medians0["simple_active"][medians0['begin']], color="white", marker='o')
+    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+
+
+    tick = 500
+    x=[i*500 for i in xrange(int(docnum/tick)) if i*500<= int(Display*10)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.ylabel("Recall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.70), loc=1, ncol=2, borderaxespad=0.)
+    plt.savefig("../figure/IST_comp_" + set + ".eps")
+    plt.savefig("../figure/IST_comp_" + set + ".png")
 
 
 

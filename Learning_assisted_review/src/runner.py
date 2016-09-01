@@ -389,17 +389,17 @@ def IST_comp_draw(set):
 
 
     line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs0['x'], iqrs1["simple_active"], "-.", color=line.get_color())
+    plt.plot(iqrs1['x'], iqrs1["simple_active"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["continuous_active"], label="P_C_C_N", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs0['x'], iqrs1["continuous_active"], "-.", color=line.get_color())
+    plt.plot(iqrs1['x'], iqrs1["continuous_active"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["continuous_aggressive"], label="P_C_C_A", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs1['x'], iqrs1["continuous_aggressive"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["semi_contunuous"], label="P_U_C_N", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs0['x'], iqrs1["semi_contunuous"], "-.", color=line.get_color())
+    plt.plot(iqrs1['x'], iqrs1["semi_contunuous"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs0['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
+    plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
 
     line, = plt.plot(medians1['x'], medians1["linear_review"], label="linear_review", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs1['x'], iqrs1["linear_review"], "-.", color=line.get_color())
@@ -440,6 +440,175 @@ def IST_comp_draw(set):
     plt.legend(bbox_to_anchor=(0.9, 0.70), loc=1, ncol=2, borderaxespad=0.)
     plt.savefig("../figure/IST_comp_" + set + ".eps")
     plt.savefig("../figure/IST_comp_" + set + ".png")
+
+
+def IST_dom_draw(set):
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 5, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 8)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
+        result0=pickle.load(f)
+    with open("../dump/repeat_"+set+"_5.pickle", "r") as f:
+        result1 = pickle.load(f)
+
+    ##wrap and normalize ##
+
+
+    medians0, iqrs0 = wrap_repeat(result0)
+    medians1, iqrs1 = wrap_repeat(result1)
+
+    posmum = medians0['simple_active'][-1]
+    docnum = medians0['x'][-1]
+
+    medians0 = rescaleY(medians0,posmum)
+    iqrs0 = rescaleY(iqrs0,posmum)
+    medians1 = rescaleY(medians1,posmum)
+    iqrs1 = rescaleY(iqrs1,posmum)
+    #################
+
+    ###### cut ######
+    Display = 250
+    medians0 = cutListinDict(medians0,Display)
+    medians1 = cutListinDict(medians1,Display)
+    iqrs0 = cutListinDict(iqrs0,Display)
+    iqrs1 = cutListinDict(iqrs1,Display)
+
+    #################
+
+
+    ### start with P_U_S_A (Patient Active Learning), compare last code first ##
+    ### P_U_S_A vs. P_U_S_N ####
+    plt.figure(4)
+
+
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
+    plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N")
+    plt.plot(iqrs1['x'], iqrs1["simple_active"], "-.", color=line.get_color())
+
+    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+
+
+    tick = 500
+    x=[i*500 for i in xrange(int(docnum/tick)) if i*500<= int(Display*10)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.ylabel("Recall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/IST_4_" + set + ".eps")
+    plt.savefig("../figure/IST_4_" + set + ".png")
+
+    ### compare third code ##
+    ### P_U_S_A vs. P_U_C_A ####
+    plt.figure(3)
+
+
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
+    plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
+    plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
+
+    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+
+
+    tick = 500
+    x=[i*500 for i in xrange(int(docnum/tick)) if i*500<= int(Display*10)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.ylabel("Recall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/IST_3_" + set + ".eps")
+    plt.savefig("../figure/IST_3_" + set + ".png")
+
+    ### compare second code ##
+    ### P_U_S_A vs. P_U_C_A vs. P_C_C_A ####
+    plt.figure(2)
+
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
+    plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
+    plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["continuous_aggressive"], label="P_C_C_A")
+    plt.plot(iqrs1['x'], iqrs1["continuous_aggressive"], "-.", color=line.get_color())
+
+    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+
+
+    tick = 500
+    x=[i*500 for i in xrange(int(docnum/tick)) if i*500<= int(Display*10)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.ylabel("Recall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/IST_2_" + set + ".eps")
+    plt.savefig("../figure/IST_2_" + set + ".png")
+
+    ### compare first code ##
+    ### P_U_S_A vs. P_U_C_A vs. P_C_C_A vs. H_U_S_A vs. H_U_C_A vs. H_C_C_A####
+    plt.figure(1)
+
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
+    plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
+    plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["continuous_aggressive"], label="P_C_C_A")
+    plt.plot(iqrs1['x'], iqrs1["continuous_aggressive"], "-.", color=line.get_color())
+
+
+    line, = plt.plot(medians0['x'], medians0["aggressive_undersampling"], label="H_U_S_A")
+    plt.plot(iqrs0['x'], iqrs0["aggressive_undersampling"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="H_U_C_A")
+    plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["continuous_aggressive"], label="H_C_C_A")
+    plt.plot(iqrs0['x'], iqrs0["continuous_aggressive"], "-.", color=line.get_color())
+
+
+    plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="red",marker='o')
+    plt.plot(medians0['x'][medians0['begin']], medians0["simple_active"][medians0['begin']], color="white", marker='o')
+    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+
+
+    tick = 500
+    x=[i*500 for i in xrange(int(docnum/tick)) if i*500<= int(Display*10)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.ylabel("Recall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/IST_1_" + set + ".eps")
+    plt.savefig("../figure/IST_1_" + set + ".png")
+
+
 
 
 

@@ -342,14 +342,14 @@ def IST_comp_draw(set):
 
     indices = range(N)
 
-    font = {'family': 'normal',
+    font = {'family': 'cursive',
             'weight': 'bold',
             'size': 20}
 
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 5, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
-             'figure.autolayout': True, 'figure.figsize': (16, 8)}
+    paras = {'lines.linewidth': 3, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
     scalarMap = colorcode(N)
@@ -438,20 +438,20 @@ def IST_comp_draw(set):
 
     plt.ylabel("Recall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.70), loc=1, ncol=2, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=2, borderaxespad=0.)
     plt.savefig("../figure/IST_comp_" + set + ".eps")
     plt.savefig("../figure/IST_comp_" + set + ".png")
 
 
 def IST_dom_draw(set):
-    font = {'family': 'normal',
+    font = {'family': 'cursive',
             'weight': 'bold',
             'size': 20}
 
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 5, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
-             'figure.autolayout': True, 'figure.figsize': (16, 8)}
+    paras = {'lines.linewidth': 3, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
     with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
@@ -508,7 +508,7 @@ def IST_dom_draw(set):
 
     plt.ylabel("Recall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_4_" + set + ".eps")
     plt.savefig("../figure/IST_4_" + set + ".png")
 
@@ -536,7 +536,7 @@ def IST_dom_draw(set):
 
     plt.ylabel("Recall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_3_" + set + ".eps")
     plt.savefig("../figure/IST_3_" + set + ".png")
 
@@ -565,7 +565,7 @@ def IST_dom_draw(set):
 
     plt.ylabel("Recall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_2_" + set + ".eps")
     plt.savefig("../figure/IST_2_" + set + ".png")
 
@@ -605,7 +605,7 @@ def IST_dom_draw(set):
 
     plt.ylabel("Recall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_1_" + set + ".eps")
     plt.savefig("../figure/IST_1_" + set + ".png")
 
@@ -639,7 +639,7 @@ def IST_dom_draw(set):
 
     plt.ylabel("Recall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_0_" + set + ".eps")
     plt.savefig("../figure/IST_0_" + set + ".png")
 

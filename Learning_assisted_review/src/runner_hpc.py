@@ -165,6 +165,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
         stable=0
         begin=0
         result={}
+        enough=False
         for idx, round in enumerate(steps[:-1]):
             can = np.random.choice(pool, step, replace=False)
             train.extend(can)
@@ -202,6 +203,35 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
                 pos = Counter(labels[train4])["yes"]
                 pos_track4.append(pos)
 
+
+                ################ new *_C_C_A
+                if not enough:
+                    if pos>=5:
+                        enough=True
+                        pos_track9=pos_track4[:]
+                        train9=train4[:]
+                        pool9=pool4[:]
+                else:
+                    clf.fit(csr_mat[train9], labels[train9])
+                    poses = np.where(labels[train9] == "yes")[0]
+                    negs = np.where(labels[train9] == "no")[0]
+                    train_dist = clf.decision_function(csr_mat[train9][negs])
+                    negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
+                    sample9 = np.array(train9)[poses].tolist() + np.array(train9)[negs][negs_sel].tolist()
+
+                    clf.fit(csr_mat[sample9], labels[sample9])
+                    pred_proba9 = clf.predict_proba(csr_mat[pool9])
+                    pos_at = list(clf.classes_).index("yes")
+                    proba9 = pred_proba9[:, pos_at]
+                    sort_order_certain9 = np.argsort(1 - proba9)
+                    can9 = [pool9[i] for i in sort_order_certain9[:step]]
+                    train9.extend(can9)
+                    pool9 = list(set(pool9) - set(can9))
+                    pos = Counter(labels[train9])["yes"]
+                    pos_track9.append(pos)
+
+                ############################
+
                 ### continuous aggressive
                 clf.fit(csr_mat[train7], labels[train7])
                 poses = np.where(labels[train7] == "yes")[0]
@@ -220,6 +250,9 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
                 pool7 = list(set(pool7) - set(can7))
                 pos = Counter(labels[train7])["yes"]
                 pos_track7.append(pos)
+
+
+
 
 
                 if not is_stable:
@@ -365,6 +398,8 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
         # result["smote"] = pos_track6
         result["continuous_aggressive"] = pos_track7
         result["semi_contunuous"] = pos_track8
+
+        result["new_continuous_aggressive"] = pos_track9
 
         return result
 

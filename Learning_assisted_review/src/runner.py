@@ -366,13 +366,13 @@ def IST_comp_draw(set):
     medians0, iqrs0 = wrap_repeat(result0)
     medians1, iqrs1 = wrap_repeat(result1)
 
-    posmum = medians0['simple_active'][-1]
+    posnum = medians0['simple_active'][-1]
     docnum = medians0['x'][-1]
 
-    medians0 = rescaleY(medians0,posmum)
-    iqrs0 = rescaleY(iqrs0,posmum)
-    medians1 = rescaleY(medians1,posmum)
-    iqrs1 = rescaleY(iqrs1,posmum)
+    medians0 = rescaleY(medians0,posnum)
+    iqrs0 = rescaleY(iqrs0,posnum)
+    medians1 = rescaleY(medians1,posnum)
+    iqrs1 = rescaleY(iqrs1,posnum)
     #################
 
     ###### cut ######
@@ -465,13 +465,13 @@ def IST_dom_draw(set):
     medians0, iqrs0 = wrap_repeat(result0)
     medians1, iqrs1 = wrap_repeat(result1)
 
-    posmum = medians0['simple_active'][-1]
+    posnum = medians0['simple_active'][-1]
     docnum = medians0['x'][-1]
 
-    medians0 = rescaleY(medians0,posmum)
-    iqrs0 = rescaleY(iqrs0,posmum)
-    medians1 = rescaleY(medians1,posmum)
-    iqrs1 = rescaleY(iqrs1,posmum)
+    medians0 = rescaleY(medians0,posnum)
+    iqrs0 = rescaleY(iqrs0,posnum)
+    medians1 = rescaleY(medians1,posnum)
+    iqrs1 = rescaleY(iqrs1,posnum)
     #################
 
     ###### cut ######
@@ -645,7 +645,39 @@ def IST_dom_draw(set):
 
 
 
+def numbers(set):
+    
+    target = 0.9
+    
+    
+    with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
+        result0=pickle.load(f)
 
+    medians0, iqrs0 = wrap_repeat(result0)
+
+    posnum = medians0['simple_active'][-1]
+    docnum = medians0['x'][-1]
+    
+    thres = int(target*posnum)
+
+    wheres=[]
+    for value in result0:
+        tmp=thres
+        best=value['semi_continuous_aggressive']
+        while True:
+            try:
+                where = value['x'][best.index(tmp)]
+                break
+            except:
+                tmp=tmp+1
+        wheres.append(where)
+
+    set_trace()
+
+    best=medians0['semi_continuous_aggressive']
+    where = best.tolist().index(thres)
+    print(medians0['x'][where])
+    set_trace()
 
 
 

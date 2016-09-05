@@ -150,7 +150,7 @@ def repeat_ieee(pos_limit):
         print("rank %d sent" %rank)
 
 
-def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin=1):
+def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin=0.8):
 
         num=len(labels)
         pool=range(num)
@@ -206,7 +206,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
 
                 ################ new *_C_C_A
                 if not enough:
-                    if pos>=5:
+                    if pos>=10:
                         enough=True
                         pos_track9=pos_track4[:]
                         train9=train4[:]

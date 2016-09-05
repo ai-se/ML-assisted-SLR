@@ -412,7 +412,7 @@ def IST_comp_draw(set):
     plt.plot(iqrs0['x'], iqrs0["aggressive_undersampling"], "-.", color=line.get_color())
     line, = plt.plot(medians0['x'], medians0["continuous_active"], label="H_C_C_N", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs0["continuous_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["continuous_aggressive"], label="H_C_C_A", color = scalarMap.to_rgba(indices.pop()))
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="H_C_C_A", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs0["continuous_aggressive"], "-.", color=line.get_color())
     line, = plt.plot(medians0['x'], medians0["semi_contunuous"], label="H_U_C_N", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs0["semi_contunuous"], "-.", color=line.get_color())
@@ -422,10 +422,10 @@ def IST_comp_draw(set):
 
 
 
-    plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="red",marker='o')
-    plt.plot(medians0['x'][medians0['begin']], medians0["simple_active"][medians0['begin']], color="white", marker='o')
-    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
-    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+    plt.plot(medians0['x'][medians0['stable']-1], medians0["simple_active"][medians0['stable']-1], color="red",marker='o')
+    plt.plot(medians0['x'][medians0['begin']-1], medians0["simple_active"][medians0['begin']-1], color="white", marker='o')
+    plt.plot(medians1['x'][medians1['stable']-1], medians1["simple_active"][medians1['stable']-1], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']-1], medians1["simple_active"][medians1['begin']-1], color="white", marker='o')
 
 
     tick = 500
@@ -494,8 +494,8 @@ def IST_dom_draw(set):
     line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N")
     plt.plot(iqrs1['x'], iqrs1["simple_active"], "-.", color=line.get_color())
 
-    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
-    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+    plt.plot(medians1['x'][medians1['stable']-1], medians1["simple_active"][medians1['stable']-1], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']-1], medians1["simple_active"][medians1['begin']-1], color="white", marker='o')
 
 
     tick = 500
@@ -522,8 +522,8 @@ def IST_dom_draw(set):
     line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
     plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
 
-    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
-    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+    plt.plot(medians1['x'][medians1['stable']-1], medians1["simple_active"][medians1['stable']-1], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']-1], medians1["simple_active"][medians1['begin']-1], color="white", marker='o')
 
 
     tick = 500
@@ -541,18 +541,16 @@ def IST_dom_draw(set):
     plt.savefig("../figure/IST_3_" + set + ".png")
 
     ### compare second code ##
-    ### P_U_S_A vs. P_U_C_A vs. P_C_C_A ####
+    ### P_U_C_A vs. P_C_C_A ####
     plt.figure(2)
 
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
-    plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
     plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["continuous_aggressive"], label="P_C_C_A")
     plt.plot(iqrs1['x'], iqrs1["continuous_aggressive"], "-.", color=line.get_color())
 
-    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
-    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+    plt.plot(medians1['x'][medians1['stable']-1], medians1["simple_active"][medians1['stable']-1], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']-1], medians1["simple_active"][medians1['begin']-1], color="white", marker='o')
 
 
     tick = 500
@@ -570,29 +568,25 @@ def IST_dom_draw(set):
     plt.savefig("../figure/IST_2_" + set + ".png")
 
     ### compare first code ##
-    ### P_U_S_A vs. P_U_C_A vs. P_C_C_A vs. H_U_S_A vs. H_U_C_A vs. H_C_C_A####
+    ### P_U_C_A vs. P_C_C_A vs. H_U_C_A vs. H_C_C_A####
     plt.figure(1)
 
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
-    plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
     plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["continuous_aggressive"], label="P_C_C_A")
     plt.plot(iqrs1['x'], iqrs1["continuous_aggressive"], "-.", color=line.get_color())
 
 
-    line, = plt.plot(medians0['x'], medians0["aggressive_undersampling"], label="H_U_S_A")
-    plt.plot(iqrs0['x'], iqrs0["aggressive_undersampling"], "-.", color=line.get_color())
     line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="H_U_C_A")
     plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["continuous_aggressive"], label="H_C_C_A")
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="H_C_C_A")
     plt.plot(iqrs0['x'], iqrs0["continuous_aggressive"], "-.", color=line.get_color())
 
 
-    plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="red",marker='o')
-    plt.plot(medians0['x'][medians0['begin']], medians0["simple_active"][medians0['begin']], color="white", marker='o')
-    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
-    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+    plt.plot(medians0['x'][medians0['stable']-1], medians0["simple_active"][medians0['stable']-1], color="red",marker='o')
+    plt.plot(medians0['x'][medians0['begin']-1], medians0["simple_active"][medians0['begin']-1], color="white", marker='o')
+    plt.plot(medians1['x'][medians1['stable']-1], medians1["simple_active"][medians1['stable']-1], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']-1], medians1["simple_active"][medians1['begin']-1], color="white", marker='o')
 
 
     tick = 500
@@ -610,11 +604,11 @@ def IST_dom_draw(set):
     plt.savefig("../figure/IST_1_" + set + ".png")
 
     ### compare best with baselines ##
-    ### H_U_C_A vs. H_C_C_N vs. P_U_S_A####
+    ### H_C_C_A vs. H_C_C_N vs. P_U_S_A####
     plt.figure(0)
 
 
-    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="H_U_C_A")
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="H_C_C_A")
     plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
     line, = plt.plot(medians0['x'], medians0["continuous_active"], label="H_C_C_N")
     plt.plot(iqrs0['x'], iqrs0["continuous_active"], "-.", color=line.get_color())
@@ -623,10 +617,10 @@ def IST_dom_draw(set):
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
 
 
-    plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="red",marker='o')
-    plt.plot(medians0['x'][medians0['begin']], medians0["simple_active"][medians0['begin']], color="white", marker='o')
-    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
-    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+    plt.plot(medians0['x'][medians0['stable']-1], medians0["simple_active"][medians0['stable']-1], color="red",marker='o')
+    plt.plot(medians0['x'][medians0['begin']-1], medians0["simple_active"][medians0['begin']-1], color="white", marker='o')
+    plt.plot(medians1['x'][medians1['stable']-1], medians1["simple_active"][medians1['stable']-1], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']-1], medians1["simple_active"][medians1['begin']-1], color="white", marker='o')
 
 
     tick = 500
@@ -663,7 +657,7 @@ def numbers(set):
     wheres=[]
     for value in result0:
         tmp=thres
-        best=value['semi_continuous_aggressive']
+        best=value['new_continuous_aggressive']
         while True:
             try:
                 where = value['x'][best.index(tmp)]

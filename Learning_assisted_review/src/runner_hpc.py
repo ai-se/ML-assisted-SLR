@@ -150,7 +150,7 @@ def repeat_ieee(pos_limit):
         print("rank %d sent" %rank)
 
 
-def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin=0.8):
+def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin=1):
 
         num=len(labels)
         pool=range(num)

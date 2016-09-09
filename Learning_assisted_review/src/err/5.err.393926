@@ -1,0 +1,1 @@
+/home/zyu9/.lsbatch/1473339194.393926: line 8: 20814 Bus error               (core dumped) mpiexec -n 5 /share2/zyu9/miniconda/bin/python2.7 runner_hpc.py repeat_Hall 5

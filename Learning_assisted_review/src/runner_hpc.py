@@ -156,6 +156,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
         pool=range(num)
         train=[]
         steps = np.array(range(int(num / step))) * step
+        margin=int(margin)
 
         pos=0
         pos_track=[0]

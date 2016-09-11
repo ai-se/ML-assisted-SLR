@@ -421,7 +421,6 @@ def IST_comp_draw(set):
 
 
 
-
     plt.plot(medians0['x'][medians0['stable']-1], medians0["simple_active"][medians0['stable']-1], color="red",marker='o')
     plt.plot(medians0['x'][medians0['begin']-1], medians0["simple_active"][medians0['begin']-1], color="white", marker='o')
     plt.plot(medians1['x'][medians1['stable']-1], medians1["simple_active"][medians1['stable']-1], color="red",marker='o')

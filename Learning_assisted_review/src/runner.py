@@ -419,7 +419,7 @@ def IST_comp_draw(set):
     line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="H_U_C_A", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
 
-
+    set_trace()
 
     plt.plot(medians0['x'][medians0['stable']-1], medians0["simple_active"][medians0['stable']-1], color="red",marker='o')
     plt.plot(medians0['x'][medians0['begin']-1], medians0["simple_active"][medians0['begin']-1], color="white", marker='o')

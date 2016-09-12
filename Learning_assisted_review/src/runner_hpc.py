@@ -93,7 +93,7 @@ def repeat_Hall(pos_limit):
         k=era*proc_num+rank
         if k+1 > repeats:
             break
-        result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=10, pos_limit=int(pos_limit),margin=0.8)
+        result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=10, pos_limit=int(pos_limit),margin=0.75)
         print("repeat: %d" %k)
 
         results.append(result)
@@ -156,7 +156,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
         pool=range(num)
         train=[]
         steps = np.array(range(int(num / step))) * step
-        margin=int(margin)
+        margin=float(margin)
 
         pos=0
         pos_track=[0]

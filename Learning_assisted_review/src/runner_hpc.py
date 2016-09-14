@@ -26,7 +26,7 @@ def simple_exp(margin):
         csr_mat = pickle.load(handle)
         labels = pickle.load(handle)
 
-    result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=500, pos_limit=2, margin=float(margin))
+    result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=10, pos_limit=1, margin=float(margin))
 
 
 
@@ -93,7 +93,7 @@ def repeat_Hall(pos_limit):
         k=era*proc_num+rank
         if k+1 > repeats:
             break
-        result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=10, pos_limit=int(pos_limit),margin=0.75)
+        result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=10, pos_limit=int(pos_limit),margin=0.8)
         print("repeat: %d" %k)
 
         results.append(result)
@@ -160,7 +160,6 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
 
         pos=0
         pos_track=[0]
-        is_stable=False
         clf = svm.SVC(kernel='linear', probability=True)
         start=0
         stable=0
@@ -256,14 +255,13 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
 
 
 
-                if not is_stable:
+                if not stable:
                     clf.fit(csr_mat[train2], labels[train2])
                     pred_proba = clf.predict_proba(csr_mat[pool2])
                     # sort_order_uncertain = np.argsort(np.abs(pred_proba[:,0] - 0.5))
                     dist = clf.decision_function(csr_mat[pool2])
                     sort_order_dist = np.argsort(np.abs(dist))
                     if abs(dist[sort_order_dist[0]]) > margin or round == steps[-2]:
-                        is_stable = True
                         stable=idx
 
 
@@ -398,7 +396,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
         result["aggressive_undersampling"] = pos_track5
         # result["smote"] = pos_track6
         result["continuous_aggressive"] = pos_track7
-        result["semi_contunuous"] = pos_track8
+        result["semi_continuous"] = pos_track8
 
         result["new_continuous_aggressive"] = pos_track9
 

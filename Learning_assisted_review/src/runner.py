@@ -356,7 +356,7 @@ def IST_comp_draw(set):
 
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 3, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
@@ -438,7 +438,7 @@ def IST_comp_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Recall")
+    plt.ylabel("Retrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=2, borderaxespad=0.)
     plt.savefig("../figure/IST_comp_" + set + ".eps")
@@ -452,7 +452,7 @@ def IST_dom_draw(set):
 
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 3, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
@@ -508,7 +508,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Recall")
+    plt.ylabel("Retrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_4_" + set + ".eps")
@@ -536,7 +536,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Recall")
+    plt.ylabel("Retrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_3_" + set + ".eps")
@@ -563,7 +563,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Recall")
+    plt.ylabel("Retrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_2_" + set + ".eps")
@@ -599,19 +599,19 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Recall")
+    plt.ylabel("Retrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_1_" + set + ".eps")
     plt.savefig("../figure/IST_1_" + set + ".png")
 
     ### compare best with baselines ##
-    ### H_C_C_A vs. H_C_C_N vs. P_U_S_A####
+    ### H_U_C_A vs. H_C_C_N vs. P_U_S_A ####
     plt.figure(0)
 
 
-    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="H_U_C_A")
-    plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="H_C_C_A")
+    plt.plot(iqrs0['x'], iqrs0["new_continuous_aggressive"], "-.", color=line.get_color())
     line, = plt.plot(medians0['x'], medians0["continuous_active"], label="H_C_C_N")
     plt.plot(iqrs0['x'], iqrs0["continuous_active"], "-.", color=line.get_color())
 
@@ -633,11 +633,14 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Recall")
+    plt.ylabel("Retrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_0_" + set + ".eps")
     plt.savefig("../figure/IST_0_" + set + ".png")
+
+
+
 
 
 

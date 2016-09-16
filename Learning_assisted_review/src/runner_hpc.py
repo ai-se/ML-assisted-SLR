@@ -206,7 +206,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
 
                 ################ new *_C_C_A
                 if not enough:
-                    if pos>=50:
+                    if pos>=30:
                         enough=True
                         pos_track9=pos_track4[:]
                         train9=train4[:]

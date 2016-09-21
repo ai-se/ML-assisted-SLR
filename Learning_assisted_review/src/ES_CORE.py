@@ -14,7 +14,7 @@ class ESHandler:
     def __init__(self, es=None, force_injest=False,):
         self.es = es if es else defaults(doc_type="")
         self.injest(force=force_injest)
-        self.target="shriram krishnamurthi"
+
 
     def __status_check_(self):
         self.es.INDEX_NAMEed = self.es.ES_CLIENT.indices.exists(
@@ -242,10 +242,12 @@ class ESHandler:
         num = self.es.ES_CLIENT.search(
                 index=self.es.INDEX_NAME,
                 body=QUERY,
+                doc_type=self.es.TYPE_NAME,
                 size=0)["hits"]["total"]
 
         return self.es.ES_CLIENT.search(
                 index=self.es.INDEX_NAME,
+                doc_type=self.es.TYPE_NAME,
                 body=QUERY,
                 size=num)
 
@@ -262,6 +264,7 @@ class ESHandler:
 
         return self.es.ES_CLIENT.search(
                 index=self.es.INDEX_NAME,
+                doc_type=self.es.TYPE_NAME,
                 body=QUERY,
                 size=total)
 

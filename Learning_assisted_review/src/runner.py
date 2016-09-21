@@ -4,7 +4,7 @@ from __future__ import division, print_function
 
 from ES_CORE import ESHandler
 from model import SVM
-from injest import Vessel
+from injest import Vessel,defaults
 import numpy as np
 from pdb import set_trace
 from demos import cmd
@@ -13,10 +13,11 @@ import pickle
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
+from sk import rdivDemo
 
 
 
-ESHandler = ESHandler(force_injest=False)
+es = ESHandler(force_injest=False)
 container = Vessel(
         OPT=None,
         SVM=None,
@@ -42,27 +43,36 @@ def saveData(set):
         container.also(SVM=SVM(disp=stepsize, set=set, opt=container.OPT).featurize())
     container.SVM.saveData()
 
+def export_CSV(set):
+    es=ESHandler(es=defaults(TYPE_NAME=set),force_injest=False)
+    res=es.get_unlabeled()
+    csv_content=""
+    for x in res['hits']['hits']:
+        csv_content=csv_content+x['_id']+','+x['_source']['title']+","+x['_source']['abstract']+","+x['_source']['user']+"\n"
+    with open("../dump/" + str(set) + ".csv","w") as f:
+        f.write(csv_content)
+
 def tag_can():
     search_string="(software OR applicati* OR systems ) AND (fault* OR defect* OR quality OR error-prone) AND (predict* OR prone* OR probability OR assess* OR detect* OR estimat* OR classificat*)"
-    res=ESHandler.query_string(search_string)
+    res=es.query_string(search_string)
     for x in res["hits"]["hits"]:
-        ESHandler.set_control(x["_id"])
+        es.set_control(x["_id"])
 
 def tag_user():
     with open('../data/citeseerx/final_list.txt', 'rb') as f:
         target_list = f.readlines()
     for title in target_list:
-        res=ESHandler.match_title(title)
+        res=es.match_title(title)
         if res["hits"]["total"]:
             print(res["hits"]["hits"][0]["_source"]["title"])
-            ESHandler.set_user(res["hits"]["hits"][0]["_id"])
+            es.set_user(res["hits"]["hits"][0]["_id"])
 
 def parse_acm():
     url="http://dl.acm.org/results.cfm?query=%28software%20OR%20applicati%2A%20OR%20systems%20%29%20AND%20%28fault%2A%20OR%20defect%2A%20OR%20quality%20OR%20error-prone%29%20AND%20%28predict%2A%20OR%20prone%2A%20OR%20probability%20OR%20assess%2A%20OR%20detect%2A%20OR%20estimat%2A%20OR%20classificat%2A%29&filtered=resources%2Eft%2EresourceFormat=PDF&within=owners%2Eowner%3DHOSTED&dte=2000&bfr=2013&srt=_score"
     crawl_acm_doi(url)
 
 def injest():
-    ESHandler.injest(force=True)
+    es.injest(force=True)
 
 def simple_exp(id):
     stepsize=10
@@ -393,6 +403,9 @@ def IST_comp_draw(set):
     #################
 
 
+    set_trace()
+
+
     line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N", color = scalarMap.to_rgba(indices.pop()))
     plt.plot(iqrs1['x'], iqrs1["simple_active"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A", color = scalarMap.to_rgba(indices.pop()))
@@ -606,7 +619,7 @@ def IST_dom_draw(set):
     plt.savefig("../figure/IST_1_" + set + ".png")
 
     ### compare best with baselines ##
-    ### H_U_C_A vs. H_C_C_N vs. P_U_S_A ####
+    ### H_C_C_A vs. H_C_C_N vs. P_U_S_A ####
     plt.figure(0)
 
 
@@ -651,32 +664,48 @@ def numbers(set):
     
     with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
         result0=pickle.load(f)
+    with open("../dump/repeat_"+set+"_5.pickle", "r") as f:
+        result1=pickle.load(f)
 
     medians0, iqrs0 = wrap_repeat(result0)
 
     posnum = medians0['simple_active'][-1]
-    docnum = medians0['x'][-1]
     
     thres = int(target*posnum)
 
-    wheres=[]
-    for value in result0:
-        tmp=thres
-        best=value['new_continuous_aggressive']
-        while True:
-            try:
-                where = value['x'][best.index(tmp)]
-                break
-            except:
-                tmp=tmp+1
-        wheres.append(where)
+    methods=['new_continuous_aggressive','continuous_active','aggressive_undersampling','semi_continuous_aggressive','simple_active','semi_continuous']
+    tests=[]
+    for method in methods:
+        wheres1=['H_'+method]
+        for value in result0:
+            tmp=thres
+            best=value[method]
+            while True:
+                try:
+                    where = value['x'][best.index(tmp)]
+                    break
+                except:
+                    tmp=tmp+1
+            wheres1.append(where)
+        wheres2=['P_'+method]
+        for value in result1:
+            tmp=thres
+            best=value[method]
+            while True:
+                try:
+                    where = value['x'][best.index(tmp)]
+                    break
+                except:
+                    tmp=tmp+1
+            wheres2.append(where)
+        tests.append(wheres1)
+        tests.append(wheres2)
+
+    rdivDemo(tests)
 
     set_trace()
 
-    best=medians0['semi_continuous_aggressive']
-    where = best.tolist().index(thres)
-    print(medians0['x'][where])
-    set_trace()
+
 
 
 

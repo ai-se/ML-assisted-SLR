@@ -32,7 +32,7 @@ def simple_exp(margin):
 
 
 def repeat_exp(margin):
-    repeats=10
+    repeats=25
     stepsize=10
     set="Hall"
     # with open("../dump/"+set+".pickle","rb") as handle:
@@ -72,7 +72,7 @@ def repeat_exp(margin):
 
 
 def repeat_Hall(pos_limit):
-    repeats=10
+    repeats=25
     stepsize=10
     set="Hall"
     # with open("../dump/"+set+".pickle","rb") as handle:

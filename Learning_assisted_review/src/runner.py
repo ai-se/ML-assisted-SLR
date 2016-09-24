@@ -793,7 +793,10 @@ def simple_hcca1(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30, st
         else:
             clf.fit(csr_mat[train4], labels[train4])
             pred_proba4 = clf.predict_proba(csr_mat[pool4])
-            pos_at = list(clf.classes_).index("yes")
+            if labels[train4][0]=="yes":
+                pos_at=0
+            else:
+                pos_at=1
             proba4 = pred_proba4[:, pos_at]
             sort_order_certain4 = np.argsort(1 - proba4)
             can4 = [pool4[i] for i in sort_order_certain4[:step]]
@@ -820,7 +823,10 @@ def simple_hcca1(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30, st
 
                 clf.fit(csr_mat[sample9], labels[sample9])
                 pred_proba9 = clf.predict_proba(csr_mat[pool9])
-                pos_at = list(clf.classes_).index("yes")
+                if labels[sample9][0]=="yes":
+                    pos_at=0
+                else:
+                    pos_at=1
                 proba9 = pred_proba9[:, pos_at]
                 sort_order_certain9 = np.argsort(1 - proba9)
                 can9 = [pool9[i] for i in sort_order_certain9[:step]]
@@ -836,7 +842,7 @@ def simple_hcca1(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30, st
     result["new_continuous_aggressive"] = pos_track_f
     return result, train_f
 
-def simple_hcca2(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30):
+def simple_hcca2(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30, stop=0.9):
     num=len(labels)
     pool=range(num)
     train=[]
@@ -848,7 +854,24 @@ def simple_hcca2(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30):
     begin=0
     result={}
     enough=False
+
+    total=Counter(labels)["yes"]*stop
+
+
     for idx, round in enumerate(steps[:-1]):
+
+        if pos >= total:
+            if enough:
+                pos_track_f=pos_track9
+                train_f=train9
+            elif begin:
+                pos_track_f=pos_track4
+                train_f=train4
+            else:
+                pos_track_f=pos_track
+                train_f=train
+            break
+
         can = np.random.choice(pool, step, replace=False)
         train.extend(can)
         pool = list(set(pool) - set(can))
@@ -870,7 +893,10 @@ def simple_hcca2(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30):
         else:
             clf.fit(csr_mat[train4], labels[train4])
             pred_proba4 = clf.predict_proba(csr_mat[pool4])
-            pos_at = list(clf.classes_).index("yes")
+            if labels[train4][0]=="yes":
+                pos_at=0
+            else:
+                pos_at=1
             proba4 = pred_proba4[:, pos_at]
             sort_order_certain4 = np.argsort(1 - proba4)
             can4 = [pool4[i] for i in sort_order_certain4[:step]]
@@ -897,7 +923,10 @@ def simple_hcca2(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30):
 
                 clf.fit(csr_mat[sample9], labels[sample9])
                 pred_proba9 = clf.predict_proba(csr_mat[pool9])
-                pos_at = list(clf.classes_).index("yes")
+                if labels[sample9][0]=="yes":
+                    pos_at=0
+                else:
+                    pos_at=1
                 proba9 = pred_proba9[:, pos_at]
                 sort_order_certain9 = np.argsort(1 - proba9)
                 can9 = [pool9[i] for i in sort_order_certain9[:step]]
@@ -909,9 +938,11 @@ def simple_hcca2(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30):
         print("Round #{id} passed\r".format(id=round), end="")
 
     result["begin"] = begin
-    result["x"] = steps
-    result["new_continuous_aggressive"] = pos_track9
-    return result
+    result["x"] = steps[:len(pos_track_f)]
+    result["new_continuous_aggressive"] = pos_track_f
+    clf.fit(csr_mat[train_f], labels[train_f])
+    w=clf.coefficient_
+    return result, train_f
 
 
 

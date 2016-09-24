@@ -743,13 +743,10 @@ def update_exp():
 
 def update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3,stepsize=10):
     result, train = simple_hcca1(csr_mat1, labels1, step=stepsize ,initial=10, pos_limit=1, thres=20)
-    set_trace()
     result2, model2 = simple_hcca2(csr_mat2, labels2, csr_mat1[train], labels1[train], step=stepsize)
-    set_trace()
     model2=model_transform(model2,vocab2,vocab3)
-    set_trace()
     result3, model3 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=10, pos_limit=1, thres=30)
-    set_trace()
+    return {"Hall2007": result, "Hall2010": result2, "ieee": result3}
 
 
 def model_transform(model,vocab,vocab_new):

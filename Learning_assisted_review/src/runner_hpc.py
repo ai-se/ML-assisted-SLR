@@ -25,6 +25,7 @@ def simple_exp(margin):
     # with open("/share2/zyu9/Datasets/SLR/dump/"+set+".pickle","r") as handle:
         csr_mat = pickle.load(handle)
         labels = pickle.load(handle)
+        vocab = pickle.load(handle)
 
     result = simple_active_hpc(csr_mat,labels,step=stepsize, initial=10, pos_limit=1, margin=float(margin))
 
@@ -194,10 +195,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
             else:
                 clf.fit(csr_mat[train4], labels[train4])
                 pred_proba4 = clf.predict_proba(csr_mat[pool4])
-                if labels[train4][0]=="yes":
-                    pos_at=0
-                else:
-                    pos_at=1
+                pos_at = list(clf.classes_).index("yes")
                 proba4 = pred_proba4[:, pos_at]
                 sort_order_certain4 = np.argsort(1 - proba4)
                 can4 = [pool4[i] for i in sort_order_certain4[:step]]
@@ -224,10 +222,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
 
                     clf.fit(csr_mat[sample9], labels[sample9])
                     pred_proba9 = clf.predict_proba(csr_mat[pool9])
-                    if labels[sample9][0]=="yes":
-                        pos_at=0
-                    else:
-                        pos_at=1
+                    pos_at = list(clf.classes_).index("yes")
                     proba9 = pred_proba9[:, pos_at]
                     sort_order_certain9 = np.argsort(1 - proba9)
                     can9 = [pool9[i] for i in sort_order_certain9[:step]]
@@ -248,10 +243,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
 
                 clf.fit(csr_mat[sample7], labels[sample7])
                 pred_proba7 = clf.predict_proba(csr_mat[pool7])
-                if labels[sample7][0]=="yes":
-                    pos_at=0
-                else:
-                    pos_at=1
+                pos_at = list(clf.classes_).index("yes")
                 proba7 = pred_proba7[:, pos_at]
                 sort_order_certain7 = np.argsort(1 - proba7)
                 can7 = [pool7[i] for i in sort_order_certain7[:step]]
@@ -280,10 +272,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
                         pos_track6 = pos_track2[:]
 
 
-                        if labels[train2][0]=="yes":
-                            pos_at=0
-                        else:
-                            pos_at=1
+                        pos_at = list(clf.classes_).index("yes")
                         proba = pred_proba[:, pos_at]
                         sort_order_certain2 = np.argsort(1 - proba)
                         can2 = [pool2[i] for i in sort_order_certain2[start:start + step]]
@@ -302,18 +291,27 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
                         sample5 = np.array(train5)[poses].tolist()+np.array(train5)[negs][negs_sel].tolist()
                         clf.fit(csr_mat[sample5], labels[sample5])
                         pred_proba5 = clf.predict_proba(csr_mat[pool2])
-                        if labels[sample5][0]=="yes":
-                            pos_at=0
-                        else:
-                            pos_at=1
-                        proba5 = pred_proba5[:, pos_at]
+                        pos_at5 = list(clf.classes_).index("yes")
+                        proba5 = pred_proba5[:, pos_at5]
                         sort_order_certain5 = np.argsort(1 - proba5)
                         can5 = [pool2[i] for i in sort_order_certain5[start:start + step]]
                         train5.extend(can5)
                         pos = Counter(labels[train5])["yes"]
                         pos_track5.append(pos)
 
-
+                        ### SMOTE ####
+                        # negs_sel = np.argsort(np.abs(train_dist))[::-1][:int(0.5*len(train6))]
+                        # sample6 = np.array(train6)[poses].tolist() + np.array(train6)[negs][negs_sel].tolist()
+                        # csr_train6, label_train6 = smote_most(csr_mat[sample6], labels[sample6])
+                        # clf.fit(csr_train6, label_train6)
+                        # pred_proba6 = clf.predict_proba(csr_mat[pool2])
+                        # pos_at6 = list(clf.classes_).index("yes")
+                        # proba6 = pred_proba6[:, pos_at6]
+                        # sort_order_certain6 = np.argsort(1 - proba6)
+                        # can6 = [pool2[i] for i in sort_order_certain6[start:start + step]]
+                        # train6.extend(can6)
+                        # pos = Counter(labels[train6])["yes"]
+                        # pos_track6.append(pos)
 
                         #####################
 
@@ -345,10 +343,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
 
                     clf.fit(csr_mat[sample3], labels[sample3])
                     pred_proba3 = clf.predict_proba(csr_mat[pool3])
-                    if labels[sample3][0]=="yes":
-                        pos_at=0
-                    else:
-                        pos_at=1
+                    pos_at = list(clf.classes_).index("yes")
                     proba3 = pred_proba3[:, pos_at]
                     sort_order_certain3 = np.argsort(1 - proba3)
                     can3 = [pool3[i] for i in sort_order_certain3[:step]]
@@ -360,10 +355,7 @@ def simple_active_hpc(csr_mat, labels, step=10 ,initial=200, pos_limit=5, margin
                     #### semi_continuous
                     clf.fit(csr_mat[train8], labels[train8])
                     pred_proba8 = clf.predict_proba(csr_mat[pool8])
-                    if labels[train8][0]=="yes":
-                        pos_at=0
-                    else:
-                        pos_at=1
+                    pos_at = list(clf.classes_).index("yes")
                     proba8=pred_proba8[:,pos_at]
                     sort_order_certain8 = np.argsort(1-proba8)
                     can8 = [pool8[i] for i in sort_order_certain8[:step]]

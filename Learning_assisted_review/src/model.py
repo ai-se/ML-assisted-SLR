@@ -47,6 +47,7 @@ class FeatureMap:
         self.user=list()
         self.doc_id = list()
         self.mappings = list()
+        self.year=list()
         self.features = features if features is not None else range(
                 len(self.data['header']))
         self.scroll = scroll
@@ -65,6 +66,7 @@ class FeatureMap:
             self._class.append(self.data["meta"][idx]['label'])
             self.user.append(self.data["meta"][idx]['user'])
             self.doc_id.append(self.data["meta"][idx]['doc_id'])
+            self.year.append(self.data["meta"][idx]['year'])
         ### masking ###
         self.mappings = self.mappings[:, self.features]
 
@@ -372,7 +374,33 @@ class SVM:
 
         return result
 
+    def splitData(self,year):
+        all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)
+        collection = FeatureMap(raw_data=all_tfm,
+                                features=self.top_feat).tf()
 
+        range1=[]
+        range2=[]
+        for i in xrange(len(collection.year)):
+            try:
+                if int(collection.year[i])<=int(year):
+                    range1.append(i)
+                else:
+                    range2.append(i)
+            except:
+                pass
+
+
+        csr1=collection._ifeatures[range1]
+        labels1=np.array(collection.user)[range1]
+        csr2=collection._ifeatures[range2]
+        labels2=np.array(collection.user)[range2]
+        with open("../dump/"+self.set+str(year)+".pickle","wb") as handle:
+            pickle.dump(csr1, handle)
+            pickle.dump(labels1, handle)
+        with open("../dump/"+self.set+str(2010)+".pickle","wb") as handle:
+            pickle.dump(csr2, handle)
+            pickle.dump(labels2, handle)
 
     def saveData(self):
         all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)

@@ -260,6 +260,9 @@ class TermFrequency:
                                    "user"],
                            "label" :
                                MY_ES_DSL.get_document(_id)["_source"][
-                                   "label"]
+                                   "label"],
+                           "year" :
+                               MY_ES_DSL.get_document(_id)["_source"][
+                                   "year"]
                        } for _id in label_id]
         }

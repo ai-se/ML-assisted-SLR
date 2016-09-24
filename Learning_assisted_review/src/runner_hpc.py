@@ -111,7 +111,7 @@ def repeat_Hall(pos_limit):
         print("rank %d sent" %rank)
 
 def repeat_ieee(pos_limit):
-    repeats=10
+    repeats=25
     stepsize=10
     set="ieee"
     # with open("../dump/"+set+".pickle","rb") as handle:

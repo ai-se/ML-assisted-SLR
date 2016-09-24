@@ -14,7 +14,9 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 from sk import rdivDemo
-
+import unicodedata
+from sklearn import svm
+from collections import Counter
 
 
 es = ESHandler(force_injest=False)
@@ -43,14 +45,22 @@ def saveData(set):
         container.also(SVM=SVM(disp=stepsize, set=set, opt=container.OPT).featurize())
     container.SVM.saveData()
 
+def splitData(set,year):
+    stepsize = 10
+
+    if container.SVM is None:
+        container.also(SVM=SVM(disp=stepsize, set=set, opt=container.OPT).featurize())
+    container.SVM.splitData(year)
+
+
 def export_CSV(set):
     es=ESHandler(es=defaults(TYPE_NAME=set),force_injest=False)
     res=es.get_unlabeled()
-    csv_content=""
+    csv_content=u'id,title,abstract,label\n'
     for x in res['hits']['hits']:
         csv_content=csv_content+x['_id']+','+x['_source']['title']+","+x['_source']['abstract']+","+x['_source']['user']+"\n"
     with open("../dump/" + str(set) + ".csv","w") as f:
-        f.write(csv_content)
+        f.write(unicodedata.normalize('NFKD', csv_content).encode('ascii', 'ignore'))
 
 def tag_can():
     search_string="(software OR applicati* OR systems ) AND (fault* OR defect* OR quality OR error-prone) AND (predict* OR prone* OR probability OR assess* OR detect* OR estimat* OR classificat*)"
@@ -85,6 +95,8 @@ def simple_exp(id):
         pickle.dump(result,f)
 
     set_trace()
+
+
 
 def simple_draw(id):
     font = {'family': 'normal',
@@ -403,7 +415,6 @@ def IST_comp_draw(set):
     #################
 
 
-    set_trace()
 
 
     line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N", color = scalarMap.to_rgba(indices.pop()))
@@ -706,6 +717,201 @@ def numbers(set):
     set_trace()
 
 
+
+
+
+
+
+##### UPDATE exp
+def update_exp():
+    stepsize=10
+    with open("../dump/Hall2007.pickle","rb") as handle:
+        csr_mat1 = pickle.load(handle)
+        labels1 = pickle.load(handle)
+    with open("../dump/Hall2010.pickle","rb") as handle:
+        csr_mat2 = pickle.load(handle)
+        labels2 = pickle.load(handle)
+    with open("../dump/ieee.pickle","rb") as handle:
+        csr_mat3 = pickle.load(handle)
+        labels3 = pickle.load(handle)
+
+    update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,stepsize=stepsize)
+
+def update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,stepsize=10):
+    result, train = simple_hcca1(csr_mat1, labels1, step=stepsize ,initial=10, pos_limit=1, thres=20)
+    result2, model2 = simple_hcca2(csr_mat2, labels2, csr_mat1[train], labels1[train], step=stepsize ,initial=10, pos_limit=1, thres=20)
+    result3, model3 = simple_hcca3(csr_mat3, labels3, step=stepsize ,initial=10, pos_limit=1, thres=30)
+
+def simple_hcca1(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30, stop=0.9):
+    num=len(labels)
+    pool=range(num)
+    train=[]
+    steps = np.array(range(int(num / step))) * step
+
+    pos=0
+    pos_track=[0]
+    clf = svm.SVC(kernel='linear', probability=True)
+    begin=0
+    result={}
+    enough=False
+
+    total=Counter(labels)["yes"]*stop
+
+
+    for idx, round in enumerate(steps[:-1]):
+
+        if pos >= total:
+            if enough:
+                pos_track_f=pos_track9
+                train_f=train9
+            elif begin:
+                pos_track_f=pos_track4
+                train_f=train4
+            else:
+                pos_track_f=pos_track
+                train_f=train
+            break
+
+        can = np.random.choice(pool, step, replace=False)
+        train.extend(can)
+        pool = list(set(pool) - set(can))
+        try:
+            pos = Counter(labels[train])["yes"]
+        except:
+            pos = 0
+        pos_track.append(pos)
+
+        if not begin:
+            pool2=pool[:]
+            train2=train[:]
+            pos_track2=pos_track[:]
+            pool4 = pool2[:]
+            train4 = train2[:]
+            pos_track4 = pos_track2[:]
+            if round >= initial and pos>=pos_limit:
+                begin=idx+1
+        else:
+            clf.fit(csr_mat[train4], labels[train4])
+            pred_proba4 = clf.predict_proba(csr_mat[pool4])
+            pos_at = list(clf.classes_).index("yes")
+            proba4 = pred_proba4[:, pos_at]
+            sort_order_certain4 = np.argsort(1 - proba4)
+            can4 = [pool4[i] for i in sort_order_certain4[:step]]
+            train4.extend(can4)
+            pool4 = list(set(pool4) - set(can4))
+            pos = Counter(labels[train4])["yes"]
+            pos_track4.append(pos)
+
+
+            ################ new *_C_C_A
+            if not enough:
+                if pos>=thres:
+                    enough=True
+                    pos_track9=pos_track4[:]
+                    train9=train4[:]
+                    pool9=pool4[:]
+            else:
+                clf.fit(csr_mat[train9], labels[train9])
+                poses = np.where(labels[train9] == "yes")[0]
+                negs = np.where(labels[train9] == "no")[0]
+                train_dist = clf.decision_function(csr_mat[train9][negs])
+                negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
+                sample9 = np.array(train9)[poses].tolist() + np.array(train9)[negs][negs_sel].tolist()
+
+                clf.fit(csr_mat[sample9], labels[sample9])
+                pred_proba9 = clf.predict_proba(csr_mat[pool9])
+                pos_at = list(clf.classes_).index("yes")
+                proba9 = pred_proba9[:, pos_at]
+                sort_order_certain9 = np.argsort(1 - proba9)
+                can9 = [pool9[i] for i in sort_order_certain9[:step]]
+                train9.extend(can9)
+                pool9 = list(set(pool9) - set(can9))
+                pos = Counter(labels[train9])["yes"]
+                pos_track9.append(pos)
+
+        print("Round #{id} passed\r".format(id=round), end="")
+
+    result["begin"] = begin
+    result["x"] = steps[:len(pos_track_f)]
+    result["new_continuous_aggressive"] = pos_track_f
+    return result, train_f
+
+def simple_hcca2(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30):
+    num=len(labels)
+    pool=range(num)
+    train=[]
+    steps = np.array(range(int(num / step))) * step
+
+    pos=0
+    pos_track=[0]
+    clf = svm.SVC(kernel='linear', probability=True)
+    begin=0
+    result={}
+    enough=False
+    for idx, round in enumerate(steps[:-1]):
+        can = np.random.choice(pool, step, replace=False)
+        train.extend(can)
+        pool = list(set(pool) - set(can))
+        try:
+            pos = Counter(labels[train])["yes"]
+        except:
+            pos = 0
+        pos_track.append(pos)
+
+        if not begin:
+            pool2=pool[:]
+            train2=train[:]
+            pos_track2=pos_track[:]
+            pool4 = pool2[:]
+            train4 = train2[:]
+            pos_track4 = pos_track2[:]
+            if round >= initial and pos>=pos_limit:
+                begin=idx+1
+        else:
+            clf.fit(csr_mat[train4], labels[train4])
+            pred_proba4 = clf.predict_proba(csr_mat[pool4])
+            pos_at = list(clf.classes_).index("yes")
+            proba4 = pred_proba4[:, pos_at]
+            sort_order_certain4 = np.argsort(1 - proba4)
+            can4 = [pool4[i] for i in sort_order_certain4[:step]]
+            train4.extend(can4)
+            pool4 = list(set(pool4) - set(can4))
+            pos = Counter(labels[train4])["yes"]
+            pos_track4.append(pos)
+
+
+            ################ new *_C_C_A
+            if not enough:
+                if pos>=thres:
+                    enough=True
+                    pos_track9=pos_track4[:]
+                    train9=train4[:]
+                    pool9=pool4[:]
+            else:
+                clf.fit(csr_mat[train9], labels[train9])
+                poses = np.where(labels[train9] == "yes")[0]
+                negs = np.where(labels[train9] == "no")[0]
+                train_dist = clf.decision_function(csr_mat[train9][negs])
+                negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
+                sample9 = np.array(train9)[poses].tolist() + np.array(train9)[negs][negs_sel].tolist()
+
+                clf.fit(csr_mat[sample9], labels[sample9])
+                pred_proba9 = clf.predict_proba(csr_mat[pool9])
+                pos_at = list(clf.classes_).index("yes")
+                proba9 = pred_proba9[:, pos_at]
+                sort_order_certain9 = np.argsort(1 - proba9)
+                can9 = [pool9[i] for i in sort_order_certain9[:step]]
+                train9.extend(can9)
+                pool9 = list(set(pool9) - set(can9))
+                pos = Counter(labels[train9])["yes"]
+                pos_track9.append(pos)
+
+        print("Round #{id} passed\r".format(id=round), end="")
+
+    result["begin"] = begin
+    result["x"] = steps
+    result["new_continuous_aggressive"] = pos_track9
+    return result
 
 
 

@@ -720,6 +720,35 @@ def numbers(set):
 
 
 
+##### Draw UPDATE
+
+def update_draw():
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/update_single.pickle", "r") as f:
+        results=pickle.load(f)
+
+    for i,key in enumerate(results):
+        plt.figure(i)
+
+        line, = plt.plot(results[key]['x'], results[key]["new_continuous_aggressive"])
+
+        # plt.plot(results[key]['x'][results[key]['begin']], results[key]["new_continuous_aggressive"][results[key]['begin']], color="white", marker='o')
+
+        plt.ylabel("Retrieval Rate")
+        plt.xlabel("Studies Reviewed")
+        plt.savefig("../figure/update_"+key+".eps")
+        plt.savefig("../figure/update_"+key+".png")
+
+
 
 
 
@@ -739,7 +768,9 @@ def update_exp():
         labels3 = pickle.load(handle)
         vocab3 = pickle.load(handle)
 
-    update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3,stepsize=stepsize)
+    result=update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3,stepsize=stepsize)
+    with open("../dump/update_single.pickle","wb") as handle:
+        pickle.dump(result,handle)
 
 def update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3,stepsize=10):
     result, train = simple_hcca1(csr_mat1, labels1, step=stepsize ,initial=10, pos_limit=1, thres=20)
@@ -757,7 +788,7 @@ def model_transform(model,vocab,vocab_new):
             w.append(model['w'][0,ind])
         except:
             w.append(0)
-    model['w']=np.array(w)
+    model['w']=csr_matrix(w)
     return model
 
 def simple_hcca1(csr_mat, labels, step=10 ,initial=10, pos_limit=1, thres=30, stop=0.9):
@@ -940,11 +971,12 @@ def simple_hcca3(csr_mat, labels, model, step=10 ,initial=10, pos_limit=1, thres
                 train_f=train
             break
 
-        order = np.argsort(model['w']*csr_mat[pool].transpose())
+        order = np.argsort((model['w']*csr_mat[pool].transpose()).toarray()[0])
         if model['pos_at'] == 1:
             can=[pool[i] for i in order[-step:]]
         else:
             can=[pool[i] for i in order[:step]]
+        # can=[pool[i] for i in order[:int(step/2)]]+[pool[i] for i in order[-step+int(step/2):]]
         train.extend(can)
         pool = list(set(pool) - set(can))
         try:
@@ -954,12 +986,9 @@ def simple_hcca3(csr_mat, labels, model, step=10 ,initial=10, pos_limit=1, thres
         pos_track.append(pos)
 
         if not begin:
-            pool2=pool[:]
-            train2=train[:]
-            pos_track2=pos_track[:]
-            pool4 = pool2[:]
-            train4 = train2[:]
-            pos_track4 = pos_track2[:]
+            pool4 = pool[:]
+            train4 = train[:]
+            pos_track4 = pos_track[:]
             if round >= initial and pos>=pos_limit:
                 begin=idx+1
         else:

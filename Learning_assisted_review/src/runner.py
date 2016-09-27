@@ -764,7 +764,8 @@ def update_repeat_draw():
         results=pickle.load(f)
 
     medians,iqrs=wrap_repeat_update(results)
-    best,worst=bestNworst(results)
+    stats=bestNworst(results)
+    set_trace()
 
     for i,key in enumerate(medians):
         plt.figure(i)
@@ -778,12 +779,10 @@ def update_repeat_draw():
         plt.savefig("../figure/update_repeat_"+key+".eps")
         plt.savefig("../figure/update_repeat_"+key+".png")
 
-    for i,key in enumerate(best):
+    for i,key in enumerate(stats):
         plt.figure(10+i)
-        line, = plt.plot(best[key]['x'], best[key]["new_continuous_aggressive"],label="best")
-        plt.plot(worst[key]['x'], worst[key]["new_continuous_aggressive"], "-.",label="worst")
-
-        # plt.plot(results[key]['x'][results[key]['begin']], results[key]["new_continuous_aggressive"][results[key]['begin']], color="white", marker='o')
+        for ind in stats[key]['x']:
+            plt.plot(stats[key]['x'][ind], stats[key]["new_continuous_aggressive"][ind],label=str(ind))
 
         plt.ylabel("Retrieval Rate")
         plt.xlabel("Studies Reviewed")
@@ -792,25 +791,20 @@ def update_repeat_draw():
         plt.savefig("../figure/update_bestNworst_"+key+".png")
 
 def bestNworst(results):
-    best={}
-    worst={}
+    stats={}
     for key in results[0].keys():
-        best[key]={}
-        worst[key]={}
+        stats[key]={}
         for k in results[0][key].keys():
+            stats[key][k]={}
             tmp = np.array([what[key][k] for what in results])
-            if k == 'x':
-                shortest=np.argmin([len(seq) for seq in tmp])
-                longest=np.argmax([len(seq) for seq in tmp])
-                best[key][k]=tmp[shortest]
-                worst[key][k]=tmp[longest]
-
-            elif k == 'begin':
+            if k == 'begin':
                 continue
-            else:
-                best[key][k] = tmp[shortest]
-                worst[key][k] = tmp[longest]
-    return best, worst
+            order=np.argsort([len(seq) for seq in tmp])
+            for ind in [0,25,50,75,100]:
+                stats[key][k][ind]=tmp[order[int(ind*(len(order)-1)/100)]]
+
+
+    return stats
 
 def wrap_repeat_update(results):
     medians={}

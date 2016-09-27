@@ -749,11 +749,92 @@ def update_draw():
         plt.savefig("../figure/update_"+key+".png")
 
 
+def update_repeat_draw():
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
 
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/update_repeat.pickle", "r") as f:
+        results=pickle.load(f)
+
+    medians,iqrs=wrap_repeat_update(results)
+    best,worst=bestNworst(results)
+
+    for i,key in enumerate(medians):
+        plt.figure(i)
+        line, = plt.plot(medians[key]['x'], medians[key]["new_continuous_aggressive"])
+        plt.plot(iqrs[key]['x'], iqrs[key]["new_continuous_aggressive"], "-.", color=line.get_color())
+
+        # plt.plot(results[key]['x'][results[key]['begin']], results[key]["new_continuous_aggressive"][results[key]['begin']], color="white", marker='o')
+
+        plt.ylabel("Retrieval Rate")
+        plt.xlabel("Studies Reviewed")
+        plt.savefig("../figure/update_repeat_"+key+".eps")
+        plt.savefig("../figure/update_repeat_"+key+".png")
+
+    for i,key in enumerate(best):
+        plt.figure(10+i)
+        line, = plt.plot(best[key]['x'], best[key]["new_continuous_aggressive"])
+        plt.plot(worst[key]['x'], worst[key]["new_continuous_aggressive"], "-.")
+
+        # plt.plot(results[key]['x'][results[key]['begin']], results[key]["new_continuous_aggressive"][results[key]['begin']], color="white", marker='o')
+
+        plt.ylabel("Retrieval Rate")
+        plt.xlabel("Studies Reviewed")
+        plt.savefig("../figure/update_bestNworst_"+key+".eps")
+        plt.savefig("../figure/update_bestNworst_"+key+".png")
+
+def bestNworst(results):
+    best={}
+    worst={}
+    for key in results[0].keys():
+        best[key]={}
+        worst[key]={}
+        for k in results[0][key].keys():
+            tmp = np.array([what[key][k] for what in results])
+            if k == 'x':
+                shortest=np.argmin([len(seq) for seq in tmp])
+                longest=np.argmax([len(seq) for seq in tmp])
+                best[key][k]=tmp[shortest]
+                worst[key][k]=tmp[longest]
+
+            elif k == 'begin':
+                continue
+            else:
+                best[key][k] = tmp[shortest]
+                worst[key][k] = tmp[longest]
+    return best, worst
+
+def wrap_repeat_update(results):
+    medians={}
+    iqrs={}
+    for key in results[0].keys():
+        medians[key]={}
+        iqrs[key]={}
+        for k in results[0][key].keys():
+            tmp = np.array([what[key][k] for what in results])
+            if k == 'x':
+                shortest=np.min([len(seq) for seq in tmp])
+                medians[key][k]=iqrs[key][k]=tmp[0][:shortest]
+
+            elif k == 'begin':
+                continue
+            else:
+                tmp2=[t[:shortest] for t in tmp]
+                medians[key][k] = np.median(tmp2,axis=0)
+                iqrs[key][k] = np.percentile(tmp2,75,axis=0) - np.percentile(tmp2,25,axis=0)
+    return medians, iqrs
 
 
 ##### UPDATE exp
 def update_exp():
+    repeats=25
     stepsize=10
     with open("../dump/Hall2007.pickle","rb") as handle:
         csr_mat1 = pickle.load(handle)
@@ -767,10 +848,13 @@ def update_exp():
         csr_mat3 = pickle.load(handle)
         labels3 = pickle.load(handle)
         vocab3 = pickle.load(handle)
+    results=[]
+    for i in xrange(repeats):
+        result=update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3,stepsize=stepsize)
+        results.append(result)
 
-    result=update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3,stepsize=stepsize)
-    with open("../dump/update_single.pickle","wb") as handle:
-        pickle.dump(result,handle)
+    with open("../dump/update_repeat.pickle","wb") as handle:
+        pickle.dump(results,handle)
 
 def update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3,stepsize=10):
     result, train = simple_hcca1(csr_mat1, labels1, step=stepsize ,initial=10, pos_limit=1, thres=20)
@@ -972,11 +1056,11 @@ def simple_hcca3(csr_mat, labels, model, step=10 ,initial=10, pos_limit=1, thres
             break
 
         order = np.argsort((model['w']*csr_mat[pool].transpose()).toarray()[0])
-        if model['pos_at'] == 1:
-            can=[pool[i] for i in order[-step:]]
-        else:
-            can=[pool[i] for i in order[:step]]
-        # can=[pool[i] for i in order[:int(step/2)]]+[pool[i] for i in order[-step+int(step/2):]]
+        # if model['pos_at'] == 1:
+        #     can=[pool[i] for i in order[-step:]]
+        # else:
+        #     can=[pool[i] for i in order[:step]]
+        can=[pool[i] for i in order[:int(step/2)]]+[pool[i] for i in order[-step+int(step/2):]]
         train.extend(can)
         pool = list(set(pool) - set(can))
         try:

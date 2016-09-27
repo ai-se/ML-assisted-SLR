@@ -780,13 +780,14 @@ def update_repeat_draw():
 
     for i,key in enumerate(best):
         plt.figure(10+i)
-        line, = plt.plot(best[key]['x'], best[key]["new_continuous_aggressive"])
-        plt.plot(worst[key]['x'], worst[key]["new_continuous_aggressive"], "-.")
+        line, = plt.plot(best[key]['x'], best[key]["new_continuous_aggressive"],label="best")
+        plt.plot(worst[key]['x'], worst[key]["new_continuous_aggressive"], "-.",label="worst")
 
         # plt.plot(results[key]['x'][results[key]['begin']], results[key]["new_continuous_aggressive"][results[key]['begin']], color="white", marker='o')
 
         plt.ylabel("Retrieval Rate")
         plt.xlabel("Studies Reviewed")
+        plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
         plt.savefig("../figure/update_bestNworst_"+key+".eps")
         plt.savefig("../figure/update_bestNworst_"+key+".png")
 

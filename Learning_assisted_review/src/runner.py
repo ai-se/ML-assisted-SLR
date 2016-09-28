@@ -767,17 +767,17 @@ def update_repeat_draw():
     stats=bestNworst(results)
     set_trace()
 
-    for i,key in enumerate(medians):
-        plt.figure(i)
-        line, = plt.plot(medians[key]['x'], medians[key]["new_continuous_aggressive"])
-        plt.plot(iqrs[key]['x'], iqrs[key]["new_continuous_aggressive"], "-.", color=line.get_color())
-
-        # plt.plot(results[key]['x'][results[key]['begin']], results[key]["new_continuous_aggressive"][results[key]['begin']], color="white", marker='o')
-
-        plt.ylabel("Retrieval Rate")
-        plt.xlabel("Studies Reviewed")
-        plt.savefig("../figure/update_repeat_"+key+".eps")
-        plt.savefig("../figure/update_repeat_"+key+".png")
+    # for i,key in enumerate(medians):
+    #     plt.figure(i)
+    #     line, = plt.plot(medians[key]['x'], medians[key]["new_continuous_aggressive"])
+    #     plt.plot(iqrs[key]['x'], iqrs[key]["new_continuous_aggressive"], "-.", color=line.get_color())
+    #
+    #     # plt.plot(results[key]['x'][results[key]['begin']], results[key]["new_continuous_aggressive"][results[key]['begin']], color="white", marker='o')
+    #
+    #     plt.ylabel("Retrieval Rate")
+    #     plt.xlabel("Studies Reviewed")
+    #     plt.savefig("../figure/update_repeat_"+key+".eps")
+    #     plt.savefig("../figure/update_repeat_"+key+".png")
 
     for i,key in enumerate(stats):
         plt.figure(10+i)
@@ -1020,7 +1020,7 @@ def simple_hcca2(csr_mat, labels, csr_old, labels_old, step=10, stop=0.9):
     return result, model
 
 
-def simple_hcca3(csr_mat, labels, model, step=10 ,initial=10, pos_limit=1, thres=30, stop=0.9):
+def simple_hcca3(csr_mat, labels, model, step=10 ,initial=100, pos_limit=1, thres=30, stop=0.9):
     num=len(labels)
     pool=range(num)
     train=[]
@@ -1051,11 +1051,11 @@ def simple_hcca3(csr_mat, labels, model, step=10 ,initial=10, pos_limit=1, thres
             break
 
         order = np.argsort((model['w']*csr_mat[pool].transpose()).toarray()[0])
-        # if model['pos_at'] == 1:
-        #     can=[pool[i] for i in order[-step:]]
-        # else:
-        #     can=[pool[i] for i in order[:step]]
-        can=[pool[i] for i in order[:int(step/2)]]+[pool[i] for i in order[-step+int(step/2):]]
+        if model['pos_at'] == 1:
+            can=[pool[i] for i in order[-step:]]
+        else:
+            can=[pool[i] for i in order[:step]]
+        # can=[pool[i] for i in order[:int(step/2)]]+[pool[i] for i in order[-step+int(step/2):]]
         train.extend(can)
         pool = list(set(pool) - set(can))
         try:
@@ -1068,46 +1068,51 @@ def simple_hcca3(csr_mat, labels, model, step=10 ,initial=10, pos_limit=1, thres
             pool4 = pool[:]
             train4 = train[:]
             pos_track4 = pos_track[:]
-            if round >= initial and pos>=pos_limit:
+            if pos>=pos_limit:
                 begin=idx+1
         else:
-            clf.fit(csr_mat[train4], labels[train4])
-            pred_proba4 = clf.predict_proba(csr_mat[pool4])
-            pos_at = list(clf.classes_).index("yes")
-            proba4 = pred_proba4[:, pos_at]
-            sort_order_certain4 = np.argsort(1 - proba4)
-            can4 = [pool4[i] for i in sort_order_certain4[:step]]
-            train4.extend(can4)
-            pool4 = list(set(pool4) - set(can4))
-            pos = Counter(labels[train4])["yes"]
-            pos_track4.append(pos)
-
-
-            ################ new *_C_C_A
-            if not enough:
-                if pos>=thres:
-                    enough=True
-                    pos_track9=pos_track4[:]
-                    train9=train4[:]
-                    pool9=pool4[:]
-            else:
-                clf.fit(csr_mat[train9], labels[train9])
-                poses = np.where(labels[train9] == "yes")[0]
-                negs = np.where(labels[train9] == "no")[0]
-                train_dist = clf.decision_function(csr_mat[train9][negs])
-                negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
-                sample9 = np.array(train9)[poses].tolist() + np.array(train9)[negs][negs_sel].tolist()
-
-                clf.fit(csr_mat[sample9], labels[sample9])
-                pred_proba9 = clf.predict_proba(csr_mat[pool9])
+            if round >= initial:
+                clf.fit(csr_mat[train4], labels[train4])
+                pred_proba4 = clf.predict_proba(csr_mat[pool4])
                 pos_at = list(clf.classes_).index("yes")
-                proba9 = pred_proba9[:, pos_at]
-                sort_order_certain9 = np.argsort(1 - proba9)
-                can9 = [pool9[i] for i in sort_order_certain9[:step]]
-                train9.extend(can9)
-                pool9 = list(set(pool9) - set(can9))
-                pos = Counter(labels[train9])["yes"]
-                pos_track9.append(pos)
+                proba4 = pred_proba4[:, pos_at]
+                sort_order_certain4 = np.argsort(1 - proba4)
+                can4 = [pool4[i] for i in sort_order_certain4[:step]]
+                train4.extend(can4)
+                pool4 = list(set(pool4) - set(can4))
+                pos = Counter(labels[train4])["yes"]
+                pos_track4.append(pos)
+
+
+                ################ new *_C_C_A
+                if not enough:
+                    if pos>=thres:
+                        enough=True
+                        pos_track9=pos_track4[:]
+                        train9=train4[:]
+                        pool9=pool4[:]
+                else:
+                    clf.fit(csr_mat[train9], labels[train9])
+                    poses = np.where(labels[train9] == "yes")[0]
+                    negs = np.where(labels[train9] == "no")[0]
+                    train_dist = clf.decision_function(csr_mat[train9][negs])
+                    negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
+                    sample9 = np.array(train9)[poses].tolist() + np.array(train9)[negs][negs_sel].tolist()
+
+                    clf.fit(csr_mat[sample9], labels[sample9])
+                    pred_proba9 = clf.predict_proba(csr_mat[pool9])
+                    pos_at = list(clf.classes_).index("yes")
+                    proba9 = pred_proba9[:, pos_at]
+                    sort_order_certain9 = np.argsort(1 - proba9)
+                    can9 = [pool9[i] for i in sort_order_certain9[:step]]
+                    train9.extend(can9)
+                    pool9 = list(set(pool9) - set(can9))
+                    pos = Counter(labels[train9])["yes"]
+                    pos_track9.append(pos)
+            else:
+                can4 = np.random.choice(pool4, step, replace=False)
+                train4.extend(can4)
+                pool4 = list(set(pool4) - set(can4))
 
         print("Round #{id} passed\r".format(id=round), end="")
 

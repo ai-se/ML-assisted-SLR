@@ -364,7 +364,123 @@ def draw_margin(id):
     plt.savefig("../figure/margin_exp" + str(id) + ".png")
 
 
+def IST_split_draw(set):
 
+
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+
+    with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
+        result0=pickle.load(f)
+    with open("../dump/repeat_"+set+"_5.pickle", "r") as f:
+        result1 = pickle.load(f)
+
+
+    ##wrap and normalize ##
+
+
+    medians0, iqrs0 = wrap_repeat(result0)
+    medians1, iqrs1 = wrap_repeat(result1)
+
+    posnum = medians0['simple_active'][-1]
+    docnum = medians0['x'][-1]
+
+    medians0 = rescaleY(medians0,posnum)
+    iqrs0 = rescaleY(iqrs0,posnum)
+    medians1 = rescaleY(medians1,posnum)
+    iqrs1 = rescaleY(iqrs1,posnum)
+    #################
+
+    ###### cut ######
+    Display = 250
+    medians0 = cutListinDict(medians0,Display)
+    medians1 = cutListinDict(medians1,Display)
+    iqrs0 = cutListinDict(iqrs0,Display)
+    iqrs1 = cutListinDict(iqrs1,Display)
+
+    #################
+
+
+    plt.figure(0)
+
+    line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N")
+    plt.plot(iqrs1['x'], iqrs1["simple_active"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
+    plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["continuous_active"], label="P_C_C_N")
+    plt.plot(iqrs1['x'], iqrs1["continuous_active"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="P_C_C_A")
+    plt.plot(iqrs1['x'], iqrs1["new_continuous_aggressive"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["semi_continuous"], label="P_U_C_N")
+    plt.plot(iqrs1['x'], iqrs1["semi_continuous"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
+    plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
+
+    line, = plt.plot(medians1['x'], medians1["linear_review"], label="linear_review")
+    plt.plot(iqrs1['x'], iqrs1["linear_review"], "-.", color=line.get_color())
+
+    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+
+    tick = 500
+    x=[i*500 for i in xrange(int(docnum/tick)) if i*500<= int(Display*10)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.ylabel(set+"\nRetrieval Rate")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=2, borderaxespad=0.)
+    plt.savefig("../figure/IST_P_" + set + ".eps")
+    plt.savefig("../figure/IST_P_" + set + ".png")
+
+
+
+    plt.figure(1)
+    line, = plt.plot(medians0['x'], medians0["simple_active"], label="H_U_S_N")
+    plt.plot(iqrs0['x'], iqrs0["simple_active"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["aggressive_undersampling"], label="H_U_S_A")
+    plt.plot(iqrs0['x'], iqrs0["aggressive_undersampling"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="H_C_C_N")
+    plt.plot(iqrs0['x'], iqrs0["continuous_active"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="H_C_C_A")
+    plt.plot(iqrs0['x'], iqrs0["new_continuous_aggressive"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["semi_continuous"], label="H_U_C_N")
+    plt.plot(iqrs0['x'], iqrs0["semi_continuous"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="H_U_C_A")
+    plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
+
+    line, = plt.plot(medians0['x'], medians0["linear_review"], label="linear_review")
+    plt.plot(iqrs0['x'], iqrs0["linear_review"], "-.", color=line.get_color())
+
+
+    plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="red",marker='o')
+    plt.plot(medians0['x'][medians0['begin']], medians0["simple_active"][medians0['begin']], color="white", marker='o')
+
+
+    tick = 500
+    x=[i*500 for i in xrange(int(docnum/tick)) if i*500<= int(Display*10)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.ylabel(set+"\nRetrieval Rate")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=2, borderaxespad=0.)
+    plt.savefig("../figure/IST_H_" + set + ".eps")
+    plt.savefig("../figure/IST_H_" + set + ".png")
 
 
 def IST_comp_draw(set):
@@ -748,6 +864,34 @@ def draw_percentile(set):
     plt.savefig("../figure/percentile_"+set+".eps")
     plt.savefig("../figure/percentile_"+set+".png")
 
+def draw_HCCA(set):
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
+        results=pickle.load(f)
+    pos_num=results[0]['simple_active'][-1]
+    # results.pop(-8)
+    stats=percentile(results)
+
+    colors=['red','blue','green','cyan', 'purple']
+    plt.figure(0)
+    for i,ind in enumerate(stats['new_continuous_aggressive']):
+        plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile")
+
+    plt.ylabel(set+"\nRetrieval Rate")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/percentile_HCCA_"+set+".eps")
+    plt.savefig("../figure/percentile_HCCA_"+set+".png")
+
 
 def percentile(results):
     stats={}
@@ -794,7 +938,7 @@ def update_repeat_draw():
     with open("../dump/update_repeat.pickle", "r") as f:
         results=pickle.load(f)
 
-    medians,iqrs=wrap_repeat_update(results)
+    # medians,iqrs=wrap_repeat_update(results)
     stats=bestNworst(results)
 
     # for i,key in enumerate(medians):
@@ -813,6 +957,7 @@ def update_repeat_draw():
         plt.figure(10+i)
         for ind in stats[key]['x']:
             plt.plot(stats[key]['x'][ind], stats[key]["new_continuous_aggressive"][ind],label=str(ind)+"th Percentile")
+
 
         plt.ylabel("Retrieval Rate")
         plt.xlabel("Studies Reviewed")
@@ -837,25 +982,25 @@ def bestNworst(results):
 
     return stats
 
-def wrap_repeat_update(results):
-    medians={}
-    iqrs={}
-    for key in results[0].keys():
-        medians[key]={}
-        iqrs[key]={}
-        for k in results[0][key].keys():
-            tmp = np.array([what[key][k] for what in results])
-            if k == 'x':
-                shortest=np.min([len(seq) for seq in tmp])
-                medians[key][k]=iqrs[key][k]=tmp[0][:shortest]
-
-            elif k == 'begin':
-                continue
-            else:
-                tmp2=[t[:shortest] for t in tmp]
-                medians[key][k] = np.median(tmp2,axis=0)
-                iqrs[key][k] = np.percentile(tmp2,75,axis=0) - np.percentile(tmp2,25,axis=0)
-    return medians, iqrs
+# def wrap_repeat_update(results):
+#     medians={}
+#     iqrs={}
+#     for key in results[0].keys():
+#         medians[key]={}
+#         iqrs[key]={}
+#         for k in results[0][key].keys():
+#             tmp = np.array([what[key][k] for what in results])
+#             if k == 'x':
+#                 shortest=np.min([len(seq) for seq in tmp])
+#                 medians[key][k]=iqrs[key][k]=tmp[0][:shortest]
+#
+#             elif k == 'begin':
+#                 continue
+#             else:
+#                 tmp2=[t[:shortest] for t in tmp]
+#                 medians[key][k] = np.median(tmp2,axis=0)
+#                 iqrs[key][k] = np.percentile(tmp2,75,axis=0) - np.percentile(tmp2,25,axis=0)
+#     return medians, iqrs
 
 
 ##### UPDATE exp
@@ -886,7 +1031,7 @@ def update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3
     result, train = simple_hcca1(csr_mat1, labels1, step=stepsize ,initial=10, pos_limit=1, thres=20)
     result2, model2 = simple_hcca2(csr_mat2, labels2, csr_mat1[train], labels1[train], step=stepsize)
     model2=model_transform(model2,vocab2,vocab3)
-    result3, model3 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=100, pos_limit=5, thres=30)
+    result3, model3 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=50, pos_limit=5, thres=30)
     return {"Hall2007": result, "Hall2010": result2, "ieee": result3}
 
 

@@ -463,7 +463,7 @@ def IST_comp_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Retrieval Rate")
+    plt.ylabel(set+"\nRetrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=2, borderaxespad=0.)
     plt.savefig("../figure/IST_comp_" + set + ".eps")
@@ -533,7 +533,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Retrieval Rate")
+    plt.ylabel(set+"\nRetrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_4_" + set + ".eps")
@@ -561,7 +561,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Retrieval Rate")
+    plt.ylabel(set+"\nRetrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_3_" + set + ".eps")
@@ -588,7 +588,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Retrieval Rate")
+    plt.ylabel(set+"\nRetrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_2_" + set + ".eps")
@@ -624,7 +624,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Retrieval Rate")
+    plt.ylabel(set+"\nRetrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_1_" + set + ".eps")
@@ -658,7 +658,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel("Retrieval Rate")
+    plt.ylabel(set+"\nRetrieval Rate")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_0_" + set + ".eps")
@@ -717,12 +717,8 @@ def numbers(set):
 
     set_trace()
 
-
-
-
-##### Draw UPDATE
-
-def update_draw():
+##### Draw percentile
+def draw_percentile(set):
     font = {'family': 'cursive',
             'weight': 'bold',
             'size': 20}
@@ -733,20 +729,55 @@ def update_draw():
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
-    with open("../dump/update_single.pickle", "r") as f:
+    with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
         results=pickle.load(f)
+    pos_num=results[0]['simple_active'][-1]
+    # results.pop(-8)
+    stats=percentile(results)
 
-    for i,key in enumerate(results):
-        plt.figure(i)
+    colors=['red','blue','green','cyan', 'purple']
+    plt.figure(0)
+    for i,ind in enumerate(stats['new_continuous_aggressive']):
+        plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile of HCCA")
+    for i,ind in enumerate(stats['semi_continuous_aggressive']):
+        plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i], label=str(ind)+"th Percentile of HUCA")
 
-        line, = plt.plot(results[key]['x'], results[key]["new_continuous_aggressive"])
+    plt.ylabel(set+"\nRetrieval Rate")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=2, borderaxespad=0.)
+    plt.savefig("../figure/percentile_"+set+".eps")
+    plt.savefig("../figure/percentile_"+set+".png")
 
-        # plt.plot(results[key]['x'][results[key]['begin']], results[key]["new_continuous_aggressive"][results[key]['begin']], color="white", marker='o')
 
-        plt.ylabel("Retrieval Rate")
-        plt.xlabel("Studies Reviewed")
-        plt.savefig("../figure/update_"+key+".eps")
-        plt.savefig("../figure/update_"+key+".png")
+def percentile(results):
+    stats={}
+    methods=['new_continuous_aggressive','continuous_active','aggressive_undersampling','semi_continuous_aggressive','simple_active','semi_continuous']
+    tests={}
+    thres=int(0.9*results[0]["simple_active"][-1])
+    for method in methods:
+        tests[method]=[]
+        for value in results:
+            tmp=thres
+            best=value[method]
+            while True:
+                try:
+                    where = best.index(tmp)
+                    break
+                except:
+                    tmp=tmp+1
+            tests[method].append(where)
+    for k in methods:
+        stats[k]={}
+        tmp = np.array([what[k] for what in results])
+
+        order=np.argsort(tests[k])
+        for ind in [0,25,50,75,100]:
+            nth=order[int(ind*(len(order)-1)/100)]
+            stats[k][ind]=tmp[nth][:tests[k][nth]]
+    return stats
+
+
+##### Draw UPDATE
 
 
 def update_repeat_draw():
@@ -781,7 +812,7 @@ def update_repeat_draw():
     for i,key in enumerate(stats):
         plt.figure(10+i)
         for ind in stats[key]['x']:
-            plt.plot(stats[key]['x'][ind], stats[key]["new_continuous_aggressive"][ind],label=str(ind))
+            plt.plot(stats[key]['x'][ind], stats[key]["new_continuous_aggressive"][ind],label=str(ind)+"th Percentile")
 
         plt.ylabel("Retrieval Rate")
         plt.xlabel("Studies Reviewed")
@@ -791,12 +822,13 @@ def update_repeat_draw():
 
 def bestNworst(results):
     stats={}
-    for key in results[0].keys():
+
+    for key in results[0]:
         stats[key]={}
         for k in results[0][key].keys():
             stats[key][k]={}
             tmp = np.array([what[key][k] for what in results])
-            if k == 'begin':
+            if k=="begin":
                 continue
             order=np.argsort([len(seq) for seq in tmp])
             for ind in [0,25,50,75,100]:

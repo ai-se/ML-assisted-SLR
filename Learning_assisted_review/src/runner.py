@@ -765,7 +765,6 @@ def update_repeat_draw():
 
     medians,iqrs=wrap_repeat_update(results)
     stats=bestNworst(results)
-    set_trace()
 
     # for i,key in enumerate(medians):
     #     plt.figure(i)
@@ -855,7 +854,7 @@ def update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3
     result, train = simple_hcca1(csr_mat1, labels1, step=stepsize ,initial=10, pos_limit=1, thres=20)
     result2, model2 = simple_hcca2(csr_mat2, labels2, csr_mat1[train], labels1[train], step=stepsize)
     model2=model_transform(model2,vocab2,vocab3)
-    result3, model3 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=10, pos_limit=1, thres=30)
+    result3, model3 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=100, pos_limit=5, thres=30)
     return {"Hall2007": result, "Hall2010": result2, "ieee": result3}
 
 
@@ -1020,7 +1019,7 @@ def simple_hcca2(csr_mat, labels, csr_old, labels_old, step=10, stop=0.9):
     return result, model
 
 
-def simple_hcca3(csr_mat, labels, model, step=10 ,initial=100, pos_limit=1, thres=30, stop=0.9):
+def simple_hcca3(csr_mat, labels, model, step=10 ,initial=200, pos_limit=5, thres=30, stop=0.9):
     num=len(labels)
     pool=range(num)
     train=[]
@@ -1113,6 +1112,8 @@ def simple_hcca3(csr_mat, labels, model, step=10 ,initial=100, pos_limit=1, thre
                 can4 = np.random.choice(pool4, step, replace=False)
                 train4.extend(can4)
                 pool4 = list(set(pool4) - set(can4))
+                pos = Counter(labels[train4])["yes"]
+                pos_track4.append(pos)
 
         print("Round #{id} passed\r".format(id=round), end="")
 

@@ -884,7 +884,7 @@ def draw_HCCA(set):
     colors=['red','blue','green','cyan', 'purple']
     plt.figure(0)
     for i,ind in enumerate(stats['new_continuous_aggressive']):
-        plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile")
+        plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], stats["new_continuous_aggressive"][ind],color=colors[i],label=str(ind)+"th Percentile")
 
     plt.ylabel(set+"\nRetrieval Rate")
     plt.xlabel("Studies Reviewed")
@@ -1032,7 +1032,8 @@ def update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3
     result2, model2 = simple_hcca2(csr_mat2, labels2, csr_mat1[train], labels1[train], step=stepsize)
     model2=model_transform(model2,vocab2,vocab3)
     result3, model3 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=50, pos_limit=5, thres=30)
-    return {"Hall2007": result, "Hall2010": result2, "ieee": result3}
+    result4, train4=simple_hcca1(csr_mat2, labels2, step=stepsize ,initial=10, pos_limit=1, thres=20)
+    return {"Hall2007": result, "Hall2010": result2, "ieee": result3, "Hall2010init": result4}
 
 
 def model_transform(model,vocab,vocab_new):

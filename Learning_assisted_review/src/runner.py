@@ -884,7 +884,7 @@ def draw_HCCA(set):
     colors=['red','blue','green','cyan', 'purple']
     plt.figure(0)
     for i,ind in enumerate(stats['new_continuous_aggressive']):
-        plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], stats["new_continuous_aggressive"][ind],color=colors[i],label=str(ind)+"th Percentile")
+        plt.plot(results[0]['x'][:min((90,len(stats["new_continuous_aggressive"][ind])))], stats["new_continuous_aggressive"][ind][:min((90,len(stats["new_continuous_aggressive"][ind])))],color=colors[i],label=str(ind)+"th Percentile")
 
     plt.ylabel(set+"\nRetrieval Rate")
     plt.xlabel("Studies Reviewed")

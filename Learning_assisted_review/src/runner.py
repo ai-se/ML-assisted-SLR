@@ -751,12 +751,12 @@ def IST_dom_draw(set):
     plt.figure(0)
 
 
-    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="H_C_C_A")
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="H_C_C_A (Aggressive CAL)")
     plt.plot(iqrs0['x'], iqrs0["new_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="H_C_C_N")
+    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="H_C_C_N (Continuous Active Learning)")
     plt.plot(iqrs0['x'], iqrs0["continuous_active"], "-.", color=line.get_color())
 
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A (Patient Active Learning)")
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
 
 

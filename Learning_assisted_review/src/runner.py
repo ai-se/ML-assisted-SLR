@@ -634,10 +634,10 @@ def IST_dom_draw(set):
 
     line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N")
+    line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N", color="red")
     plt.plot(iqrs1['x'], iqrs1["simple_active"], "-.", color=line.get_color())
 
-    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
     plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
 
 
@@ -662,10 +662,10 @@ def IST_dom_draw(set):
 
     line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A", color="red")
     plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
 
-    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
     plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
 
 
@@ -689,10 +689,10 @@ def IST_dom_draw(set):
 
     line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
     plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="P_C_C_A")
+    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="P_C_C_A", color="red")
     plt.plot(iqrs1['x'], iqrs1["new_continuous_aggressive"], "-.", color=line.get_color())
 
-    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
     plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
 
 
@@ -726,9 +726,9 @@ def IST_dom_draw(set):
     plt.plot(iqrs0['x'], iqrs0["new_continuous_aggressive"], "-.", color=line.get_color())
 
 
-    plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="red",marker='o')
+    plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="black",marker='o')
     plt.plot(medians0['x'][medians0['begin']], medians0["simple_active"][medians0['begin']], color="white", marker='o')
-    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
     plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
 
 
@@ -760,9 +760,9 @@ def IST_dom_draw(set):
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
 
 
-    plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="red",marker='o')
+    plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="black",marker='o')
     plt.plot(medians0['x'][medians0['begin']], medians0["simple_active"][medians0['begin']], color="white", marker='o')
-    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="red",marker='o')
+    plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
     plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
 
 

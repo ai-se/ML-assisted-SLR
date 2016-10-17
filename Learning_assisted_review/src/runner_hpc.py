@@ -7,9 +7,9 @@ import numpy as np
 from pdb import set_trace
 from demos import cmd
 import pickle
-import matplotlib.pyplot as plt
-from collections import Counter
-from sklearn import svm
+# import matplotlib.pyplot as plt
+# from collections import Counter
+# from sklearn import svm
 
 
 from funcs import *

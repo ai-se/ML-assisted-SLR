@@ -105,16 +105,16 @@ def repeat_Hall(pos_limit):
             tmp=comm.recv(source=i+1)
             results.extend(tmp)
             print("rand %d received" %i)
-        with open("../dump/repeat_Hall_" + str(pos_limit) + ".pickle","w") as handle:
+        with open("../dump/repeat_"+set+"_" + str(pos_limit) + ".pickle","w") as handle:
             pickle.dump(results, handle)
     else:
         comm.send(results,dest=0)
         print("rank %d sent" %rank)
 
-def repeat_ieee(pos_limit):
+def repeat_Wahono(pos_limit):
     repeats=30
     stepsize=10
-    set="ieee"
+    set="Wahono"
     # with open("../dump/"+set+".pickle","rb") as handle:
     with open("/share2/zyu9/Datasets/SLR/dump/"+set+".pickle","rb") as handle:
         csr_mat = pickle.load(handle)
@@ -144,7 +144,7 @@ def repeat_ieee(pos_limit):
             tmp=comm.recv(source=i+1)
             results.extend(tmp)
             print("rand %d received" %i)
-        with open("../dump/repeat_ieee_" + str(pos_limit) + ".pickle","w") as handle:
+        with open("../dump/repeat_"+set+"_" + str(pos_limit) + ".pickle","w") as handle:
             pickle.dump(results, handle)
     else:
         comm.send(results,dest=0)

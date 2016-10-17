@@ -1007,7 +1007,7 @@ def bestNworst(results):
 
 ##### UPDATE exp
 def update_exp(id):
-    repeats=25
+    repeats=30
     stepsize=10
     with open("../dump/Hall2007.pickle","rb") as handle:
         csr_mat1 = pickle.load(handle)
@@ -1033,7 +1033,7 @@ def update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3
     result, train = simple_hcca1(csr_mat1, labels1, step=stepsize ,initial=10, pos_limit=1, thres=20)
     result2, model2 = simple_hcca2(csr_mat2, labels2, csr_mat1[train], labels1[train], step=stepsize)
     model2=model_transform(model2,vocab2,vocab3)
-    result3, model3 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=50, pos_limit=60, thres=30)
+    result3, model3 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=50, pos_limit=5, thres=30)
     result5, model5 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=10, pos_limit=2, thres=30,clustering=True,sample=2)
     result4, train4=simple_hcca1(csr_mat2, labels2, step=stepsize ,initial=10, pos_limit=1, thres=20)
     return {"Hall2007": result, "Hall2010": result2, "ieee": result3, "Hall2010init": result4, "ieee_clustering": result5}

@@ -55,14 +55,15 @@ def splitData(set,year):
     container.SVM.splitData(year)
 
 
-def export_CSV(set):
+def export_txt(set):
     es=ESHandler(es=defaults(TYPE_NAME=set),force_injest=False)
     res=es.get_unlabeled()
-    csv_content=u'id,title,abstract,label\n'
+    den="\t"
+    txt_content='Document Title'+den+'Abstract'+den+'Year'+den+'PDF Link'+den+'label\n'
     for x in res['hits']['hits']:
-        csv_content=csv_content+x['_id']+','+x['_source']['title']+","+x['_source']['abstract']+","+x['_source']['user']+"\n"
-    with open("../dump/" + str(set) + ".csv","w") as f:
-        f.write(unicodedata.normalize('NFKD', csv_content).encode('ascii', 'ignore'))
+        txt_content=txt_content+x['_source']['title']+den+x['_source']['abstract']+den+x['_source']['year']+den+x['_source']['ft_url']+den+x['_source']['user']+"\n"
+    with open("../dump/" + str(set) + ".txt","w") as f:
+        f.write(unicodedata.normalize('NFKD', txt_content).encode('ascii', 'ignore'))
 
 def tag_can():
     search_string="(software OR applicati* OR systems ) AND (fault* OR defect* OR quality OR error-prone) AND (predict* OR prone* OR probability OR assess* OR detect* OR estimat* OR classificat*)"

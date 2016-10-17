@@ -18,6 +18,7 @@ import unicodedata
 from sklearn import svm
 from collections import Counter
 from scipy.sparse import csr_matrix
+from sklearn.cluster import KMeans
 
 
 es = ESHandler(force_injest=False)
@@ -924,7 +925,7 @@ def percentile(results):
 ##### Draw UPDATE
 
 
-def update_repeat_draw():
+def update_repeat_draw(id):
     font = {'family': 'cursive',
             'weight': 'bold',
             'size': 20}
@@ -935,7 +936,7 @@ def update_repeat_draw():
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
-    with open("../dump/update_repeat.pickle", "r") as f:
+    with open("../dump/update_repeat"+str(id)+".pickle", "r") as f:
         results=pickle.load(f)
 
     # medians,iqrs=wrap_repeat_update(results)
@@ -962,8 +963,8 @@ def update_repeat_draw():
         plt.ylabel("Retrieval Rate")
         plt.xlabel("Studies Reviewed")
         plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
-        plt.savefig("../figure/update_bestNworst_"+key+".eps")
-        plt.savefig("../figure/update_bestNworst_"+key+".png")
+        plt.savefig("../figure/update_bestNworst_"+key+str(id)+".eps")
+        plt.savefig("../figure/update_bestNworst_"+key+str(id)+".png")
 
 def bestNworst(results):
     stats={}
@@ -1004,7 +1005,7 @@ def bestNworst(results):
 
 
 ##### UPDATE exp
-def update_exp():
+def update_exp(id):
     repeats=25
     stepsize=10
     with open("../dump/Hall2007.pickle","rb") as handle:
@@ -1024,16 +1025,17 @@ def update_exp():
         result=update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3,stepsize=stepsize)
         results.append(result)
 
-    with open("../dump/update_repeat.pickle","wb") as handle:
+    with open("../dump/update_repeat"+str(id)+".pickle","wb") as handle:
         pickle.dump(results,handle)
 
 def update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3,stepsize=10):
     result, train = simple_hcca1(csr_mat1, labels1, step=stepsize ,initial=10, pos_limit=1, thres=20)
     result2, model2 = simple_hcca2(csr_mat2, labels2, csr_mat1[train], labels1[train], step=stepsize)
     model2=model_transform(model2,vocab2,vocab3)
-    result3, model3 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=50, pos_limit=5, thres=30)
+    result3, model3 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=50, pos_limit=60, thres=30)
+    result5, model5 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=10, pos_limit=2, thres=30,clustering=True,sample=2)
     result4, train4=simple_hcca1(csr_mat2, labels2, step=stepsize ,initial=10, pos_limit=1, thres=20)
-    return {"Hall2007": result, "Hall2010": result2, "ieee": result3, "Hall2010init": result4}
+    return {"Hall2007": result, "Hall2010": result2, "ieee": result3, "Hall2010init": result4, "ieee_clustering": result5}
 
 
 def model_transform(model,vocab,vocab_new):
@@ -1197,7 +1199,7 @@ def simple_hcca2(csr_mat, labels, csr_old, labels_old, step=10, stop=0.9):
     return result, model
 
 
-def simple_hcca3(csr_mat, labels, model, step=10 ,initial=200, pos_limit=5, thres=30, stop=0.9):
+def simple_hcca3(csr_mat, labels, model, step=10 ,initial=200, pos_limit=5, thres=30, stop=0.9, clustering=False, sample=2):
     num=len(labels)
     pool=range(num)
     train=[]
@@ -1215,7 +1217,7 @@ def simple_hcca3(csr_mat, labels, model, step=10 ,initial=200, pos_limit=5, thre
 
     for idx, round in enumerate(steps[:-1]):
 
-        if pos >= total:
+        if pos >= total: ## stop rule
             if enough:
                 pos_track_f=pos_track9
                 train_f=train9
@@ -1226,6 +1228,17 @@ def simple_hcca3(csr_mat, labels, model, step=10 ,initial=200, pos_limit=5, thre
                 pos_track_f=pos_track
                 train_f=train
             break
+
+        if idx<sample and clustering:
+            can=init_sample(csr_mat,step,sample)
+            train.extend(can)
+            pool = list(set(pool) - set(can))
+            try:
+                pos = Counter(labels[train])["yes"]
+            except:
+                pos = 0
+            pos_track.append(pos)
+            continue
 
         order = np.argsort((model['w']*csr_mat[pool].transpose()).toarray()[0])
         if model['pos_at'] == 1:
@@ -1307,7 +1320,17 @@ def simple_hcca3(csr_mat, labels, model, step=10 ,initial=200, pos_limit=5, thre
     model={'w': w,'pos_at': pos_at}
     return result, model
 
-
+## Start rule (clustering)
+def init_sample(data,n_clusters,samples):
+    cluster=KMeans(n_clusters=n_clusters)
+    cluster.fit(data)
+    result=cluster.labels_
+    x=list(set(result))
+    pool=[]
+    for key in x:
+        a=[i for i in xrange(data.shape[0])if result[i]==key]
+        pool.extend(list(np.random.choice(a,samples,replace=False)))
+    return pool
 
 if __name__ == "__main__":
     eval(cmd())

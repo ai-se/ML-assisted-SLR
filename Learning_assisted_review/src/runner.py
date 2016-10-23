@@ -877,6 +877,21 @@ def PoR2():
     plt.savefig("../figure/PoR.eps")
     plt.savefig("../figure/PoR.png")
 
+    plt.figure(1)
+    for set in sets:
+        line, =plt.plot(data[set]['x'], data[set]['y'], label=set)
+        # plt.plot(data[set]['x'], data[set]['q'],"-.",color=line.get_color())
+
+
+    x=np.array(range(21))*0.05
+    plt.xticks(x,x)
+
+    plt.ylabel("Studies Reviewed")
+    plt.xlabel("Retrieval Rate")
+    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/PoR2.eps")
+    plt.savefig("../figure/PoR2.png")
+
 
 
 

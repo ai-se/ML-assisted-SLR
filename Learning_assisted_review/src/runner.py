@@ -914,9 +914,10 @@ def numbers(set):
     thres = int(target*posnum)
 
     methods=['new_continuous_aggressive','continuous_active','aggressive_undersampling','semi_continuous_aggressive','simple_active','semi_continuous']
+    decode={'new_continuous_aggressive':'\\bar{U}\\bar{S}A','continuous_active':'\\bar{U}\\bar{S}\\bar{A}','aggressive_undersampling':'USA','semi_continuous_aggressive':'U\\bar{S}A','simple_active':'US\\bar{A}','semi_continuous':'U\\bar{S}\\bar{A}'}
     tests=[]
     for method in methods:
-        wheres1=['H_'+method]
+        wheres1=['$\\bar{P}'+decode[method]+'$']
         for value in result0:
             tmp=thres
             best=value[method]
@@ -927,7 +928,7 @@ def numbers(set):
                 except:
                     tmp=tmp+1
             wheres1.append(where)
-        wheres2=['P_'+method]
+        wheres2=['$P'+decode[method]+'$']
         for value in result1:
             tmp=thres
             best=value[method]
@@ -941,7 +942,7 @@ def numbers(set):
         tests.append(wheres1)
         tests.append(wheres2)
 
-    rdivDemo(tests)
+    rdivDemo(tests, isLatex=True)
 
     set_trace()
 

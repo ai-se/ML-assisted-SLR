@@ -783,6 +783,101 @@ def IST_dom_draw(set):
     plt.savefig("../figure/IST_0_" + set + ".png")
 
 
+def PoR(set):
+    with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
+        result=pickle.load(f)
+    x=[]
+    pos=[]
+    yy=[]
+    for rep in result:
+        y=[rep["new_continuous_aggressive"][ind]/rep["x"][ind] if rep["x"][ind]>0 else 0 for ind in xrange(len(rep["x"]))]
+        yy.append(y)
+        tmp=np.argmax(y)
+        x.append(rep["x"][tmp])
+        pos.append(rep["new_continuous_aggressive"][tmp])
+    sup=np.median(yy,axis=0)
+    iqr=np.percentile(yy,75,axis=0)-np.percentile(yy,25,axis=0)
+
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    plt.figure(0)
+
+    line, =plt.plot(result[0]['x'][:90], sup[:90])
+    plt.plot(result[0]['x'][:90], iqr[:90],"-.",color=line.get_color())
+
+    plt.ylabel(set+"\nRetrieval Rate per Cost")
+    plt.xlabel("Studies Reviewed")
+    # plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/PoR_"+set+".eps")
+    plt.savefig("../figure/PoR_"+set+".png")
+
+def PoR2():
+    sets=["Wahono","Hall"]
+    data={}
+    for set in sets:
+        data[set]={}
+        with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
+            results=pickle.load(f)
+        pos=results[0]['new_continuous_aggressive'][-1]
+        x=range(pos+1)
+        y=[]
+        z=[]
+        q=[]
+        for target in x:
+            yyy=[]
+            zzz=[]
+            for result in results:
+                for i in xrange(len(result['x'])):
+                    if result['new_continuous_aggressive'][i]>= target:
+                        tmp=i
+                        break
+                yy=result['x'][tmp]
+                zz=target/yy if yy>0 else 0
+                yyy.append(yy)
+                zzz.append(zz)
+            z.append(np.median(zzz))
+            q.append(np.percentile(zzz,75)-np.percentile(zzz,25))
+            y.append(np.median(yyy))
+        data[set]['x']=np.array(x)/pos
+        data[set]['y']=y
+        data[set]['z']=z
+        data[set]['q']=q
+
+
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    plt.figure(0)
+    for set in sets:
+        line, =plt.plot(data[set]['x'], data[set]['z'], label=set)
+        # plt.plot(data[set]['x'], data[set]['q'],"-.",color=line.get_color())
+
+
+    x=np.array(range(21))*0.05
+    plt.xticks(x,x)
+
+    plt.ylabel("Retrieval per Review")
+    plt.xlabel("Retrieval Rate")
+    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/PoR.eps")
+    plt.savefig("../figure/PoR.png")
+
+
 
 
 
@@ -850,7 +945,6 @@ def draw_percentile(set):
     with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
         results=pickle.load(f)
     pos_num=results[0]['simple_active'][-1]
-    # results.pop(-8)
     stats=percentile(results)
 
     colors=['red','blue','green','cyan', 'purple']
@@ -880,7 +974,6 @@ def draw_HCCA(set):
     with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
         results=pickle.load(f)
     pos_num=results[0]['simple_active'][-1]
-    # results.pop(-8)
     stats=percentile(results)
 
     colors=['red','blue','green','cyan', 'purple']

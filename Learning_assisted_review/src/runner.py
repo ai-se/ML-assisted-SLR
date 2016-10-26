@@ -413,17 +413,17 @@ def IST_split_draw(set):
 
     plt.figure(0)
 
-    line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N")
+    line, = plt.plot(medians1['x'], medians1["simple_active"], label="$PUS\\bar{N}$")
     plt.plot(iqrs1['x'], iqrs1["simple_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$")
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["continuous_active"], label="P_C_C_N")
+    line, = plt.plot(medians1['x'], medians1["continuous_active"], label="$P\\bar{U}\\bar{S}\\bar{A}$")
     plt.plot(iqrs1['x'], iqrs1["continuous_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="P_C_C_A")
+    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="$P\\bar{U}\\bar{S}A$")
     plt.plot(iqrs1['x'], iqrs1["new_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["semi_continuous"], label="P_U_C_N")
+    line, = plt.plot(medians1['x'], medians1["semi_continuous"], label="$PU\\bar{S}\\bar{A}$")
     plt.plot(iqrs1['x'], iqrs1["semi_continuous"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="$PU\\bar{S}A$")
     plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
 
     line, = plt.plot(medians1['x'], medians1["linear_review"], label="linear_review")
@@ -440,7 +440,7 @@ def IST_split_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel(set+"\nRetrieval Rate")
+    plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=2, borderaxespad=0.)
     plt.savefig("../figure/IST_P_" + set + ".eps")
@@ -449,17 +449,17 @@ def IST_split_draw(set):
 
 
     plt.figure(1)
-    line, = plt.plot(medians0['x'], medians0["simple_active"], label="H_U_S_N")
+    line, = plt.plot(medians0['x'], medians0["simple_active"], label="$\\bar{P}US\\bar{A}$")
     plt.plot(iqrs0['x'], iqrs0["simple_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["aggressive_undersampling"], label="H_U_S_A")
+    line, = plt.plot(medians0['x'], medians0["aggressive_undersampling"], label="$\\bar{P}USA$")
     plt.plot(iqrs0['x'], iqrs0["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="H_C_C_N")
+    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$")
     plt.plot(iqrs0['x'], iqrs0["continuous_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="H_C_C_A")
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="$\\bar{P}\\bar{U}\\bar{S}A$")
     plt.plot(iqrs0['x'], iqrs0["new_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["semi_continuous"], label="H_U_C_N")
+    line, = plt.plot(medians0['x'], medians0["semi_continuous"], label="$\\bar{P}U\\bar{S}\\bar{A}$")
     plt.plot(iqrs0['x'], iqrs0["semi_continuous"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="H_U_C_A")
+    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="$\\bar{P}U\\bar{S}A$")
     plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
 
     line, = plt.plot(medians0['x'], medians0["linear_review"], label="linear_review")
@@ -478,7 +478,7 @@ def IST_split_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel(set+"\nRetrieval Rate")
+    plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=2, borderaxespad=0.)
     plt.savefig("../figure/IST_H_" + set + ".eps")
@@ -581,7 +581,7 @@ def IST_comp_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel(set+"\nRetrieval Rate")
+    plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=2, borderaxespad=0.)
     plt.savefig("../figure/IST_comp_" + set + ".eps")
@@ -634,9 +634,9 @@ def IST_dom_draw(set):
     plt.figure(4)
 
 
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$")
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N", color="red")
+    line, = plt.plot(medians1['x'], medians1["simple_active"], label="$PUS\\bar{A}$", color="red")
     plt.plot(iqrs1['x'], iqrs1["simple_active"], "-.", color=line.get_color())
 
     plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
@@ -662,9 +662,9 @@ def IST_dom_draw(set):
     plt.figure(3)
 
 
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A")
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$")
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A", color="red")
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="$PU\\bar{S}A$", color="red")
     plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
 
     plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
@@ -689,9 +689,9 @@ def IST_dom_draw(set):
     ### P_U_C_A vs. P_C_C_A ####
     plt.figure(2)
 
-    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="$PU\\bar{S}A$")
     plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="P_C_C_A", color="red")
+    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="$P\\bar{U}\\bar{S}A$", color="red")
     plt.plot(iqrs1['x'], iqrs1["new_continuous_aggressive"], "-.", color=line.get_color())
 
     plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
@@ -716,15 +716,15 @@ def IST_dom_draw(set):
     ### P_U_C_A vs. P_C_C_A vs. H_U_C_A vs. H_C_C_A####
     plt.figure(1)
 
-    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A")
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="$PU\\bar{S}A$")
     plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="P_C_C_A")
+    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="$P\\bar{U}\\bar{S}A$")
     plt.plot(iqrs1['x'], iqrs1["new_continuous_aggressive"], "-.", color=line.get_color())
 
 
-    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="H_U_C_A")
+    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="$\\bar{P}U\\bar{S}A$")
     plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="H_C_C_A")
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="$\\bar{P}\\bar{U}\\bar{S}A$")
     plt.plot(iqrs0['x'], iqrs0["new_continuous_aggressive"], "-.", color=line.get_color())
 
 
@@ -753,12 +753,12 @@ def IST_dom_draw(set):
     plt.figure(0)
 
 
-    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="H_C_C_A (Aggressive CAL)")
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="$\\bar{P}\\bar{U}\\bar{S}A$ (FASTREAD)")
     plt.plot(iqrs0['x'], iqrs0["new_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="H_C_C_N (Continuous Active Learning)")
+    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Continuous Active Learning)")
     plt.plot(iqrs0['x'], iqrs0["continuous_active"], "-.", color=line.get_color())
 
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A (Patient Active Learning)")
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$ (Patient Active Learning)")
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
 
 
@@ -871,7 +871,7 @@ def PoR2():
     x=np.array(range(21))*0.05
     plt.xticks(x,x)
 
-    plt.ylabel("Retrieval per Review")
+    plt.ylabel("Precision")
     plt.xlabel("Retrieval Rate")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/PoR.eps")
@@ -966,11 +966,11 @@ def draw_percentile(set):
     colors=['red','blue','green','cyan', 'purple']
     plt.figure(0)
     for i,ind in enumerate(stats['new_continuous_aggressive']):
-        plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile of HCCA")
+        plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile of $\\bar{P}\\bar{U}\\bar{S}A$")
     for i,ind in enumerate(stats['semi_continuous_aggressive']):
-        plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i], label=str(ind)+"th Percentile of HUCA")
+        plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i], label=str(ind)+"th Percentile of $\\bar{P}U\\bar{S}A$")
 
-    plt.ylabel(set+"\nRetrieval Rate")
+    plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=2, borderaxespad=0.)
     plt.savefig("../figure/percentile_"+set+".eps")
@@ -997,7 +997,7 @@ def draw_HCCA(set):
     for i,ind in enumerate(stats['new_continuous_aggressive']):
         plt.plot(results[0]['x'][:min((90,len(stats["new_continuous_aggressive"][ind])))], stats["new_continuous_aggressive"][ind][:min((90,len(stats["new_continuous_aggressive"][ind])))],color=colors[i],label=str(ind)+"th Percentile")
 
-    plt.ylabel(set+"\nRetrieval Rate")
+    plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/percentile_HCCA_"+set+".eps")

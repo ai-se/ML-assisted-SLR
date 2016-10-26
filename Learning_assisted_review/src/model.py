@@ -18,7 +18,7 @@ from ES_CORE import ESHandler
 from ABCD import ABCD
 from sklearn.feature_extraction.text import TfidfTransformer
 from scipy.sparse import csr_matrix
-from funcs import *
+# from funcs import *
 from pdb import set_trace
 import pickle
 

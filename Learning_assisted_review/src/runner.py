@@ -19,6 +19,9 @@ from sklearn import svm
 from collections import Counter
 from scipy.sparse import csr_matrix
 from sklearn.cluster import KMeans
+import lda
+from sklearn.decomposition import LatentDirichletAllocation
+from time import time
 
 
 es = ESHandler(force_injest=False)
@@ -651,7 +654,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel(set+"\nRetrieval Rate")
+    plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_4_" + set + ".eps")
@@ -679,7 +682,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel(set+"\nRetrieval Rate")
+    plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_3_" + set + ".eps")
@@ -706,7 +709,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel(set+"\nRetrieval Rate")
+    plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_2_" + set + ".eps")
@@ -742,7 +745,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel(set+"\nRetrieval Rate")
+    plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_1_" + set + ".eps")
@@ -776,7 +779,7 @@ def IST_dom_draw(set):
 
     plt.xticks(x, xlabels)
 
-    plt.ylabel(set+"\nRetrieval Rate")
+    plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_0_" + set + ".eps")
@@ -872,7 +875,7 @@ def PoR2():
     plt.xticks(x,x)
 
     plt.ylabel("Precision")
-    plt.xlabel("Retrieval Rate")
+    plt.xlabel("Recall")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/PoR.eps")
     plt.savefig("../figure/PoR.png")
@@ -887,7 +890,7 @@ def PoR2():
     plt.xticks(x,x)
 
     plt.ylabel("Studies Reviewed")
-    plt.xlabel("Retrieval Rate")
+    plt.xlabel("Recall")
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/PoR2.eps")
     plt.savefig("../figure/PoR2.png")
@@ -1114,6 +1117,57 @@ def bestNworst(results):
 #     return medians, iqrs
 
 
+## LDA ##
+
+def comp_LDA(id):
+    with open("../dump/ieee.pickle","rb") as handle:
+        csr_mat3 = pickle.load(handle)
+        labels3 = pickle.load(handle)
+        vocab3 = pickle.load(handle)
+
+    lda1 = lda.LDA(n_topics=80, alpha=0.1, eta=0.1, n_iter=200)
+
+    lda2 = LatentDirichletAllocation(n_topics=80, learning_method='online', doc_topic_prior=0.1, topic_word_prior=0.1, max_iter=200)
+    time1=time()
+    # csr_mat4 = csr_matrix(lda1.fit_transform(csr_mat3.todense()))
+    csr_mat4 = csr_matrix(lda2.fit_transform(csr_mat3))
+    time2=time()-time1
+    print(time2)
+    set_trace()
+    # tops = lda1.doc_topic_
+    # topic_word = lda1.topic_word_
+    topic_word=lda2.components_
+    result2, train2 = simple_hcca1(csr_mat4, labels3, step=stepsize ,initial=10, pos_limit=1, thres=20)
+    result, train = simple_hcca1(csr_mat3, labels3, step=stepsize ,initial=10, pos_limit=1, thres=20)
+    dict = {"lda": result2, "no_lda": result}
+    with open("../dump/lda"+str(id)+".pickle","wb") as handle:
+        pickle.dump(dict,handle)
+    set_trace()
+
+def draw_LDA(id):
+    with open("../dump/lda"+str(id)+".pickle","rb") as handle:
+        result = pickle.load(handle)
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+    plt.figure(0)
+    plt.plot(result['lda']['x'], result['lda']["new_continuous_aggressive"],label="lda")
+    plt.plot(result['no_lda']['x'], result['no_lda']["new_continuous_aggressive"],label="no_lda")
+
+    plt.ylabel("Recall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/lda_"+str(id)+".eps")
+    plt.savefig("../figure/lda_"+str(id)+".png")
+
+
+
 ##### UPDATE exp
 def update_exp(id):
     repeats=30
@@ -1139,10 +1193,16 @@ def update_exp(id):
         pickle.dump(results,handle)
 
 def update_exps(csr_mat1,labels1,csr_mat2,labels2,csr_mat3,labels3,vocab2,vocab3,stepsize=10):
+    t1=time()
     result, train = simple_hcca1(csr_mat1, labels1, step=stepsize ,initial=10, pos_limit=1, thres=20)
     result2, model2 = simple_hcca2(csr_mat2, labels2, csr_mat1[train], labels1[train], step=stepsize)
+    t2=time()-t1
+    print(t2)
     model2=model_transform(model2,vocab2,vocab3)
+    t1=time()
     result3, model3 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=50, pos_limit=5, thres=30)
+    t2=time()-t1
+    print(t2)
     result5, model5 = simple_hcca3(csr_mat3, labels3, model2, step=stepsize ,initial=10, pos_limit=2, thres=30,clustering=True,sample=2)
     result4, train4=simple_hcca1(csr_mat2, labels2, step=stepsize ,initial=10, pos_limit=1, thres=20)
     return {"Hall2007": result, "Hall2010": result2, "ieee": result3, "Hall2010init": result4, "ieee_clustering": result5}

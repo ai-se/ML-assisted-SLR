@@ -24,6 +24,7 @@ from sklearn.decomposition import LatentDirichletAllocation
 from time import time
 
 
+
 es = ESHandler(force_injest=False)
 container = Vessel(
         OPT=None,
@@ -62,11 +63,14 @@ def export_txt(set):
     es=ESHandler(es=defaults(TYPE_NAME=set),force_injest=False)
     res=es.get_unlabeled()
     den="\t"
+    txt=[]
     txt_content='Document Title'+den+'Abstract'+den+'Year'+den+'PDF Link'+den+'label\n'
+    txt.append(txt_content)
     for x in res['hits']['hits']:
-        txt_content=txt_content+x['_source']['title']+den+x['_source']['abstract']+den+x['_source']['year']+den+x['_source']['ft_url']+den+x['_source']['user']+"\n"
+        txt_content=x['_source']['title']+den+x['_source']['abstract']+den+x['_source']['year']+den+x['_source']['ft_url']+den+x['_source']['user']+"\n"
+        txt.append(unicodedata.normalize('NFKD', txt_content).encode('ascii', 'ignore'))
     with open("../dump/" + str(set) + ".txt","w") as f:
-        f.write(unicodedata.normalize('NFKD', txt_content).encode('ascii', 'ignore'))
+        f.writelines(txt)
 
 def tag_can():
     search_string="(software OR applicati* OR systems ) AND (fault* OR defect* OR quality OR error-prone) AND (predict* OR prone* OR probability OR assess* OR detect* OR estimat* OR classificat*)"
@@ -488,7 +492,9 @@ def IST_split_draw(set):
     plt.savefig("../figure/IST_H_" + set + ".png")
 
 
-def IST_comp_draw(set):
+
+
+def IST_fade_draw(set):
 
     N= 13
 
@@ -539,35 +545,22 @@ def IST_comp_draw(set):
 
 
 
-    line, = plt.plot(medians1['x'], medians1["simple_active"], label="P_U_S_N", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs1['x'], iqrs1["simple_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="P_U_S_A", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["continuous_active"], label="P_C_C_N", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs1['x'], iqrs1["continuous_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="P_C_C_A", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs1['x'], iqrs1["new_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["semi_continuous"], label="P_U_C_N", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs1['x'], iqrs1["semi_continuous"], "-.", color=line.get_color())
-    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="P_U_C_A", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs1['x'], iqrs1["semi_continuous_aggressive"], "-.", color=line.get_color())
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="$\\bar{P}\\bar{U}\\bar{S}A$ (FASTREAD)")
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$ (EBM)")
+    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (TAR)")
+    line, = plt.plot(medians1['x'], medians1["simple_active"],'.', color='gray', label="$PUS\\bar{N}$")
+    line, = plt.plot(medians1['x'], medians1["continuous_active"],'.', color='gray', label="$P\\bar{U}\\bar{S}\\bar{A}$")
+    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"],'.', color='gray', label="$P\\bar{U}\\bar{S}A$")
 
-    line, = plt.plot(medians1['x'], medians1["linear_review"], label="linear_review", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs1['x'], iqrs1["linear_review"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["linear_review"],'.', color='gray', label="linear_review")
 
 
-    line, = plt.plot(medians0['x'], medians0["simple_active"], label="H_U_S_N", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs0['x'], iqrs0["simple_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["aggressive_undersampling"], label="H_U_S_A", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs0['x'], iqrs0["aggressive_undersampling"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="H_C_C_N", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs0['x'], iqrs0["continuous_active"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="H_C_C_A", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs0['x'], iqrs0["new_continuous_aggressive"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["semi_continuous"], label="H_U_C_N", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs0['x'], iqrs0["semi_continuous"], "-.", color=line.get_color())
-    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="H_U_C_A", color = scalarMap.to_rgba(indices.pop()))
-    plt.plot(iqrs0['x'], iqrs0["semi_continuous_aggressive"], "-.", color=line.get_color())
+    line, = plt.plot(medians1['x'], medians1["semi_continuous"],'.', color='gray', label="$PU\\bar{S}\\bar{A}$")
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"],'.', color='gray', label="$PU\\bar{S}A$")
+    line, = plt.plot(medians0['x'], medians0["simple_active"],'.', color='gray', label="$\\bar{P}US\\bar{A}$")
+    line, = plt.plot(medians0['x'], medians0["aggressive_undersampling"],'.', color='gray', label="$\\bar{P}USA$")
+    line, = plt.plot(medians0['x'], medians0["semi_continuous"],'.', color='gray', label="$\\bar{P}U\\bar{S}\\bar{A}$")
+    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"],'.', color='gray', label="$\\bar{P}U\\bar{S}A$")
 
 
     plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="red",marker='o')
@@ -1133,6 +1126,11 @@ def comp_LDA(tp):
     lda2 = LatentDirichletAllocation(n_topics=int(tp), learning_method='online', doc_topic_prior=0.1, topic_word_prior=0.01, max_iter=200)
     time1=time()
     csr_mat4 = lda1.fit_transform(csr)
+    n_top_words = 8
+    for i, topic_dist in enumerate(lda1.topic_word_):
+        topic_words = np.array(vocab3)[np.argsort(topic_dist)][:-(n_top_words+1):-1]
+        print('Topic {}: {}'.format(i, ' '.join(topic_words)))
+    set_trace()
     # csr_mat4 = csr_matrix(lda2.fit_transform(csr_mat3))
     time2=time()-time1
     print(time2)

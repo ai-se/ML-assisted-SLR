@@ -403,6 +403,16 @@ class SVM:
             pickle.dump(labels2, handle)
             pickle.dump(self.vocab,handle)
 
+    def extract_data(self):
+        all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)
+        collection = FeatureMap(raw_data=all_tfm,
+                                features=self.top_feat).tf()
+
+
+        csr=collection.mappings
+        labels=np.array(collection.user)
+        return csr,labels
+
     def saveData(self):
         all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)
         collection = FeatureMap(raw_data=all_tfm,

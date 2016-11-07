@@ -1112,6 +1112,16 @@ def bestNworst(results):
 
 ## LDA ##
 
+"L2 normalization_row"
+def l2normalize(mat):
+    mat=mat.asfptype()
+    for i in xrange(mat.shape[0]):
+        nor=np.linalg.norm(mat[i].data,2)
+        if not nor==0:
+            for k in mat[i].indices:
+                mat[i,k]=mat[i,k]/nor
+    return mat
+
 def comp_LDA(tp):
     with open("../dump/ieee.pickle","rb") as handle:
         csr_mat3 = pickle.load(handle)
@@ -1123,14 +1133,14 @@ def comp_LDA(tp):
 
     lda1 = lda.LDA(n_topics=int(tp), alpha=0.1, eta=0.01, n_iter=200)
 
-    lda2 = LatentDirichletAllocation(n_topics=int(tp), learning_method='online', doc_topic_prior=0.1, topic_word_prior=0.01, max_iter=200)
+    # lda2 = LatentDirichletAllocation(n_topics=int(tp), learning_method='online', doc_topic_prior=0.1, topic_word_prior=0.01, max_iter=200)
     time1=time()
-    csr_mat4 = lda1.fit_transform(csr)
+    csr_mat4 = csr_matrix(lda1.fit_transform(csr))
+    csr_mat4 = l2normalize(csr_mat4)
     n_top_words = 8
     for i, topic_dist in enumerate(lda1.topic_word_):
         topic_words = np.array(vocab3)[np.argsort(topic_dist)][:-(n_top_words+1):-1]
         print('Topic {}: {}'.format(i, ' '.join(topic_words)))
-    set_trace()
     # csr_mat4 = csr_matrix(lda2.fit_transform(csr_mat3))
     time2=time()-time1
     print(time2)

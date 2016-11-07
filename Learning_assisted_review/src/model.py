@@ -405,8 +405,7 @@ class SVM:
 
     def extract_data(self):
         all_tfm = self.TF.matrix(CONTROL=False, LABELED=False)
-        collection = FeatureMap(raw_data=all_tfm,
-                                features=self.top_feat).tf()
+        collection = FeatureMap(raw_data=all_tfm).tf()
 
 
         csr=collection.mappings

@@ -243,13 +243,15 @@ def update_exp():
         pickle.dump(result,handle)
 
 def update_or_reuse():
-    repeats=30
+    repeats=1
     result={"update":[],"reuse":[]}
     for i in xrange(repeats):
         a = START("Hall.csv")
         a.export()
         b = UPDATE("Wahono.csv","Hall.csv")
         result["update"].append(b.record)
+        b.plot()
+        set_trace()
         b.restart()
         # c = REUSE("Wahono.csv","Hall.csv")
         # result["all"].append(c.record)

@@ -226,20 +226,35 @@ def bestNworst(results):
 ##### UPDATE exp
 def update_exp():
     repeats=30
-    result={"part":[],"all":[]}
+    result={"start_1":[],"start_2":[], "start_3":[],"update_2":[],"update_3":[],"reuse_3":[]}
     for i in xrange(repeats):
         a = START("Hall2007-.csv")
+        result["start_1"].append(a.record)
         a.export()
-        b = UPDATE("Hall2007+.csv","Hall2007-.csv")
-        result["part"].append(b.record)
+
+        b = START("Hall2007+.csv")
+        result["start_2"].append(b.record)
         b.restart()
-        c = UPDATE_ALL("Hall2007+.csv","Hall2007-.csv")
-        result["all"].append(c.record)
+
+        c = UPDATE("Hall2007+.csv","Hall2007-.csv")
+        result["update_2"].append(c.record)
+        c.export()
+
+        d = START("Wahono.csv")
+        result["start_3"].append(d.record)
+        d.restart()
+
+        e = UPDATE("Wahono.csv","Hall2007+.csv")
+        result["update_3"].append(e.record)
+        e.restart()
+
+        f = REUSE("Wahono.csv",c)
+        result["reuse_3"].append(f.record)
+        f.restart()
         c.restart()
-        a.restart()
         # print("Repeat #{id} finished\r".format(id=i), end="")
         print(i, end=" ")
-    with open("../dump/update_all_or_part.pickle","wb") as handle:
+    with open("../dump/everything.pickle","wb") as handle:
         pickle.dump(result,handle)
 
 def update_or_reuse():

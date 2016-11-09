@@ -287,6 +287,16 @@ class MAR(object):
     def random(self):
         return np.random.choice(self.pool,size=np.min((self.step,len(self.pool))),replace=False)
 
+    ## Reuse Model ##
+    def reuse(self,model):
+        order = np.argsort((model['w']*self.csr_mat[self.pool].transpose()).toarray()[0])
+        if model['pos_at'] == 1:
+            order=order[::-1]
+        can=[self.pool[i] for i in order[:int(self.step/2)]]
+        num=self.step-int(self.step/2)
+        can.extend([self.pool[order[-int(i*len(order)/num+1)]] for i in xrange(num)])
+        return np.array(can)
+
     ## Format ##
     def format(self,id,prob=[]):
         result=[]
@@ -343,3 +353,18 @@ class MAR(object):
     ## Restart ##
     def restart(self):
         os.remove("./memory/"+self.name+".pickle")
+
+    ## Train model ##
+    def get_clf(self):
+        clf = svm.SVC(kernel='linear', probability=True)
+        poses = np.where(self.body['code'] == "yes")[0]
+        negs = np.where(self.body['code'] == "no")[0]
+        clf.fit(self.csr_mat[self.labeled], self.body['code'][self.labeled])
+        ## aggressive undersampling ##
+        if len(poses)>=self.enough:
+
+            train_dist = clf.decision_function(self.csr_mat[negs])
+            negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
+            sample = poses.tolist() + negs[negs_sel].tolist()
+            clf.fit(self.csr_mat[sample], self.body['code'][sample])
+        return clf

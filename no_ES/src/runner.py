@@ -243,36 +243,24 @@ def update_exp():
         pickle.dump(result,handle)
 
 def update_or_reuse():
-    repeats=1
+    repeats=30
     result={"update":[],"reuse":[]}
     for i in xrange(repeats):
         a = START("Hall.csv")
         a.export()
+
+        c = REUSE("Wahono.csv",a)
+        result["reuse"].append(c.record)
+        c.restart()
         b = UPDATE("Wahono.csv","Hall.csv")
         result["update"].append(b.record)
-        b.plot()
-        set_trace()
         b.restart()
-        # c = REUSE("Wahono.csv","Hall.csv")
-        # result["all"].append(c.record)
-        # c.restart()
         a.restart()
-        # print("Repeat #{id} finished\r".format(id=i), end="")
-        print(i, end=" ")
+        print("Repeat #{id} finished\r".format(id=i), end="")
+        # print(i, end=" ")
     with open("../dump/update_or_reuse.pickle","wb") as handle:
         pickle.dump(result,handle)
 
-
-def model_transform(model,vocab,vocab_new):
-    w=[]
-    for term in vocab_new:
-        try:
-            ind=vocab.index(term)
-            w.append(model['w'][0,ind])
-        except:
-            w.append(0)
-    model['w']=csr_matrix(w)
-    return model
 
 def START(filename):
     stop=0.9
@@ -323,19 +311,37 @@ def UPDATE_ALL(filename,old):
             read.code(id, read.body["label"][id])
     return read
 
+
+
+def model_transform(model,vocab,vocab_new):
+    w=[]
+    for term in vocab_new:
+        try:
+            ind=vocab.index(term)
+            w.append(model['w'][0,ind])
+        except:
+            w.append(0)
+    model['w']=csr_matrix(w)
+    return model
+
 def REUSE(filename,old):
     stop=0.9
 
     read = MAR()
-    read = read.create_UPDATE(filename,old)
+    read = read.create(filename)
     target = int(read.get_allpos()*stop)
+    model = model_transform({'w':old.get_clf().coef_, "pos_at":list(old.get_clf().classes_).index("yes")},old.voc,read.voc)
     while True:
         pos, neg, total = read.get_numbers()
         if pos > target:
             break
-        a,b,ids,c =read.train()
-        for id in ids:
-            read.code(id, read.body["label"][id])
+        if pos==0 or pos+neg<50:
+            for id in read.reuse(model):
+                read.code(id, read.body["label"][id])
+        else:
+            a,b,ids,c =read.train()
+            for id in ids:
+                read.code(id, read.body["label"][id])
     return read
 
 

@@ -198,22 +198,26 @@ def update_repeat_draw(file):
 
     stats=bestNworst(results)
     colors=['blue','purple','green','brown','red']
-    lines=['-','-.']
+    lines=['-','--',':']
+    five=['best','$Q_1$','median','$Q_3$','worst']
 
-    plt.figure()
-    for i,key in enumerate(stats):
+
+    line=[0,0,0,0]
+    for key in stats:
         a = key.split("_")[0]
         b = key.split("_")[1]
         plt.figure(int(b))
         for j,ind in enumerate(stats[key]):
-            plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[i],color=colors[j],label=str(ind)+"th Percentile_"+str(a))
+            plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a))
+        line[int(b)]+=1
 
-
-    plt.ylabel("Retrieval Rate")
-    plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=2, borderaxespad=0.)
-    plt.savefig("../figure/"+str(file)+".eps")
-    plt.savefig("../figure/"+str(file)+".png")
+    for i in xrange(3):
+        plt.figure(i+1)
+        plt.ylabel("Retrieval Rate")
+        plt.xlabel("Studies Reviewed")
+        plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=i+1, borderaxespad=0.)
+        plt.savefig("../figure/"+str(file)+str(i+1)+".eps")
+        plt.savefig("../figure/"+str(file)+str(i+1)+".png")
 
 def bestNworst(results):
     stats={}

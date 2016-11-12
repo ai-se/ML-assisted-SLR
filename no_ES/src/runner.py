@@ -16,6 +16,7 @@ from scipy.sparse import csr_matrix
 from sklearn.cluster import KMeans
 import lda
 from time import time
+from sklearn.feature_extraction.text import TfidfVectorizer
 from mar import MAR
 
 
@@ -201,8 +202,11 @@ def update_repeat_draw(file):
 
     plt.figure()
     for i,key in enumerate(stats):
+        a = key.split("_")[0]
+        b = key.split("_")[1]
+        plt.figure(int(b))
         for j,ind in enumerate(stats[key]):
-            plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[i],color=colors[j],label=str(ind)+"th Percentile_"+str(key))
+            plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[i],color=colors[j],label=str(ind)+"th Percentile_"+str(a))
 
 
     plt.ylabel("Retrieval Rate")
@@ -358,6 +362,90 @@ def REUSE(filename,old):
             for id in ids:
                 read.code(id, read.body["label"][id])
     return read
+
+def similarity(a,b):
+    tops=30
+
+    read = MAR()
+    read = read.create(a)
+    body_a = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
+                   xrange(len(read.body["Document Title"]))]
+    label_a = read.body['label']
+    read = read.create(b)
+    body_b = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
+                   xrange(len(read.body["Document Title"]))]
+    label_b = read.body['label']
+    body_c = body_a+body_b
+
+    tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False)
+    tf_c = tfer.fit_transform(body_c).astype(np.int32)
+    tf_a = tfer.transform(body_a).astype(np.int32)
+    tf_b = tfer.transform(body_b).astype(np.int32)
+
+    clt = lda.LDA(n_topics=tops, n_iter=200, alpha=0.8, eta=0.8)
+    dis = csr_matrix(clt.fit_transform(tf_c))
+    dis_a = dis[:tf_a.shape[0]]
+    dis_b = dis[tf_a.shape[0]:]
+
+    sum_a = dis_a.sum(axis=0)/dis_a.shape[0]
+    sum_b = dis_b.sum(axis=0)/dis_b.shape[0]
+    x=range(tops)
+
+
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    plt.figure()
+    plt.plot(x, np.array(sum_a)[0] ,label=a.split('.')[0])
+    plt.plot(x, np.array(sum_b)[0] ,label=b.split('.')[0])
+
+
+    plt.ylabel("Topic Weight")
+    plt.xlabel("Topic ID")
+    plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/data_"+a.split('.')[0]+" vs "+b.split('.')[0]+".eps")
+    plt.savefig("../figure/data_"+a.split('.')[0]+" vs "+b.split('.')[0]+".png")
+
+
+    # Data similarity
+    score = sum([min((sum_a[0,i],sum_b[0,i])) for i in xrange(tops)])
+    print("data: %f" %score)
+
+    # Target similarity
+    pos_a = [i for i in xrange(len(label_a)) if label_a[i]=='yes']
+    pos_b = [i for i in xrange(len(label_b)) if label_b[i]=='yes']
+
+    dis_pos_a = dis_a[pos_a]
+    dis_pos_b = dis_b[pos_b]
+    sum_pos_a = dis_pos_a.sum(axis=0)/dis_pos_a.shape[0]
+    sum_pos_b = dis_pos_b.sum(axis=0)/dis_pos_b.shape[0]
+
+    plt.figure()
+    plt.plot(x, np.array(sum_pos_a)[0] ,label=a.split('.')[0])
+    plt.plot(x, np.array(sum_pos_b)[0] ,label=b.split('.')[0])
+
+
+    plt.ylabel("Topic Weight")
+    plt.xlabel("Topic ID")
+    plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/target_"+a.split('.')[0]+" vs "+b.split('.')[0]+".eps")
+    plt.savefig("../figure/target_"+a.split('.')[0]+" vs "+b.split('.')[0]+".png")
+
+    score2 = sum([min((sum_pos_a[0,i],sum_pos_b[0,i])) for i in xrange(tops)])
+    print("target: %f" %score2)
+    set_trace()
+
+
+
+
+
 
 
 

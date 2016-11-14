@@ -1250,14 +1250,20 @@ def draw_percentile(set):
 
     colors=['red','blue','green','cyan', 'purple']
     plt.figure(0)
+    # for i,ind in enumerate(stats['new_continuous_aggressive']):
+    #     plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile of $\\bar{P}\\bar{U}\\bar{S}A$")
+    # for i,ind in enumerate(stats['semi_continuous_aggressive']):
+    #     plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i], label=str(ind)+"th Percentile of $\\bar{P}U\\bar{S}A$")
+
     for i,ind in enumerate(stats['new_continuous_aggressive']):
-        plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile of $\\bar{P}\\bar{U}\\bar{S}A$")
+        plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile")
     for i,ind in enumerate(stats['semi_continuous_aggressive']):
-        plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i], label=str(ind)+"th Percentile of $\\bar{P}U\\bar{S}A$")
+        plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i])
 
     plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=2, borderaxespad=0.)
+    # plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=2, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.7, 0.80), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/percentile_"+set+".eps")
     plt.savefig("../figure/percentile_"+set+".png")
 

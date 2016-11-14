@@ -31,11 +31,12 @@ def colorcode(N):
 
 
 
-"L2 normalization_row"
-def l2normalize(mat):
+
+"normalization_row"
+def normalize(mat,ord=2):
     mat=mat.asfptype()
     for i in xrange(mat.shape[0]):
-        nor=np.linalg.norm(mat[i].data,2)
+        nor=np.linalg.norm(mat[i].data,ord=ord)
         if not nor==0:
             for k in mat[i].indices:
                 mat[i,k]=mat[i,k]/nor
@@ -367,7 +368,7 @@ def REUSE(filename,old):
                 read.code(id, read.body["label"][id])
     return read
 
-def similarity(a,b):
+def similarity(a,b,norm=1):
     tops=30
 
     read = MAR()
@@ -388,6 +389,10 @@ def similarity(a,b):
 
     clt = lda.LDA(n_topics=tops, n_iter=200, alpha=0.8, eta=0.8)
     dis = csr_matrix(clt.fit_transform(tf_c))
+
+    if norm!=1:
+        dis = normalize(dis,ord=norm)
+
     dis_a = dis[:tf_a.shape[0]]
     dis_b = dis[tf_a.shape[0]:]
 
@@ -419,7 +424,11 @@ def similarity(a,b):
 
 
     # Data similarity
-    score = sum([min((sum_a[0,i],sum_b[0,i])) for i in xrange(tops)])
+    score=0
+    if norm==1:
+        score = sum([min((sum_a[0,i],sum_b[0,i])) for i in xrange(tops)])
+    elif norm==2:
+        score = (sum_a*sum_b.transpose())[0,0]
     print("data: %f" %score)
 
     # Target similarity
@@ -442,7 +451,11 @@ def similarity(a,b):
     plt.savefig("../figure/target_"+a.split('.')[0]+" vs "+b.split('.')[0]+".eps")
     plt.savefig("../figure/target_"+a.split('.')[0]+" vs "+b.split('.')[0]+".png")
 
-    score2 = sum([min((sum_pos_a[0,i],sum_pos_b[0,i])) for i in xrange(tops)])
+    score2=0
+    if norm==1:
+        score2 = sum([min((sum_pos_a[0,i],sum_pos_b[0,i])) for i in xrange(tops)])
+    elif norm==2:
+        score2 = (sum_pos_a*sum_pos_b.transpose())[0,0]
     print("target: %f" %score2)
     set_trace()
 

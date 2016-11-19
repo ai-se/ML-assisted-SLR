@@ -1,6 +1,6 @@
 from __future__ import division, print_function
 
-
+import csv
 import numpy as np
 from pdb import set_trace
 from demos import cmd
@@ -273,10 +273,10 @@ def update_or_reuse():
         a = START("Hall.csv")
         a.export()
 
-        c = REUSE("Wahono.csv",a)
+        c = REUSE("Syn_Wahono.csv",a)
         result["reuse"].append(c.record)
         c.restart()
-        b = UPDATE("Wahono.csv","Hall.csv")
+        b = UPDATE("Syn_Wahono.csv","Hall.csv")
         result["update"].append(b.record)
         b.restart()
         a.restart()
@@ -284,6 +284,7 @@ def update_or_reuse():
         # print(i, end=" ")
     with open("../dump/update_or_reuse.pickle","wb") as handle:
         pickle.dump(result,handle)
+    set_trace()
 
 
 def START(filename):
@@ -368,7 +369,7 @@ def REUSE(filename,old):
                 read.code(id, read.body["label"][id])
     return read
 
-def similarity(a,b,norm=1):
+def similarity(a,b,norm=2):
     tops=30
 
     read = MAR()
@@ -428,7 +429,7 @@ def similarity(a,b,norm=1):
     if norm==1:
         score = sum([min((sum_a[0,i],sum_b[0,i])) for i in xrange(tops)])
     elif norm==2:
-        score = (sum_a*sum_b.transpose())[0,0]
+        score = (sum_a*sum_b.transpose())[0,0]/(np.linalg.norm(sum_a,2)*np.linalg.norm(sum_b,2))
     print("data: %f" %score)
 
     # Target similarity
@@ -455,8 +456,57 @@ def similarity(a,b,norm=1):
     if norm==1:
         score2 = sum([min((sum_pos_a[0,i],sum_pos_b[0,i])) for i in xrange(tops)])
     elif norm==2:
-        score2 = (sum_pos_a*sum_pos_b.transpose())[0,0]
+        score2 = (sum_pos_a*sum_pos_b.transpose())[0,0]/(np.linalg.norm(sum_pos_a,2)*np.linalg.norm(sum_pos_b,2))
     print("target: %f" %score2)
+    set_trace()
+
+def generate_data(file,norm=2):
+    tops=30
+
+    read = MAR()
+    read = read.create(file)
+    body_a = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
+                   xrange(len(read.body["Document Title"]))]
+    label_a = read.body['label']
+
+    tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False)
+    tf_a = tfer.fit_transform(body_a).astype(np.int32)
+
+    clt = lda.LDA(n_topics=tops, n_iter=200, alpha=0.8, eta=0.8)
+    dis = csr_matrix(clt.fit_transform(tf_a))
+
+    if norm!=1:
+        dis = normalize(dis,ord=norm)
+
+
+    sum_a = dis.sum(axis=0)/dis.shape[0]
+
+
+
+
+    # Target similarity
+    pos_a = [i for i in xrange(len(label_a)) if label_a[i]=='yes']
+
+    dis_pos = dis[pos_a]
+    sum_pos_a = dis_pos.sum(axis=0)/dis_pos.shape[0]
+
+    second = np.argsort(sum_pos_a)[::-1][0,1]
+
+    indices = np.argsort(dis[:,second].toarray().flat)[:len(pos_a)]
+
+    fields = ["Document Title", "Abstract", "Year", "PDF Link", "label", "code"]
+    with open("../workspace/coded/Syn_" + str(file), "wb") as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',')
+        csvwriter.writerow(fields)
+        for ind in xrange(len(read.body["Year"])):
+            content = [read.body[field][ind] for field in fields]
+            if ind in indices:
+                content[-2]="yes"
+            else:
+                content[-2]="no"
+            csvwriter.writerow(content)
+
+
     set_trace()
 
 

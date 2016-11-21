@@ -10,6 +10,7 @@ import matplotlib.colors as colors
 import matplotlib.cm as cmx
 from sk import rdivDemo
 import unicodedata
+import random
 from sklearn import svm
 from collections import Counter
 from scipy.sparse import csr_matrix
@@ -266,23 +267,23 @@ def update_exp():
     with open("../dump/everything.pickle","wb") as handle:
         pickle.dump(result,handle)
 
-def update_or_reuse():
+def update_or_reuse(what):
     repeats=1
     result={"update":[],"reuse":[]}
     for i in xrange(repeats):
         a = START("Hall.csv")
         a.export()
 
-        c = REUSE("Syn_Wahono.csv",a)
+        c = REUSE(str(what)+"Wahono.csv",a)
         result["reuse"].append(c.record)
         c.restart()
-        b = UPDATE("Syn_Wahono.csv","Hall.csv")
+        b = UPDATE(str(what)+"Wahono.csv","Hall.csv")
         result["update"].append(b.record)
         b.restart()
         a.restart()
         print("Repeat #{id} finished\r".format(id=i), end="")
         # print(i, end=" ")
-    with open("../dump/update_or_reuse.pickle","wb") as handle:
+    with open("../dump/update_or_reuse_"+str(what)+".pickle","wb") as handle:
         pickle.dump(result,handle)
     set_trace()
 
@@ -509,6 +510,54 @@ def generate_data(file,norm=2):
 
     set_trace()
 
+
+def generate_term(file,sim=0.5):
+    tops=30
+    pre=0.01
+
+    read = MAR()
+    read = read.create(file)
+    body = read.csr_mat
+    label = read.body['label']
+
+    pos = [i for i in xrange(len(label)) if label[i] == 'yes']
+
+    dis_pos = body[pos]
+    sum_pos = dis_pos.sum(axis=0)
+    sum_pos = sum_pos/np.linalg.norm(sum_pos,2)
+
+    cos = body*sum_pos.transpose()
+    best_fit = np.argsort(np.abs(cos - sim).flat)[0]
+    best_vec = body[best_fit]
+    cos2 = body*best_vec.transpose()
+
+    median = np.median(cos2.toarray().flat)
+    label2 = []
+    for dis in cos2.toarray().flat:
+        chance = pre*(dis/median)
+        if random.random()<chance:
+            label2.append("yes")
+        else:
+            label2.append("no")
+
+    pos2 = [i for i in xrange(len(label)) if label2[i] == 'yes']
+    print(len(pos2))
+    dis_pos2 = body[pos2]
+    sum_pos2 = dis_pos2.sum(axis=0)
+    sum_pos2 = sum_pos2 / np.linalg.norm(sum_pos2, 2)
+    sims = (sum_pos*sum_pos2.transpose())[0,0]
+    print(sims)
+    fields = ["Document Title", "Abstract", "Year", "PDF Link", "label", "code"]
+    with open(("../workspace/coded/%d" %int(sims*100))+ str(file), "wb") as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',')
+        csvwriter.writerow(fields)
+        for ind in xrange(len(read.body["Year"])):
+            content = [read.body[field][ind] for field in fields]
+            content[-2] = label2[ind]
+            csvwriter.writerow(content)
+
+
+    set_trace()
 
 
 

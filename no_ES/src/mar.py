@@ -123,6 +123,7 @@ class MAR(object):
         self.num = len(content) - 1
         return
 
+    ## for Partial UPDATE
     def loadold(self,old):
         with open("../workspace/coded/" + str(old), "r") as csvfile:
             content = [x for x in csv.reader(csvfile, delimiter=',')]
@@ -134,6 +135,7 @@ class MAR(object):
                     self.body[field].append(x[ind])
         self.body['code']=np.array(self.body['code'])
 
+    ## for Whole UPDATE
     def loadold_all(self,old):
         with open("../workspace/coded/" + str(old), "r") as csvfile:
             content = [x for x in csv.reader(csvfile, delimiter=',')]
@@ -144,6 +146,7 @@ class MAR(object):
                 self.body[field].append(x[ind])
         self.body['code']=np.array(self.body['code'])
 
+    ## essential to be done before each training
     def get_numbers(self):
         total = self.num
         pos = Counter(self.body["code"][:self.num])["yes"]
@@ -189,6 +192,7 @@ class MAR(object):
                     csvwriter.writerow([self.body[field][ind] for field in fields])
         return
 
+    ## preprocess data, stemming+stopwords removal+feature selection+featurization
     def preprocess(self):
         ### Combine title and abstract for training ###########
         content = [self.body["Document Title"][index] + " " + self.body["Abstract"][index] for index in

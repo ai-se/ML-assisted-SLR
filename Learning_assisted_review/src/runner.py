@@ -494,13 +494,13 @@ def IST_split_draw(set):
 def IST_split_draw_noiqr(set):
 
 
-    font = {'family': 'cursive',
+    font = {'family': 'normal',
             'weight': 'bold',
-            'size': 20}
+            'size': 30}
 
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 30, 'axes.labelsize': 30, 'legend.frameon': False,
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
@@ -887,13 +887,13 @@ def IST_dom_draw(set):
     plt.savefig("../figure/IST_0_" + set + ".png")
 
 def IST_dom_draw_noiqr(set):
-    font = {'family': 'cursive',
-            'weight': 'bold',
-            'size': 20}
+    font = {'family': 'default',
+            # 'weight': 'bold',
+            'size': 30}
 
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 25, 'axes.labelsize': 30, 'legend.frameon': False,
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
@@ -949,7 +949,7 @@ def IST_dom_draw_noiqr(set):
 
     plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.9, 0.70), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_4_" + set + ".eps")
     plt.savefig("../figure/IST_4_" + set + ".png")
 
@@ -975,7 +975,7 @@ def IST_dom_draw_noiqr(set):
 
     plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.9, 0.70), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_3_" + set + ".eps")
     plt.savefig("../figure/IST_3_" + set + ".png")
 
@@ -1000,7 +1000,7 @@ def IST_dom_draw_noiqr(set):
 
     plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.9, 0.70), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_2_" + set + ".eps")
     plt.savefig("../figure/IST_2_" + set + ".png")
 
@@ -1063,7 +1063,7 @@ def IST_dom_draw_noiqr(set):
 
     plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.9, 0.70), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_0_" + set + ".eps")
     plt.savefig("../figure/IST_0_" + set + ".png")
 
@@ -1083,13 +1083,13 @@ def PoR(set):
     sup=np.median(yy,axis=0)
     iqr=np.percentile(yy,75,axis=0)-np.percentile(yy,25,axis=0)
 
-    font = {'family': 'cursive',
-            'weight': 'bold',
-            'size': 20}
+    font = {'family': 'default',
+            # 'weight': 'bold',
+            'size': 30}
 
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 25, 'axes.labelsize': 30, 'legend.frameon': False,
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
@@ -1137,13 +1137,13 @@ def PoR2():
         data[set]['q']=q
 
 
-    font = {'family': 'cursive',
-            'weight': 'bold',
-            'size': 20}
+    font = {'family': 'default',
+            # 'weight': 'bold',
+            'size': 30}
 
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 25, 'axes.labelsize': 30, 'legend.frameon': False,
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
@@ -1153,7 +1153,7 @@ def PoR2():
         # plt.plot(data[set]['x'], data[set]['q'],"-.",color=line.get_color())
 
 
-    x=np.array(range(21))*0.05
+    x=np.array(range(11))*0.1
     plt.xticks(x,x)
 
     plt.ylabel("Precision")
@@ -1168,7 +1168,7 @@ def PoR2():
         # plt.plot(data[set]['x'], data[set]['q'],"-.",color=line.get_color())
 
 
-    x=np.array(range(21))*0.05
+    x=np.array(range(11))*0.1
     plt.xticks(x,x)
 
     plt.ylabel("Studies Reviewed")
@@ -1233,13 +1233,13 @@ def numbers(set):
 
 ##### Draw percentile
 def draw_percentile(set):
-    font = {'family': 'cursive',
-            'weight': 'bold',
-            'size': 20}
+    font = {'family': 'default',
+            # 'weight': 'bold',
+            'size': 30}
 
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 25, 'axes.labelsize': 30, 'legend.frameon': False,
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 

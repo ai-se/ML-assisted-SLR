@@ -287,6 +287,32 @@ def update_or_reuse(what):
         pickle.dump(result,handle)
     set_trace()
 
+def update_or_reuse2():
+    repeats=1
+    result={"update":[],"reuse":[],"start":[]}
+    for i in xrange(repeats):
+        a = START("Hall.csv")
+        a.export()
+
+        d = START("Abdellatif.csv")
+        result["start"].append(d.record)
+        d.restart()
+
+        c = REUSE("Abdellatif.csv",a)
+        result["reuse"].append(c.record)
+        c.restart()
+
+        b = UPDATE("Abdellatif.csv","Hall.csv")
+        result["update"].append(b.record)
+        b.restart()
+        a.restart()
+
+        print("Repeat #{id} finished\r".format(id=i), end="")
+        # print(i, end=" ")
+    with open("../dump/update_or_reuse2.pickle","wb") as handle:
+        pickle.dump(result,handle)
+    set_trace()
+
 
 def START(filename):
     stop=0.9
@@ -384,7 +410,7 @@ def similarity(a,b,norm=2):
     label_b = read.body['label']
     body_c = body_a+body_b
 
-    tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False)
+    tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False,decode_error="ignore")
     tf_c = tfer.fit_transform(body_c).astype(np.int32)
     tf_a = tfer.transform(body_a).astype(np.int32)
     tf_b = tfer.transform(body_b).astype(np.int32)

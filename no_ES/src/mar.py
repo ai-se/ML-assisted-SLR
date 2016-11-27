@@ -198,10 +198,9 @@ class MAR(object):
         content = [self.body["Document Title"][index] + " " + self.body["Abstract"][index] for index in
                    xrange(len(self.body["Document Title"]))]
         #######################################################
-
         ### Feature selection by tfidf in order to keep vocabulary ###
         tfidfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=True, smooth_idf=False,
-                                sublinear_tf=False)
+                                sublinear_tf=False,decode_error="ignore")
         tfidf = tfidfer.fit_transform(content)
         weight = tfidf.sum(axis=0).tolist()[0]
         kept = np.argsort(weight)[-self.fea_num:]
@@ -210,7 +209,7 @@ class MAR(object):
 
         ### Term frequency as feature, L2 normalization ##########
         tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=u'l2', use_idf=False,
-                        vocabulary=self.voc)
+                        vocabulary=self.voc,decode_error="ignore")
         self.csr_mat=tfer.fit_transform(content)
         ########################################################
 

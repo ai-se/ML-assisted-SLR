@@ -203,23 +203,27 @@ def update_repeat_draw(file):
     lines=['-','--',':']
     five=['best','$Q_1$','median','$Q_3$','worst']
 
-
+    nums = set([])
     line=[0,0,0,0]
     for key in stats:
         a = key.split("_")[0]
-        b = key.split("_")[1]
+        try:
+            b = key.split("_")[1]
+        except:
+            b = 0
+        nums = nums | set([b])
         plt.figure(int(b))
         for j,ind in enumerate(stats[key]):
             plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a))
         line[int(b)]+=1
 
-    for i in xrange(3):
-        plt.figure(i+1)
+    for i in nums:
+        plt.figure(i)
         plt.ylabel("Retrieval Rate")
         plt.xlabel("Studies Reviewed")
-        plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=i+1, borderaxespad=0.)
-        plt.savefig("../figure/"+str(file)+str(i+1)+".eps")
-        plt.savefig("../figure/"+str(file)+str(i+1)+".png")
+        plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=line[int(i)], borderaxespad=0.)
+        plt.savefig("../figure/"+str(file)+str(i)+".eps")
+        plt.savefig("../figure/"+str(file)+str(i)+".png")
 
 def bestNworst(results):
     stats={}
@@ -288,7 +292,7 @@ def update_or_reuse(what):
     set_trace()
 
 def update_or_reuse2():
-    repeats=1
+    repeats=30
     result={"update":[],"reuse":[],"start":[]}
     for i in xrange(repeats):
         a = START("Hall.csv")
@@ -298,7 +302,7 @@ def update_or_reuse2():
         result["start"].append(d.record)
         d.restart()
 
-        c = REUSE("Abdellatif.csv",a)
+        c = REUSE("Abdellatif.csv","Hall.csv")
         result["reuse"].append(c.record)
         c.restart()
 
@@ -322,7 +326,7 @@ def START(filename):
     target = int(read.get_allpos()*stop)
     while True:
         pos, neg, total = read.get_numbers()
-        if pos > target:
+        if pos >= target:
             break
         if pos==0:
             for id in read.random():
@@ -341,7 +345,7 @@ def UPDATE(filename,old):
     target = int(read.get_allpos()*stop)
     while True:
         pos, neg, total = read.get_numbers()
-        if pos > target:
+        if pos >= target:
             break
         a,b,ids,c =read.train()
         for id in ids:
@@ -356,7 +360,7 @@ def UPDATE_ALL(filename,old):
     target = int(read.get_allpos()*stop)
     while True:
         pos, neg, total = read.get_numbers()
-        if pos > target:
+        if pos >= target:
             break
         a,b,ids,c =read.train()
         for id in ids:
@@ -381,14 +385,14 @@ def REUSE(filename,old):
 
     read = MAR()
     read = read.create(filename)
+    read.load_reuse(old)
     target = int(read.get_allpos()*stop)
-    model = model_transform({'w':old.get_clf().coef_, "pos_at":list(old.get_clf().classes_).index("yes")},old.voc,read.voc)
     while True:
         pos, neg, total = read.get_numbers()
-        if pos > target:
+        if pos >= target:
             break
         if pos==0 or pos+neg<50:
-            for id in read.reuse(model):
+            for id in read.reuse():
                 read.code(id, read.body["label"][id])
         else:
             a,b,ids,c =read.train()

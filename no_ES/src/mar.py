@@ -29,6 +29,7 @@ class MAR(object):
         self.offset=0.5
         self.interval=3
         self.buffer=[]
+        self.reused={}
 
         try:
             ## if model already exists, load it ##
@@ -291,14 +292,29 @@ class MAR(object):
         return np.random.choice(self.pool,size=np.min((self.step,len(self.pool))),replace=False)
 
     ## Reuse Model ##
-    def reuse(self,model):
-        order = np.argsort((model['w']*self.csr_mat[self.pool].transpose()).toarray()[0])
-        if model['pos_at'] == 1:
-            order=order[::-1]
-        can=[self.pool[i] for i in order[:int(self.step/2)]]
-        num=self.step-int(self.step/2)
-        can.extend([self.pool[order[-int(i*len(order)/num+1)]] for i in xrange(num)])
-        return np.array(can)
+    def reuse(self):
+        content = [self.reused["Document Title"][index] + " " + self.reused["Abstract"][index] for index in
+                   xrange(len(self.reused["Document Title"]))]
+
+        tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=u'l2', use_idf=False,
+                        vocabulary=self.voc,decode_error="ignore")
+        csr_mat=tfer.fit_transform(content)
+        reused_clf = svm.SVC(kernel='linear', probability=True)
+        poses = np.where(self.reused['code'] == "yes")[0]
+        negs = np.where(self.reused['code'] == "no")[0]
+        reused_labeled = list(poses)+list(negs)
+        reused_clf.fit(csr_mat[reused_labeled], self.reused['code'][reused_labeled])
+        ## aggressive undersampling ##
+        if len(poses)>=self.enough:
+
+            train_dist = reused_clf.decision_function(csr_mat[negs])
+            negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
+            sample = list(poses) + list(negs[negs_sel])
+            reused_clf.fit(csr_mat[sample], self.reused['code'][sample])
+
+        certain_id, certain_prob = self.certain(reused_clf)
+        return certain_id
+
 
     ## Format ##
     def format(self,id,prob=[]):
@@ -357,17 +373,21 @@ class MAR(object):
     def restart(self):
         os.remove("./memory/"+self.name+".pickle")
 
-    ## Train model ##
-    def get_clf(self):
-        clf = svm.SVC(kernel='linear', probability=True)
-        poses = np.where(self.body['code'] == "yes")[0]
-        negs = np.where(self.body['code'] == "no")[0]
-        clf.fit(self.csr_mat[self.labeled], self.body['code'][self.labeled])
-        ## aggressive undersampling ##
-        if len(poses)>=self.enough:
+    ## Load data for reuse
+    def load_reuse(self,old):
+        with open("../workspace/coded/" + str(old), "r") as csvfile:
+            content = [x for x in csv.reader(csvfile, delimiter=',')]
+        fields = ["Document Title", "Abstract", "Year", "PDF Link", "label", "code"]
+        for field in fields:
+            self.reused[field]=[]
+        for x in content[1:]:
+            if x[-1]!="undetermined":
+                for ind,field in enumerate(fields):
+                    self.reused[field].append(x[ind])
+        self.reused['code']=np.array(self.reused['code'])
 
-            train_dist = clf.decision_function(self.csr_mat[negs])
-            negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
-            sample = poses.tolist() + negs[negs_sel].tolist()
-            clf.fit(self.csr_mat[sample], self.body['code'][sample])
-        return clf
+
+
+    ## set enough
+    def set_enough(self,enough):
+        self.enough=enough

@@ -294,15 +294,15 @@ def update_or_reuse2():
         a = START("Hall.csv")
         a.export()
 
-        d = START("Abdellatif.csv",enough=10)
+        d = START("Abdellatif.csv")
         result["start"].append(d.record)
         d.restart()
 
-        c = REUSE("Abdellatif.csv",a,enough=10)
+        c = REUSE("Abdellatif.csv",a)
         result["reuse"].append(c.record)
         c.restart()
 
-        b = UPDATE("Abdellatif.csv","Hall.csv",enough=10)
+        b = UPDATE("Abdellatif.csv","Hall.csv")
         result["update"].append(b.record)
         b.restart()
         a.restart()
@@ -314,11 +314,10 @@ def update_or_reuse2():
     set_trace()
 
 
-def START(filename,enough=30):
+def START(filename):
     stop=0.9
 
     read = MAR()
-    read.set_enough(enough)
     read = read.create(filename)
     target = int(read.get_allpos()*stop)
     while True:
@@ -334,11 +333,10 @@ def START(filename,enough=30):
                 read.code(id, read.body["label"][id])
     return read
 
-def UPDATE(filename,old,enough=30):
+def UPDATE(filename,old):
     stop=0.9
 
     read = MAR()
-    read.set_enough(enough)
     read = read.create_UPDATE(filename,old)
     target = int(read.get_allpos()*stop)
     while True:
@@ -350,11 +348,10 @@ def UPDATE(filename,old,enough=30):
             read.code(id, read.body["label"][id])
     return read
 
-def UPDATE_ALL(filename,old,enough=30):
+def UPDATE_ALL(filename,old):
     stop=0.9
 
     read = MAR()
-    read.set_enough(enough)
     read = read.create_UPDATE_ALL(filename,old)
     target = int(read.get_allpos()*stop)
     while True:
@@ -379,11 +376,10 @@ def model_transform(model,vocab,vocab_new):
     model['w']=csr_matrix(w)
     return model
 
-def REUSE(filename,old,enough=30):
+def REUSE(filename,old):
     stop=0.9
 
     read = MAR()
-    read.set_enough(enough)
     read = read.create(filename)
     target = int(read.get_allpos()*stop)
     model = model_transform({'w':old.get_clf().coef_, "pos_at":list(old.get_clf().classes_).index("yes")},old.voc,read.voc)

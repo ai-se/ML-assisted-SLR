@@ -225,6 +225,49 @@ def update_repeat_draw(file):
         plt.savefig("../figure/"+str(file)+str(i)+".eps")
         plt.savefig("../figure/"+str(file)+str(i)+".png")
 
+def update_median_draw(file):
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/"+str(file)+".pickle", "r") as f:
+        results=pickle.load(f)
+
+
+    stats=bestNworst(results)
+    colors=['blue','purple','green','brown','red']
+    lines=['-','--',':']
+    five=['best','$Q_1$','median','$Q_3$','worst']
+
+    nums = set([])
+    line=[0,0,0,0]
+    for key in stats:
+        a = key.split("_")[0]
+        try:
+            b = key.split("_")[1]
+        except:
+            b = 0
+        nums = nums | set([b])
+        plt.figure(int(b))
+        for j,ind in enumerate(stats[key]):
+            if ind==50:
+                plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a))
+        line[int(b)]+=1
+
+    for i in nums:
+        plt.figure(i)
+        plt.ylabel("Retrieval Rate")
+        plt.xlabel("Studies Reviewed")
+        plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
+        plt.savefig("../figure/median_"+str(file)+str(i)+".eps")
+        plt.savefig("../figure/median_"+str(file)+str(i)+".png")
+
 def bestNworst(results):
     stats={}
 
@@ -313,7 +356,7 @@ def update_or_reuse2():
 
         print("Repeat #{id} finished\r".format(id=i), end="")
         # print(i, end=" ")
-    with open("../dump/update_or_reuse2.pickle","wb") as handle:
+    with open("../dump/update_or_reuse3.pickle","wb") as handle:
         pickle.dump(result,handle)
     set_trace()
 
@@ -369,16 +412,16 @@ def UPDATE_ALL(filename,old):
 
 
 
-def model_transform(model,vocab,vocab_new):
-    w=[]
-    for term in vocab_new:
-        try:
-            ind=vocab.index(term)
-            w.append(model['w'][0,ind])
-        except:
-            w.append(0)
-    model['w']=csr_matrix(w)
-    return model
+# def model_transform(model,vocab,vocab_new):
+#     w=[]
+#     for term in vocab_new:
+#         try:
+#             ind=vocab.index(term)
+#             w.append(model['w'][0,ind])
+#         except:
+#             w.append(0)
+#     model['w']=csr_matrix(w)
+#     return model
 
 def REUSE(filename,old):
     stop=0.9

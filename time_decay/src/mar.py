@@ -15,6 +15,7 @@ class MAR(object):
         self.fea_num = 4000
         self.step = 10
         self.enough = 30
+        self.keep = 50
 
 
     def create(self,filename):
@@ -120,6 +121,12 @@ class MAR(object):
             self.body["code"] = np.array([c[ind] for c in content[1:]])
         except:
             self.body["code"]= np.array(['undetermined']*(len(content) - 1))
+        try:
+            ind = header.index("decay")
+            self.body["decay"] = np.array([c[ind] for c in content[1:]])
+        except:
+            self.body["decay"]= np.array([-1]*(len(content) - 1))
+
         self.num = len(content) - 1
         return
 
@@ -127,10 +134,11 @@ class MAR(object):
     def loadold(self,old):
         with open("../workspace/coded/" + str(old), "r") as csvfile:
             content = [x for x in csv.reader(csvfile, delimiter=',')]
-        fields = ["Document Title", "Abstract", "Year", "PDF Link", "label", "code"]
+        fields = content[0]
         self.body['code']=self.body['code'].tolist()
         for x in content[1:]:
-            if x[-1]!="undetermined":
+            code_ind = content[0].index("code")
+            if x[code_ind]!="undetermined":
                 for ind,field in enumerate(fields):
                     self.body[field].append(x[ind])
         self.body['code']=np.array(self.body['code'])
@@ -139,7 +147,7 @@ class MAR(object):
     def loadold_all(self,old):
         with open("../workspace/coded/" + str(old), "r") as csvfile:
             content = [x for x in csv.reader(csvfile, delimiter=',')]
-        fields = ["Document Title", "Abstract", "Year", "PDF Link", "label", "code"]
+        fields = content[0]
         self.body['code']=self.body['code'].tolist()
         for x in content[1:]:
             for ind,field in enumerate(fields):
@@ -167,8 +175,9 @@ class MAR(object):
     def get_allpos(self):
         return Counter(self.body["label"][:self.num])["yes"]
 
+    ## export csv file to /workspace/coded/
     def export(self):
-        fields = ["Document Title", "Abstract", "Year", "PDF Link", "label", "code"]
+        fields = self.body.keys()
         with open("../workspace/coded/" + str(self.name) + ".csv", "wb") as csvfile:
             csvwriter = csv.writer(csvfile, delimiter=',')
             csvwriter.writerow(fields)
@@ -270,6 +279,56 @@ class MAR(object):
         certain_id, certain_prob = self.certain(clf)
         return uncertain_id, uncertain_prob, certain_id, certain_prob
 
+    ## Train decay_keep model ##
+    def train_decay_keep(self):
+        clf = svm.SVC(kernel='linear', probability=True)
+        # poses = np.where(self.body['code'] == "yes")[0]
+        negs = np.where(self.body['code'] == "no")[0]
+
+        ## decay_keep model
+        poses = [i for i, x in enumerate(self.body["decay"]) if x>=0][:self.keep]
+        self.labeled = list(negs)+poses
+
+        clf.fit(self.csr_mat[self.labeled], self.body['code'][self.labeled])
+        ## aggressive undersampling ##
+        if len(poses)>=self.enough:
+
+            train_dist = clf.decision_function(self.csr_mat[negs])
+            negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
+            sample = list(poses) + list(negs[negs_sel])
+            clf.fit(self.csr_mat[sample], self.body['code'][sample])
+            self.estimate_curve(clf)
+
+        uncertain_id, uncertain_prob = self.uncertain(clf)
+        certain_id, certain_prob = self.certain(clf)
+        return uncertain_id, uncertain_prob, certain_id, certain_prob
+
+    ## Train decay model ##
+    def train_decay(self):
+        clf = svm.SVC(kernel='linear', probability=True)
+        poses = np.where(self.body['code'] == "yes")[0]
+        negs = np.where(self.body['code'] == "no")[0]
+
+        ## decay model
+        offset = self.get_decay()-self.keep
+        decays = [[i]*(x-offset) for i, x in enumerate(self.body["decay"]) if x>=0 and x-offset>0]
+        decays = [item for sublist in decays for item in sublist]
+        self.labeled = list(negs)+decays
+
+        clf.fit(self.csr_mat[self.labeled], self.body['code'][self.labeled])
+        ## aggressive undersampling ##
+        if len(poses)>=self.enough:
+
+            train_dist = clf.decision_function(self.csr_mat[negs])
+            negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(decays)]
+            sample = decays + list(negs[negs_sel])
+            clf.fit(self.csr_mat[sample], self.body['code'][sample])
+            self.estimate_curve(clf)
+
+        uncertain_id, uncertain_prob = self.uncertain(clf)
+        certain_id, certain_prob = self.certain(clf)
+        return uncertain_id, uncertain_prob, certain_id, certain_prob
+
     ## Get certain ##
     def certain(self,clf):
         pos_at = list(clf.classes_).index("yes")
@@ -316,6 +375,12 @@ class MAR(object):
         self.buffer.append(id)
         self.buffer=self.buffer[-self.step * self.interval:]
         self.body["code"][id]=label
+        if label=="yes":
+            self.body["decay"][id]=self.get_decay()+1
+
+    ## Get latest decay
+    def get_decay(self):
+        return np.max(self.body["decay"])
 
     ## Plot ##
     def plot(self):

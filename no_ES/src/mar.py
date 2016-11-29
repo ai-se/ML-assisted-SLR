@@ -312,8 +312,15 @@ class MAR(object):
             sample = list(poses) + list(negs[negs_sel])
             reused_clf.fit(csr_mat[sample], self.reused['code'][sample])
 
-        certain_id, certain_prob = self.certain(reused_clf)
-        return certain_id
+        # certain_id, certain_prob = self.certain(reused_clf)
+
+
+        pos_at = list(reused_clf.classes_).index("yes")
+        prob = reused_clf.predict_proba(self.csr_mat[self.pool])[:,pos_at]
+        order = np.argsort(prob)[::-1][:int(self.step/2)]
+        order2 = np.random.choice(self.pool,size=np.min(((self.step-int(self.step/2)),len(self.pool))),replace=False)
+        order = list(order)+list(order2)
+        return np.array(self.pool)[order]
 
 
     ## Format ##

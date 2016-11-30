@@ -318,9 +318,9 @@ class MAR(object):
         pos_at = list(reused_clf.classes_).index("yes")
         prob = reused_clf.predict_proba(self.csr_mat[self.pool])[:,pos_at]
         order = np.argsort(prob)[::-1][:int(self.step/2)]
-        order2 = np.random.choice(self.pool,size=np.min(((self.step-int(self.step/2)),len(self.pool))),replace=False)
-        order = list(order)+list(order2)
-        return np.array(self.pool)[order]
+        order2 = np.random.choice(list(set(self.pool)-set(np.array(self.pool)[order])),size=np.min(((self.step-int(self.step/2)),len(self.pool)-int(self.step/2))),replace=False)
+        order = list(np.array(self.pool)[order])+list(order2)
+        return order
 
 
     ## Format ##

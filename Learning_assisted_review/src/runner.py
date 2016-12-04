@@ -1255,9 +1255,8 @@ def draw_percentile(set):
     # for i,ind in enumerate(stats['semi_continuous_aggressive']):
     #     plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i], label=str(ind)+"th Percentile of $\\bar{P}U\\bar{S}A$")
 
-    for i,ind in enumerate(stats['new_continuous_aggressive']):
+    for i,ind in enumerate(np.sort(stats['new_continuous_aggressive'].keys())):
         plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile")
-    for i,ind in enumerate(stats['semi_continuous_aggressive']):
         plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i])
 
     plt.ylabel(set+"\nRecall")
@@ -1317,7 +1316,7 @@ def percentile(results):
         tmp = np.array([what[k] for what in results])
 
         order=np.argsort(tests[k])
-        for ind in [0,25,50,75,100]:
+        for ind in [0,50,75,90,100]:
             nth=order[int(ind*(len(order)-1)/100)]
             stats[k][ind]=tmp[nth][:tests[k][nth]]
     return stats

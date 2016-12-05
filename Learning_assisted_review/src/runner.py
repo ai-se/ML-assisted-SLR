@@ -1284,7 +1284,7 @@ def draw_HCCA(set):
 
     colors=['red','blue','green','cyan', 'purple']
     plt.figure(0)
-    for i,ind in enumerate(stats['new_continuous_aggressive']):
+    for i,ind in enumerate(np.sort(stats['new_continuous_aggressive'].keys())):
         plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile")
 
     plt.ylabel(set+"\nRecall")
@@ -1311,7 +1311,7 @@ def draw_HUCA(set):
 
     colors=['red','blue','green','cyan', 'purple']
     plt.figure(0)
-    for i,ind in enumerate(stats['semi_continuous_aggressive']):
+    for i,ind in enumerate(np.sort(stats['semi_continuous_aggressive'].keys())):
         plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile")
 
     plt.ylabel(set+"\nRecall")

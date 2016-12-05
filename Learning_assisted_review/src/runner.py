@@ -1269,11 +1269,11 @@ def draw_percentile(set):
 def draw_HCCA(set):
     font = {'family': 'cursive',
             'weight': 'bold',
-            'size': 20}
+            'size': 30}
 
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 25, 'axes.labelsize': 30, 'legend.frameon': False,
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
@@ -1285,13 +1285,40 @@ def draw_HCCA(set):
     colors=['red','blue','green','cyan', 'purple']
     plt.figure(0)
     for i,ind in enumerate(stats['new_continuous_aggressive']):
-        plt.plot(results[0]['x'][:min((90,len(stats["new_continuous_aggressive"][ind])))], stats["new_continuous_aggressive"][ind][:min((90,len(stats["new_continuous_aggressive"][ind])))],color=colors[i],label=str(ind)+"th Percentile")
+        plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile")
 
     plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/percentile_HCCA_"+set+".eps")
-    plt.savefig("../figure/percentile_HCCA_"+set+".png")
+    plt.legend(bbox_to_anchor=(0.9, 0.85), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/percentile_best_"+set+".eps")
+    plt.savefig("../figure/percentile_best_"+set+".png")
+
+def draw_HUCA(set):
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 30}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 25, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
+        results=pickle.load(f)
+    pos_num=results[0]['simple_active'][-1]
+    stats=percentile(results)
+
+    colors=['red','blue','green','cyan', 'purple']
+    plt.figure(0)
+    for i,ind in enumerate(stats['semi_continuous_aggressive']):
+        plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile")
+
+    plt.ylabel(set+"\nRecall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.85), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/percentile_second_"+set+".eps")
+    plt.savefig("../figure/percentile_second_"+set+".png")
 
 
 def percentile(results):

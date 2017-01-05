@@ -23,6 +23,7 @@ from mar import MAR
 
 
 
+
 def colorcode(N):
     jet = plt.get_cmap('jet')
     cNorm  = colors.Normalize(vmin=0, vmax=N-1, clip=True)
@@ -204,9 +205,12 @@ def update_repeat_draw(file):
     five=['best','$Q_1$','median','$Q_3$','worst']
 
     nums = set([])
-    line=[0,0,0,0]
+    line=[0,0,0,0,0]
+
     for key in stats:
         a = key.split("_")[0]
+        if a=="start":
+            a='FASTREAD'
         try:
             b = key.split("_")[1]
         except:
@@ -214,11 +218,11 @@ def update_repeat_draw(file):
         nums = nums | set([b])
         plt.figure(int(b))
         for j,ind in enumerate(stats[key]):
-            plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a))
+            plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a).capitalize())
         line[int(b)]+=1
 
     for i in nums:
-        plt.figure(i)
+        plt.figure(int(i))
         plt.ylabel("Retrieval Rate")
         plt.xlabel("Studies Reviewed")
         plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=line[int(i)], borderaxespad=0.)
@@ -246,9 +250,11 @@ def update_median_draw(file):
     five=['best','$Q_1$','median','$Q_3$','worst']
 
     nums = set([])
-    line=[0,0,0,0]
+    line=[0,0,0,0,0]
     for key in stats:
         a = key.split("_")[0]
+        if a=="start":
+            a='FASTREAD'
         try:
             b = key.split("_")[1]
         except:
@@ -257,11 +263,11 @@ def update_median_draw(file):
         plt.figure(int(b))
         for j,ind in enumerate(stats[key]):
             if ind==50:
-                plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a))
+                plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a).capitalize())
         line[int(b)]+=1
 
     for i in nums:
-        plt.figure(i)
+        plt.figure(int(i))
         plt.ylabel("Retrieval Rate")
         plt.xlabel("Studies Reviewed")
         plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
@@ -283,7 +289,7 @@ def bestNworst(results):
 ##### UPDATE exp
 def update_exp():
     repeats=30
-    result={"start_1":[],"start_2":[], "start_3":[],"update_2":[],"update_3":[],"reuse_3":[]}
+    result={"start_1":[],"start_2":[], "start_3":[],"all_2":[],"partial_2":[],"update_3":[],"reuse_4":[],"start_4":[]}
     for i in xrange(repeats):
         a = START("Hall2007-.csv")
         result["start_1"].append(a.record)
@@ -293,9 +299,14 @@ def update_exp():
         result["start_2"].append(b.record)
         b.restart()
 
+        cc = UPDATE_ALL("Hall2007+.csv", "Hall2007-.csv")
+        result["all_2"].append(cc.record)
+        cc.restart()
+
         c = UPDATE("Hall2007+.csv","Hall2007-.csv")
-        result["update_2"].append(c.record)
+        result["partial_2"].append(c.record)
         c.export()
+        c.restart()
 
         d = START("Wahono.csv")
         result["start_3"].append(d.record)
@@ -303,62 +314,58 @@ def update_exp():
 
         e = UPDATE("Wahono.csv","Hall2007+.csv")
         result["update_3"].append(e.record)
+        e.export()
         e.restart()
 
-        f = REUSE("Wahono.csv",c)
-        result["reuse_3"].append(f.record)
+        f = START("Abdellatif.csv")
+        result["start_4"].append(f.record)
         f.restart()
-        c.restart()
+
+        f = REUSE("Abdellatif.csv", "Wahono.csv")
+        result["reuse_4"].append(f.record)
+        f.restart()
+
         # print("Repeat #{id} finished\r".format(id=i), end="")
         print(i, end=" ")
     with open("../dump/everything.pickle","wb") as handle:
         pickle.dump(result,handle)
 
-def update_or_reuse(what):
-    repeats=1
-    result={"update":[],"reuse":[]}
-    for i in xrange(repeats):
-        a = START("Hall.csv")
-        a.export()
+def reuse_exp():
+    data = ["Hall.csv","Wahono.csv","Abdellatif.csv"]
+    for a in data:
+        for b in data:
+            if a==b:
+                continue
+            else:
+                update_or_reuse(a,b)
 
-        c = REUSE(str(what)+"Wahono.csv",a)
-        result["reuse"].append(c.record)
-        c.restart()
-        b = UPDATE(str(what)+"Wahono.csv","Hall.csv")
-        result["update"].append(b.record)
-        b.restart()
-        a.restart()
-        print("Repeat #{id} finished\r".format(id=i), end="")
-        # print(i, end=" ")
-    with open("../dump/update_or_reuse_"+str(what)+".pickle","wb") as handle:
-        pickle.dump(result,handle)
-    set_trace()
-
-def update_or_reuse2():
+def update_or_reuse(first,second):
+    first = str(first)
+    second = str(second)
     repeats=30
     result={"update":[],"reuse":[],"start":[]}
     for i in xrange(repeats):
-        a = START("Hall.csv")
+        a = START(first)
         a.export()
 
-        d = START("Abdellatif.csv")
+        d = START(second)
         result["start"].append(d.record)
         d.restart()
 
-        c = REUSE("Abdellatif.csv","Hall.csv")
+        c = REUSE(second,first)
         result["reuse"].append(c.record)
         c.restart()
 
-        b = UPDATE("Abdellatif.csv","Hall.csv")
+        b = UPDATE(second,first)
         result["update"].append(b.record)
         b.restart()
         a.restart()
 
         print("Repeat #{id} finished\r".format(id=i), end="")
         # print(i, end=" ")
-    with open("../dump/update_or_reuse3.pickle","wb") as handle:
+    with open("../dump/"+first.split('.')[0]+"_"+second.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(result,handle)
-    set_trace()
+
 
 
 def START(filename):
@@ -533,6 +540,218 @@ def similarity(a,b,norm=2):
         score2 = (sum_pos_a*sum_pos_b.transpose())[0,0]/(np.linalg.norm(sum_pos_a,2)*np.linalg.norm(sum_pos_b,2))
     print("target: %f" %score2)
     set_trace()
+
+def similarity_all(tops=30,alpha=0.1,eta=0.1,norm=2):
+
+    read = MAR()
+    read = read.create("Hall.csv")
+    body_a = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
+                   xrange(len(read.body["Document Title"]))]
+    label_a = read.body['label']
+    x=range(len(body_a))
+    random.shuffle(x)
+    body_a = list(np.array(body_a)[x])
+    label_a = list(np.array(label_a)[x])
+    read = read.create("Wahono.csv")
+    body_b = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
+                   xrange(len(read.body["Document Title"]))]
+    label_b = read.body['label']
+    x = range(len(body_b))
+    random.shuffle(x)
+    body_b = list(np.array(body_b)[x])
+    label_b = list(np.array(label_b)[x])
+    read = read.create("Abdellatif.csv")
+    body_c = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
+              xrange(len(read.body["Document Title"]))]
+    label_c = read.body['label']
+    x = range(len(body_c))
+    random.shuffle(x)
+    body_c = list(np.array(body_c)[x])
+    label_c = list(np.array(label_c)[x])
+    body_d = body_a+body_b+body_c
+
+    tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False,decode_error="ignore")
+    tf_d = tfer.fit_transform(body_d).astype(np.int32)
+
+    clt = lda.LDA(n_topics=tops, n_iter=200, alpha=alpha, eta=eta)
+    dis = csr_matrix(clt.fit_transform(tf_d))
+
+    if norm!=1:
+        dis = normalize(dis,ord=norm)
+
+    dis_a = dis[:len(body_a)]
+    dis_b = dis[len(body_a):len(body_a)+len(body_b)]
+    dis_c = dis[len(body_a) + len(body_b):]
+
+    sum_a = dis_a.sum(axis=0)/dis_a.shape[0]
+    sum_b = dis_b.sum(axis=0)/dis_b.shape[0]
+    sum_c = dis_c.sum(axis=0) / dis_c.shape[0]
+    x=range(tops)
+
+
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    plt.figure()
+    plt.plot(x, np.array(sum_a)[0] ,label="Hall")
+    plt.plot(x, np.array(sum_b)[0] ,label="Wahono")
+    plt.plot(x, np.array(sum_c)[0], label="Abdellatif")
+
+
+    plt.ylabel("Topic Weight")
+    plt.xlabel("Topic ID")
+    plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/data_topic.eps")
+    plt.savefig("../figure/data_topic.png")
+
+
+    # Data similarity
+    score1 = (sum_a*sum_b.transpose())[0,0]/(np.linalg.norm(sum_a,2)*np.linalg.norm(sum_b,2))
+    score2 = (sum_a * sum_c.transpose())[0, 0] / (np.linalg.norm(sum_a, 2) * np.linalg.norm(sum_c, 2))
+    score3 = (sum_c * sum_b.transpose())[0, 0] / (np.linalg.norm(sum_c, 2) * np.linalg.norm(sum_b, 2))
+    print("data_Hall_Wahono: %f" % score1)
+    print("data_Hall_Abdellatif: %f" % score2)
+    print("data_Abdellatif_Wahono: %f" % score3)
+
+    # Target similarity
+    pos_a = [i for i in xrange(len(label_a)) if label_a[i]=='yes']
+    pos_b = [i for i in xrange(len(label_b)) if label_b[i]=='yes']
+    pos_c = [i for i in xrange(len(label_c)) if label_c[i] == 'yes']
+
+    dis_pos_a = dis_a[pos_a]
+    dis_pos_b = dis_b[pos_b]
+    dis_pos_c = dis_c[pos_c]
+    sum_pos_a = dis_pos_a.sum(axis=0)/dis_pos_a.shape[0]
+    sum_pos_b = dis_pos_b.sum(axis=0)/dis_pos_b.shape[0]
+    sum_pos_c = dis_pos_c.sum(axis=0) / dis_pos_c.shape[0]
+
+    plt.figure()
+    plt.plot(x, np.array(sum_pos_a)[0], label="Hall")
+    plt.plot(x, np.array(sum_pos_b)[0], label="Wahono")
+    plt.plot(x, np.array(sum_pos_c)[0], label="Abdellatif")
+
+
+    plt.ylabel("Topic Weight")
+    plt.xlabel("Topic ID")
+    plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/target_topic.eps")
+    plt.savefig("../figure/target_topic.png")
+
+
+    score4 = (sum_pos_a*sum_pos_b.transpose())[0,0]/(np.linalg.norm(sum_pos_a,2)*np.linalg.norm(sum_pos_b,2))
+    score5 = (sum_pos_a * sum_pos_c.transpose())[0, 0] / (np.linalg.norm(sum_pos_a, 2) * np.linalg.norm(sum_pos_c, 2))
+    score6 = (sum_pos_c * sum_pos_b.transpose())[0, 0] / (np.linalg.norm(sum_pos_c, 2) * np.linalg.norm(sum_pos_b, 2))
+    print("target_Hall_Wahono: %f" % score4)
+    print("target_Hall_Abdellatif: %f" % score5)
+    print("target_Abdellatif_Wahono: %f" % score6)
+    score = [score1, score2, score3, score4, score5, score6]
+    return score
+
+def similarity_tune(tops=30,alpha=0.1,eta=0.1,norm=2,seed=0):
+
+    read = MAR()
+    read = read.create("Hall.csv")
+    body_a = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
+                   xrange(len(read.body["Document Title"]))]
+    label_a = read.body['label']
+    x=range(len(body_a))
+    random.seed=seed
+    random.shuffle(x)
+    body_a = list(np.array(body_a)[x])
+    label_a = list(np.array(label_a)[x])
+    read = read.create("Wahono.csv")
+    body_b = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
+                   xrange(len(read.body["Document Title"]))]
+    label_b = read.body['label']
+    x = range(len(body_b))
+    random.shuffle(x)
+    body_b = list(np.array(body_b)[x])
+    label_b = list(np.array(label_b)[x])
+    read = read.create("Abdellatif.csv")
+    body_c = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
+              xrange(len(read.body["Document Title"]))]
+    label_c = read.body['label']
+    x = range(len(body_c))
+    random.shuffle(x)
+    body_c = list(np.array(body_c)[x])
+    label_c = list(np.array(label_c)[x])
+    body_d = body_a+body_b+body_c
+
+    tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False,decode_error="ignore")
+    tf_d = tfer.fit_transform(body_d).astype(np.int32)
+
+    clt = lda.LDA(n_topics=tops, n_iter=200, alpha=alpha, eta=eta)
+    dis = csr_matrix(clt.fit_transform(tf_d))
+
+    if norm!=1:
+        dis = normalize(dis,ord=norm)
+
+    dis_a = dis[:len(body_a)]
+    dis_b = dis[len(body_a):len(body_a)+len(body_b)]
+    dis_c = dis[len(body_a) + len(body_b):]
+
+    x=range(tops)
+
+    # Data similarity
+
+
+    # Target similarity
+    pos_a = [i for i in xrange(len(label_a)) if label_a[i]=='yes']
+    pos_b = [i for i in xrange(len(label_b)) if label_b[i]=='yes']
+    pos_c = [i for i in xrange(len(label_c)) if label_c[i] == 'yes']
+
+    dis_pos_a = dis_a[pos_a]
+    dis_pos_b = dis_b[pos_b]
+    dis_pos_c = dis_c[pos_c]
+    sum_pos_a = dis_pos_a.sum(axis=0)/dis_pos_a.shape[0]
+    sum_pos_b = dis_pos_b.sum(axis=0)/dis_pos_b.shape[0]
+    sum_pos_c = dis_pos_c.sum(axis=0) / dis_pos_c.shape[0]
+
+
+
+    score4 = (sum_pos_a*sum_pos_b.transpose())[0,0]/(np.linalg.norm(sum_pos_a,2)*np.linalg.norm(sum_pos_b,2))
+    score5 = (sum_pos_a * sum_pos_c.transpose())[0, 0] / (np.linalg.norm(sum_pos_a, 2) * np.linalg.norm(sum_pos_c, 2))
+    score6 = (sum_pos_c * sum_pos_b.transpose())[0, 0] / (np.linalg.norm(sum_pos_c, 2) * np.linalg.norm(sum_pos_b, 2))
+    # print("target_Hall_Wahono: %f" % score4)
+    # print("target_Hall_Abdellatif: %f" % score5)
+    # print("target_Abdellatif_Wahono: %f" % score6)
+    score = [score4, score5, score6]
+    return score
+
+def repeat_sim(tops=30,alpha=0.1,eta=0.1):
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    proc_num = 10
+    repeats=10
+    for i in xrange(proc_num - 1):
+        comm.send([tops,alpha,eta,repeats], dest=i + 1)
+    era = 0
+    scores = []
+    while True:
+        i = era * proc_num + rank
+        if i + 1 > repeats:
+            break
+        scores.extend(similarity_tune(tops=tops,alpha=alpha,eta=eta,seed=i))
+        era = era + 1
+    for i in range(proc_num - 1):
+        tmp = comm.recv(source=i + 1)
+        scores.extend(tmp)
+
+    n=len(scores[0])
+    x=[[j[i] for j in scores] for i in xrange(n)]
+    # print(x)
+    print([np.median(xx) for xx in x])
+    iqr=[np.percentile(xx,75)-np.percentile(xx,25) for xx in x]
+    print(iqr)
+    return [iqr[-1],iqr[-2]]
 
 def generate_data(file,norm=2):
     tops=30

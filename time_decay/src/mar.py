@@ -15,7 +15,8 @@ class MAR(object):
         self.fea_num = 4000
         self.step = 10
         self.enough = 30
-        self.kept=60
+        self.kept=50
+        self.atleast=100
 
 
     def create(self,filename):
@@ -191,18 +192,25 @@ class MAR(object):
         clf = svm.SVC(kernel='linear', probability=True)
         poses = np.where(np.array(self.body['code']) == "yes")[0]
         negs = np.where(np.array(self.body['code']) == "no")[0]
-
         left = poses
-        decayed = list(left)+list(negs)
+        decayed = list(left) + list(negs)
+        unlabeled = np.where(np.array(self.body['code']) == "undetermined")[0]
+        try:
+            unlabeled = np.random.choice(unlabeled,size=np.max((len(decayed),self.atleast)),replace=False)
+        except:
+            pass
+        labels=np.array([x if x!='undetermined' else 'no' for x in self.body['code']])
+        all_neg=list(negs)+list(unlabeled)
+        all = list(decayed)+list(unlabeled)
 
-        clf.fit(self.csr_mat[decayed], np.array(self.body['code'])[decayed])
+        clf.fit(self.csr_mat[all], labels[all])
         ## aggressive undersampling ##
         if len(poses)>=self.enough:
 
-            train_dist = clf.decision_function(self.csr_mat[negs])
+            train_dist = clf.decision_function(self.csr_mat[all_neg])
             negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(left)]
-            sample = list(left) + list(negs[negs_sel])
-            clf.fit(self.csr_mat[sample], np.array(self.body['code'])[sample])
+            sample = list(left) + list(np.array(all_neg)[negs_sel])
+            clf.fit(self.csr_mat[sample], labels[sample])
             self.estimate_curve(clf)
 
         uncertain_id, uncertain_prob = self.uncertain(clf)
@@ -216,23 +224,37 @@ class MAR(object):
         negs = np.where(np.array(self.body['code']) == "no")[0]
 
         left = np.array(poses)[np.argsort(np.array(self.body['time'])[poses])[self.last_pos:]]
-        decayed = list(left)+list(negs)
+        negs = np.array(negs)[np.argsort(np.array(self.body['time'])[negs])[self.last_neg:]]
 
-        clf.fit(self.csr_mat[decayed], np.array(self.body['code'])[decayed])
+        if len(left)==0:
+            return [], [], self.random(), []
+
+        decayed = list(left) + list(negs)
+        unlabeled = np.where(np.array(self.body['code']) == "undetermined")[0]
+        try:
+            unlabeled = np.random.choice(unlabeled,size=np.max((len(decayed),self.atleast)),replace=False)
+        except:
+            pass
+
+
+        labels = np.array([x if x != 'undetermined' else 'no' for x in self.body['code']])
+        all_neg = list(negs) + list(unlabeled)
+        all = list(decayed) + list(unlabeled)
+
+        clf.fit(self.csr_mat[all], labels[all])
         ## aggressive undersampling ##
-        if len(poses)>=self.enough:
-
-            train_dist = clf.decision_function(self.csr_mat[negs])
+        if len(poses) >= self.enough:
+            train_dist = clf.decision_function(self.csr_mat[all_neg])
             negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(left)]
-            sample = list(left) + list(negs[negs_sel])
-            clf.fit(self.csr_mat[sample], np.array(self.body['code'])[sample])
+            sample = list(left) + list(np.array(all_neg)[negs_sel])
+            clf.fit(self.csr_mat[sample], labels[sample])
             self.estimate_curve(clf)
 
         uncertain_id, uncertain_prob = self.uncertain(clf)
         certain_id, certain_prob = self.certain(clf)
         return uncertain_id, uncertain_prob, certain_id, certain_prob
 
-    ## reuse
+    ## not in use currently
     def train_reuse_random(self):
         thres=50
 
@@ -277,23 +299,32 @@ class MAR(object):
 
         ## only use latest poses
         left = np.array(poses)[np.argsort(np.array(self.body['time'])[poses])[::-1][:self.kept]]
+        negs = np.array(negs)[np.argsort(np.array(self.body['time'])[poses])[::-1][:self.kept]]
         decayed = list(left)+list(negs)
+        unlabeled = np.where(np.array(self.body['code']) == "undetermined")[0]
+        try:
+            unlabeled = np.random.choice(unlabeled, size=np.max((len(decayed),self.atleast)), replace=False)
+        except:
+            pass
 
+        labels = np.array([x if x != 'undetermined' else 'no' for x in self.body['code']])
+        all_neg = list(negs) + list(unlabeled)
+        all = list(decayed) + list(unlabeled)
 
-        clf.fit(self.csr_mat[decayed], np.array(self.body['code'])[decayed])
+        clf.fit(self.csr_mat[all], labels[all])
         ## aggressive undersampling ##
-        if len(poses)>=self.enough:
-
-            train_dist = clf.decision_function(self.csr_mat[negs])
+        if len(poses) >= self.enough:
+            train_dist = clf.decision_function(self.csr_mat[all_neg])
             negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(left)]
-            sample = list(left) + list(negs[negs_sel])
-            clf.fit(self.csr_mat[sample], np.array(self.body['code'])[sample])
+            sample = list(left) + list(np.array(all_neg)[negs_sel])
+            clf.fit(self.csr_mat[sample], labels[sample])
             self.estimate_curve(clf)
 
         uncertain_id, uncertain_prob = self.uncertain(clf)
         certain_id, certain_prob = self.certain(clf)
         return uncertain_id, uncertain_prob, certain_id, certain_prob
 
+    ## not in use currently
     def train_kept2(self):
         clf = svm.SVC(kernel='linear', probability=True)
         poses = np.where(np.array(self.body['code']) == "yes")[0]

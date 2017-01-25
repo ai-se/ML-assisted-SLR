@@ -24,165 +24,22 @@ from mar import MAR
 
 
 
-def colorcode(N):
-    jet = plt.get_cmap('jet')
-    cNorm  = colors.Normalize(vmin=0, vmax=N-1, clip=True)
-    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
-    return scalarMap
-
-
-
-
-
-"normalization_row"
-def normalize(mat,ord=2):
-    mat=mat.asfptype()
-    for i in xrange(mat.shape[0]):
-        nor=np.linalg.norm(mat[i].data,ord=ord)
-        if not nor==0:
-            for k in mat[i].indices:
-                mat[i,k]=mat[i,k]/nor
-    return mat
-
-
-def hcca_lda(csr_mat,csr_lda, labels, step=10 ,initial=10, pos_limit=1, thres=30, stop=0.9):
-    num=len(labels)
-    pool=range(num)
-    train=[]
-    steps = np.array(range(int(num / step))) * step
-
-    pos=0
-    pos_track=[0]
-    clf = svm.SVC(kernel='linear', probability=True)
-    begin=0
-    result={}
-    enough=False
-
-    total=Counter(labels)["yes"]*stop
-
-    # total = 1000
-
-    for idx, round in enumerate(steps[:-1]):
-
-        if round >= 2500:
-            if enough:
-                pos_track_f=pos_track9
-                train_f=train9
-                pos_track_l=pos_track8
-                train_l=train8
-            elif begin:
-                pos_track_f=pos_track4
-                train_f=train4
-                pos_track_l=pos_track2
-                train_l=train2
-            else:
-                pos_track_f=pos_track
-                train_f=train
-                pos_track_l=pos_track
-                train_l=train
-            break
-
-        can = np.random.choice(pool, step, replace=False)
-        train.extend(can)
-        pool = list(set(pool) - set(can))
-        try:
-            pos = Counter(labels[train])["yes"]
-        except:
-            pos = 0
-        pos_track.append(pos)
-
-        if not begin:
-            pool2=pool[:]
-            train2=train[:]
-            pos_track2=pos_track[:]
-            pool4 = pool2[:]
-            train4 = train2[:]
-            pos_track4 = pos_track2[:]
-            if round >= initial and pos>=pos_limit:
-                begin=idx+1
-        else:
-            clf.fit(csr_mat[train4], labels[train4])
-            pred_proba4 = clf.predict_proba(csr_mat[pool4])
-            pos_at = list(clf.classes_).index("yes")
-            proba4 = pred_proba4[:, pos_at]
-            sort_order_certain4 = np.argsort(1 - proba4)
-            can4 = [pool4[i] for i in sort_order_certain4[:step]]
-            train4.extend(can4)
-            pool4 = list(set(pool4) - set(can4))
-            pos = Counter(labels[train4])["yes"]
-            pos_track4.append(pos)
-
-            ## lda
-            clf.fit(csr_lda[train2], labels[train2])
-            pred_proba2 = clf.predict_proba(csr_lda[pool2])
-            pos_at = list(clf.classes_).index("yes")
-            proba2 = pred_proba2[:, pos_at]
-            sort_order_certain2 = np.argsort(1 - proba2)
-            can2 = [pool2[i] for i in sort_order_certain2[:step]]
-            train2.extend(can2)
-            pool2 = list(set(pool2) - set(can2))
-            pos = Counter(labels[train2])["yes"]
-            pos_track2.append(pos)
-
-
-            ################ new *_C_C_A
-            if not enough:
-                if pos>=thres:
-                    enough=True
-                    pos_track9=pos_track4[:]
-                    train9=train4[:]
-                    pool9=pool4[:]
-                    pos_track8=pos_track2[:]
-                    train8=train2[:]
-                    pool8=pool2[:]
-            else:
-                clf.fit(csr_mat[train9], labels[train9])
-                poses = np.where(labels[train9] == "yes")[0]
-                negs = np.where(labels[train9] == "no")[0]
-                train_dist = clf.decision_function(csr_mat[train9][negs])
-                negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
-                sample9 = np.array(train9)[poses].tolist() + np.array(train9)[negs][negs_sel].tolist()
-
-                clf.fit(csr_mat[sample9], labels[sample9])
-                pred_proba9 = clf.predict_proba(csr_mat[pool9])
-                pos_at = list(clf.classes_).index("yes")
-                proba9 = pred_proba9[:, pos_at]
-                sort_order_certain9 = np.argsort(1 - proba9)
-                can9 = [pool9[i] for i in sort_order_certain9[:step]]
-                train9.extend(can9)
-                pool9 = list(set(pool9) - set(can9))
-                pos = Counter(labels[train9])["yes"]
-                pos_track9.append(pos)
-
-                clf.fit(csr_lda[train8], labels[train8])
-                poses = np.where(labels[train8] == "yes")[0]
-                negs = np.where(labels[train8] == "no")[0]
-                train_dist = clf.decision_function(csr_lda[train8][negs])
-                negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(poses)]
-                sample8 = np.array(train8)[poses].tolist() + np.array(train8)[negs][negs_sel].tolist()
-
-                clf.fit(csr_lda[sample8], labels[sample8])
-                pred_proba8 = clf.predict_proba(csr_lda[pool8])
-                pos_at = list(clf.classes_).index("yes")
-                proba8 = pred_proba8[:, pos_at]
-                sort_order_certain8 = np.argsort(1 - proba8)
-                can8 = [pool8[i] for i in sort_order_certain8[:step]]
-                train8.extend(can8)
-                pool8 = list(set(pool8) - set(can8))
-                pos = Counter(labels[train8])["yes"]
-                pos_track8.append(pos)
-
-        print("Round #{id} passed\r".format(id=round), end="")
-
-    result["begin"] = begin
-    result["x"] = steps[:len(pos_track_f)]
-    result["new_continuous_aggressive"] = pos_track_f
-    result["lda"] = pos_track_l
-    return result, train_f
-
 
 
 ##### draw
+
+def bestNworst(results):
+    stats={}
+
+    for key in results:
+        stats[key]={}
+        result=results[key]
+        order = np.argsort([r['x'][-1] for r in result])
+        for ind in [0,25,50,75,100]:
+            stats[key][ind]=result[order[int(ind*(len(order)-1)/100)]]
+
+    return stats
+
 
 def update_repeat_draw(file):
     font = {'family': 'cursive',
@@ -201,68 +58,24 @@ def update_repeat_draw(file):
 
     stats=bestNworst(results)
     colors=['blue','purple','green','brown','red']
-    lines=['-','--',':']
+    lines=['-','--','-.',':']
     five=['best','$Q_1$','median','$Q_3$','worst']
 
     nums = set([])
     line=[0,0,0,0,0]
 
     for key in stats:
-        a = key.split("_")[0]
+        a = key.split(":")[0]
         if a=="start":
             a='FASTREAD'
         try:
-            b = key.split("_")[1]
+            b = key.split(":")[1]
         except:
             b = 0
         nums = nums | set([b])
         plt.figure(int(b))
         for j,ind in enumerate(stats[key]):
-            plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a).capitalize())
-        line[int(b)]+=1
-
-    for i in nums:
-        plt.figure(int(i))
-        plt.ylabel("Retrieval Rate")
-        plt.xlabel("Studies Reviewed")
-        plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=line[int(i)], borderaxespad=0.)
-        plt.savefig("../figure/"+str(file)+str(i)+".eps")
-        plt.savefig("../figure/"+str(file)+str(i)+".png")
-
-def update_median_draw(file):
-    font = {'family': 'cursive',
-            'weight': 'bold',
-            'size': 20}
-
-
-    plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
-             'figure.autolayout': True, 'figure.figsize': (16, 6)}
-    plt.rcParams.update(paras)
-
-    with open("../dump/"+str(file)+".pickle", "r") as f:
-        results=pickle.load(f)
-
-
-    stats=bestNworst(results)
-    colors=['blue','purple','green','brown','red']
-    lines=['-','--',':']
-    five=['best','$Q_1$','median','$Q_3$','worst']
-
-    nums = set([])
-    line=[0,0,0,0,0]
-    for key in stats:
-        a = key.split("_")[0]
-        if a=="start":
-            a='FASTREAD'
-        try:
-            b = key.split("_")[1]
-        except:
-            b = 0
-        nums = nums | set([b])
-        plt.figure(int(b))
-        for j,ind in enumerate(stats[key]):
-            if ind==50:
+            if ind==50 or ind==100:
                 plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a).capitalize())
         line[int(b)]+=1
 
@@ -270,65 +83,12 @@ def update_median_draw(file):
         plt.figure(int(i))
         plt.ylabel("Retrieval Rate")
         plt.xlabel("Studies Reviewed")
-        plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
-        plt.savefig("../figure/median_"+str(file)+str(i)+".eps")
-        plt.savefig("../figure/median_"+str(file)+str(i)+".png")
+        plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=2, borderaxespad=0.)
+        plt.savefig("../figure/"+str(file)+str(i)+".eps")
+        plt.savefig("../figure/"+str(file)+str(i)+".png")
 
-def bestNworst(results):
-    stats={}
-
-    for key in results:
-        stats[key]={}
-        result=results[key]
-        order = np.argsort([r['x'][-1] for r in result])
-        for ind in [0,25,50,75,100]:
-            stats[key][ind]=result[order[int(ind*(len(order)-1)/100)]]
-
-    return stats
 
 ##### UPDATE exp
-def update_exp():
-    repeats=30
-    result={"start_1":[],"start_2":[], "start_3":[],"all_2":[],"partial_2":[],"update_3":[],"reuse_4":[],"start_4":[]}
-    for i in xrange(repeats):
-        a = START("Hall2007-.csv")
-        result["start_1"].append(a.record)
-        a.export()
-
-        b = START("Hall2007+.csv")
-        result["start_2"].append(b.record)
-        b.restart()
-
-        cc = UPDATE_ALL("Hall2007+.csv", "Hall2007-.csv")
-        result["all_2"].append(cc.record)
-        cc.restart()
-
-        c = UPDATE("Hall2007+.csv","Hall2007-.csv")
-        result["partial_2"].append(c.record)
-        c.export()
-        c.restart()
-
-        d = START("Wahono.csv")
-        result["start_3"].append(d.record)
-        d.restart()
-
-        e = UPDATE("Wahono.csv","Hall2007+.csv")
-        result["update_3"].append(e.record)
-        e.export()
-        e.restart()
-
-        f = START("Abdellatif.csv")
-        result["start_4"].append(f.record)
-        f.restart()
-
-        f = REUSE("Abdellatif.csv", "Wahono.csv")
-        result["reuse_4"].append(f.record)
-        f.restart()
-
-        # print("Repeat #{id} finished\r".format(id=i), end="")
-        print(i, end=" ")
-    with open("../dump/everything.pickle","wb") as handle:
-        pickle.dump(result,handle)
 
 def reuse_exp():
     data = ["Hall.csv","Wahono.csv","Abdellatif.csv"]
@@ -343,7 +103,7 @@ def update_or_reuse(first,second):
     first = str(first)
     second = str(second)
     repeats=30
-    result={"update":[],"reuse":[],"start":[]}
+    result={"update":[],"reuse":[],"start":[],"update_reuse":[]}
     for i in xrange(repeats):
         a = START(first)
         a.export()
@@ -352,13 +112,17 @@ def update_or_reuse(first,second):
         result["start"].append(d.record)
         d.restart()
 
-        c = REUSE(second,first)
+        c = REUSE_RANDOM(second,first)
         result["reuse"].append(c.record)
         c.restart()
 
         b = UPDATE(second,first)
         result["update"].append(b.record)
         b.restart()
+
+        e = UPDATE_REUSE(second, first)
+        result["update_reuse"].append(e.record)
+        e.restart()
         a.restart()
 
         print("Repeat #{id} finished\r".format(id=i), end="")
@@ -367,15 +131,45 @@ def update_or_reuse(first,second):
         pickle.dump(result,handle)
 
 
+def time_exp(first,second):
+    result={}
+    # a = START(first)
+    # a.plot()
+    # a.export()
+
+    b = UPDATE_REUSE(second, first)
+    result["update_reuse"] = b.record
+    b.restart()
+
+    b = REUSE_RANDOM(second, first)
+    result["reuse_random"] = b.record
+    b.restart()
+
+    b = REUSE(second, first)
+    result["reuse"] = b.record
+    b.restart()
+
+    b = UPDATE(second, first)
+    result["update"] = b.record
+    b.restart()
+
+    b = TIME(second, first)
+    result["time"] = b.record
+    b.restart()
+    print(result)
+    # a.restart()
+
 
 def START(filename):
-    stop=0.9
+    stop=0.90
 
     read = MAR()
     read = read.create(filename)
-    target = int(read.get_allpos()*stop)
+    num = read.get_allpos()
+    target = int(num*stop)
     while True:
         pos, neg, total = read.get_numbers()
+        # print("%d/ %d" %(pos,pos+neg))
         if pos >= target:
             break
         if pos==0:
@@ -387,487 +181,121 @@ def START(filename):
                 read.code(id, read.body["label"][id])
     return read
 
-def UPDATE(filename,old):
-    stop=0.9
 
-    read = MAR()
-    read = read.create_UPDATE(filename,old)
-    target = int(read.get_allpos()*stop)
-    while True:
-        pos, neg, total = read.get_numbers()
-        if pos >= target:
-            break
-        a,b,ids,c =read.train()
-        for id in ids:
-            read.code(id, read.body["label"][id])
-    return read
-
-def UPDATE_ALL(filename,old):
-    stop=0.9
-
-    read = MAR()
-    read = read.create_UPDATE_ALL(filename,old)
-    target = int(read.get_allpos()*stop)
-    while True:
-        pos, neg, total = read.get_numbers()
-        if pos >= target:
-            break
-        a,b,ids,c =read.train()
-        for id in ids:
-            read.code(id, read.body["label"][id])
-    return read
-
-
-
-# def model_transform(model,vocab,vocab_new):
-#     w=[]
-#     for term in vocab_new:
-#         try:
-#             ind=vocab.index(term)
-#             w.append(model['w'][0,ind])
-#         except:
-#             w.append(0)
-#     model['w']=csr_matrix(w)
-#     return model
-
-def REUSE(filename,old):
+def TIME(filename,old):
     stop=0.9
 
     read = MAR()
     read = read.create(filename)
-    read.load_reuse(old)
-    target = int(read.get_allpos()*stop)
+    read.create_old(old)
+    num2 = read.get_allpos()
+    target = int(num2*stop)
     while True:
         pos, neg, total = read.get_numbers()
+        # print("%d/ %d" % (pos,pos+neg))
         if pos >= target:
             break
-        if pos==0 or pos+neg<50:
-            for id in read.reuse():
+        a,b,ids,c =read.train_kept()
+        for id in ids:
+            read.code(id, read.body["label"][id])
+    return read
+
+def UPDATE(filename,old):
+    stop=0.9
+
+    read = MAR()
+    read = read.create(filename)
+    read.create_old(old)
+    num2 = read.get_allpos()
+    target = int(num2*stop)
+    while True:
+        pos, neg, total = read.get_numbers()
+        # print("%d/ %d" % (pos,pos+neg))
+        if pos >= target:
+            break
+        a,b,ids,c =read.train()
+        for id in ids:
+            read.code(id, read.body["label"][id])
+    return read
+
+
+def REUSE_RANDOM(filename,old):
+    stop=0.9
+
+    read = MAR()
+    read = read.create(filename)
+    read.create_old(old)
+    num2 = read.get_allpos()
+    target = int(num2*stop)
+    while True:
+        pos, neg, total = read.get_numbers()
+        # print("%d/ %d" % (pos,pos+neg))
+        if pos >= target:
+            break
+        a,b,ids,c =read.train_reuse_random()
+        for id in ids:
+            read.code(id, read.body["label"][id])
+    return read
+
+def REUSE(filename,old):
+    stop=0.9
+    thres=5
+
+    read = MAR()
+    read = read.create(filename)
+    read.create_old(old)
+    num2 = read.get_allpos()
+    target = int(num2*stop)
+    while True:
+        pos, neg, total = read.get_numbers()
+        # print("%d/ %d" % (pos,pos+neg))
+        if pos >= target:
+            break
+        if pos < thres:
+            a,b,ids,c =read.train()
+            for id in ids:
                 read.code(id, read.body["label"][id])
         else:
-            a,b,ids,c =read.train()
+            a, b, ids, c = read.train_reuse()
             for id in ids:
                 read.code(id, read.body["label"][id])
     return read
 
-def similarity(a,b,norm=2):
-    tops=30
+def UPDATE_REUSE(filename,old):
+    stop=0.9
+    lifes=2
+    life=lifes
+    last_pos=0
 
     read = MAR()
-    read = read.create(a)
-    body_a = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
-                   xrange(len(read.body["Document Title"]))]
-    label_a = read.body['label']
-    read = read.create(b)
-    body_b = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
-                   xrange(len(read.body["Document Title"]))]
-    label_b = read.body['label']
-    body_c = body_a+body_b
-
-    tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False,decode_error="ignore")
-    tf_c = tfer.fit_transform(body_c).astype(np.int32)
-    tf_a = tfer.transform(body_a).astype(np.int32)
-    tf_b = tfer.transform(body_b).astype(np.int32)
-
-    clt = lda.LDA(n_topics=tops, n_iter=200, alpha=0.8, eta=0.8)
-    dis = csr_matrix(clt.fit_transform(tf_c))
-
-    if norm!=1:
-        dis = normalize(dis,ord=norm)
-
-    dis_a = dis[:tf_a.shape[0]]
-    dis_b = dis[tf_a.shape[0]:]
-
-    sum_a = dis_a.sum(axis=0)/dis_a.shape[0]
-    sum_b = dis_b.sum(axis=0)/dis_b.shape[0]
-    x=range(tops)
-
-
-    font = {'family': 'cursive',
-            'weight': 'bold',
-            'size': 20}
-
-
-    plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
-             'figure.autolayout': True, 'figure.figsize': (16, 6)}
-    plt.rcParams.update(paras)
-
-    plt.figure()
-    plt.plot(x, np.array(sum_a)[0] ,label=a.split('.')[0])
-    plt.plot(x, np.array(sum_b)[0] ,label=b.split('.')[0])
-
-
-    plt.ylabel("Topic Weight")
-    plt.xlabel("Topic ID")
-    plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/data_"+a.split('.')[0]+" vs "+b.split('.')[0]+".eps")
-    plt.savefig("../figure/data_"+a.split('.')[0]+" vs "+b.split('.')[0]+".png")
-
-
-    # Data similarity
-    score=0
-    if norm==1:
-        score = sum([min((sum_a[0,i],sum_b[0,i])) for i in xrange(tops)])
-    elif norm==2:
-        score = (sum_a*sum_b.transpose())[0,0]/(np.linalg.norm(sum_a,2)*np.linalg.norm(sum_b,2))
-    print("data: %f" %score)
-
-    # Target similarity
-    pos_a = [i for i in xrange(len(label_a)) if label_a[i]=='yes']
-    pos_b = [i for i in xrange(len(label_b)) if label_b[i]=='yes']
-
-    dis_pos_a = dis_a[pos_a]
-    dis_pos_b = dis_b[pos_b]
-    sum_pos_a = dis_pos_a.sum(axis=0)/dis_pos_a.shape[0]
-    sum_pos_b = dis_pos_b.sum(axis=0)/dis_pos_b.shape[0]
-
-    plt.figure()
-    plt.plot(x, np.array(sum_pos_a)[0] ,label=a.split('.')[0])
-    plt.plot(x, np.array(sum_pos_b)[0] ,label=b.split('.')[0])
-
-
-    plt.ylabel("Topic Weight")
-    plt.xlabel("Topic ID")
-    plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/target_"+a.split('.')[0]+" vs "+b.split('.')[0]+".eps")
-    plt.savefig("../figure/target_"+a.split('.')[0]+" vs "+b.split('.')[0]+".png")
-
-    score2=0
-    if norm==1:
-        score2 = sum([min((sum_pos_a[0,i],sum_pos_b[0,i])) for i in xrange(tops)])
-    elif norm==2:
-        score2 = (sum_pos_a*sum_pos_b.transpose())[0,0]/(np.linalg.norm(sum_pos_a,2)*np.linalg.norm(sum_pos_b,2))
-    print("target: %f" %score2)
-    set_trace()
-
-def similarity_all(tops=30,alpha=0.1,eta=0.1,norm=2):
-
-    read = MAR()
-    read = read.create("Hall.csv")
-    body_a = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
-                   xrange(len(read.body["Document Title"]))]
-    label_a = read.body['label']
-    x=range(len(body_a))
-    random.shuffle(x)
-    body_a = list(np.array(body_a)[x])
-    label_a = list(np.array(label_a)[x])
-    read = read.create("Wahono.csv")
-    body_b = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
-                   xrange(len(read.body["Document Title"]))]
-    label_b = read.body['label']
-    x = range(len(body_b))
-    random.shuffle(x)
-    body_b = list(np.array(body_b)[x])
-    label_b = list(np.array(label_b)[x])
-    read = read.create("Abdellatif.csv")
-    body_c = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
-              xrange(len(read.body["Document Title"]))]
-    label_c = read.body['label']
-    x = range(len(body_c))
-    random.shuffle(x)
-    body_c = list(np.array(body_c)[x])
-    label_c = list(np.array(label_c)[x])
-    body_d = body_a+body_b+body_c
-
-    tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False,decode_error="ignore")
-    tf_d = tfer.fit_transform(body_d).astype(np.int32)
-
-    clt = lda.LDA(n_topics=tops, n_iter=200, alpha=alpha, eta=eta)
-    dis = csr_matrix(clt.fit_transform(tf_d))
-
-    if norm!=1:
-        dis = normalize(dis,ord=norm)
-
-    dis_a = dis[:len(body_a)]
-    dis_b = dis[len(body_a):len(body_a)+len(body_b)]
-    dis_c = dis[len(body_a) + len(body_b):]
-
-    sum_a = dis_a.sum(axis=0)/dis_a.shape[0]
-    sum_b = dis_b.sum(axis=0)/dis_b.shape[0]
-    sum_c = dis_c.sum(axis=0) / dis_c.shape[0]
-    x=range(tops)
-
-
-    font = {'family': 'cursive',
-            'weight': 'bold',
-            'size': 20}
-
-
-    plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
-             'figure.autolayout': True, 'figure.figsize': (16, 6)}
-    plt.rcParams.update(paras)
-
-    plt.figure()
-    plt.plot(x, np.array(sum_a)[0] ,label="Hall")
-    plt.plot(x, np.array(sum_b)[0] ,label="Wahono")
-    plt.plot(x, np.array(sum_c)[0], label="Abdellatif")
-
-
-    plt.ylabel("Topic Weight")
-    plt.xlabel("Topic ID")
-    plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/data_topic.eps")
-    plt.savefig("../figure/data_topic.png")
-
-
-    # Data similarity
-    score1 = (sum_a*sum_b.transpose())[0,0]/(np.linalg.norm(sum_a,2)*np.linalg.norm(sum_b,2))
-    score2 = (sum_a * sum_c.transpose())[0, 0] / (np.linalg.norm(sum_a, 2) * np.linalg.norm(sum_c, 2))
-    score3 = (sum_c * sum_b.transpose())[0, 0] / (np.linalg.norm(sum_c, 2) * np.linalg.norm(sum_b, 2))
-    print("data_Hall_Wahono: %f" % score1)
-    print("data_Hall_Abdellatif: %f" % score2)
-    print("data_Abdellatif_Wahono: %f" % score3)
-
-    # Target similarity
-    pos_a = [i for i in xrange(len(label_a)) if label_a[i]=='yes']
-    pos_b = [i for i in xrange(len(label_b)) if label_b[i]=='yes']
-    pos_c = [i for i in xrange(len(label_c)) if label_c[i] == 'yes']
-
-    dis_pos_a = dis_a[pos_a]
-    dis_pos_b = dis_b[pos_b]
-    dis_pos_c = dis_c[pos_c]
-    sum_pos_a = dis_pos_a.sum(axis=0)/dis_pos_a.shape[0]
-    sum_pos_b = dis_pos_b.sum(axis=0)/dis_pos_b.shape[0]
-    sum_pos_c = dis_pos_c.sum(axis=0) / dis_pos_c.shape[0]
-
-    plt.figure()
-    plt.plot(x, np.array(sum_pos_a)[0], label="Hall")
-    plt.plot(x, np.array(sum_pos_b)[0], label="Wahono")
-    plt.plot(x, np.array(sum_pos_c)[0], label="Abdellatif")
-
-
-    plt.ylabel("Topic Weight")
-    plt.xlabel("Topic ID")
-    plt.legend(bbox_to_anchor=(0.9, 0.90), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/target_topic.eps")
-    plt.savefig("../figure/target_topic.png")
-
-
-    score4 = (sum_pos_a*sum_pos_b.transpose())[0,0]/(np.linalg.norm(sum_pos_a,2)*np.linalg.norm(sum_pos_b,2))
-    score5 = (sum_pos_a * sum_pos_c.transpose())[0, 0] / (np.linalg.norm(sum_pos_a, 2) * np.linalg.norm(sum_pos_c, 2))
-    score6 = (sum_pos_c * sum_pos_b.transpose())[0, 0] / (np.linalg.norm(sum_pos_c, 2) * np.linalg.norm(sum_pos_b, 2))
-    print("target_Hall_Wahono: %f" % score4)
-    print("target_Hall_Abdellatif: %f" % score5)
-    print("target_Abdellatif_Wahono: %f" % score6)
-    score = [score1, score2, score3, score4, score5, score6]
-    return score
-
-def similarity_tune(tops=30,alpha=0.1,eta=0.1,norm=2,seed=0):
-
-    read = MAR()
-    read = read.create("Hall.csv")
-    body_a = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
-                   xrange(len(read.body["Document Title"]))]
-    label_a = read.body['label']
-    x=range(len(body_a))
-    random.seed=seed
-    random.shuffle(x)
-    body_a = list(np.array(body_a)[x])
-    label_a = list(np.array(label_a)[x])
-    read = read.create("Wahono.csv")
-    body_b = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
-                   xrange(len(read.body["Document Title"]))]
-    label_b = read.body['label']
-    x = range(len(body_b))
-    random.shuffle(x)
-    body_b = list(np.array(body_b)[x])
-    label_b = list(np.array(label_b)[x])
-    read = read.create("Abdellatif.csv")
-    body_c = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
-              xrange(len(read.body["Document Title"]))]
-    label_c = read.body['label']
-    x = range(len(body_c))
-    random.shuffle(x)
-    body_c = list(np.array(body_c)[x])
-    label_c = list(np.array(label_c)[x])
-    body_d = body_a+body_b+body_c
-
-    tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False,decode_error="ignore")
-    tf_d = tfer.fit_transform(body_d).astype(np.int32)
-
-    clt = lda.LDA(n_topics=tops, n_iter=200, alpha=alpha, eta=eta)
-    dis = csr_matrix(clt.fit_transform(tf_d))
-
-    if norm!=1:
-        dis = normalize(dis,ord=norm)
-
-    dis_a = dis[:len(body_a)]
-    dis_b = dis[len(body_a):len(body_a)+len(body_b)]
-    dis_c = dis[len(body_a) + len(body_b):]
-
-    x=range(tops)
-
-    # Data similarity
-
-
-    # Target similarity
-    pos_a = [i for i in xrange(len(label_a)) if label_a[i]=='yes']
-    pos_b = [i for i in xrange(len(label_b)) if label_b[i]=='yes']
-    pos_c = [i for i in xrange(len(label_c)) if label_c[i] == 'yes']
-
-    dis_pos_a = dis_a[pos_a]
-    dis_pos_b = dis_b[pos_b]
-    dis_pos_c = dis_c[pos_c]
-    sum_pos_a = dis_pos_a.sum(axis=0)/dis_pos_a.shape[0]
-    sum_pos_b = dis_pos_b.sum(axis=0)/dis_pos_b.shape[0]
-    sum_pos_c = dis_pos_c.sum(axis=0) / dis_pos_c.shape[0]
-
-
-
-    score4 = (sum_pos_a*sum_pos_b.transpose())[0,0]/(np.linalg.norm(sum_pos_a,2)*np.linalg.norm(sum_pos_b,2))
-    score5 = (sum_pos_a * sum_pos_c.transpose())[0, 0] / (np.linalg.norm(sum_pos_a, 2) * np.linalg.norm(sum_pos_c, 2))
-    score6 = (sum_pos_c * sum_pos_b.transpose())[0, 0] / (np.linalg.norm(sum_pos_c, 2) * np.linalg.norm(sum_pos_b, 2))
-    # print("target_Hall_Wahono: %f" % score4)
-    # print("target_Hall_Abdellatif: %f" % score5)
-    # print("target_Abdellatif_Wahono: %f" % score6)
-    score = [score4, score5, score6]
-    return score
-
-def repeat_sim(tops=30,alpha=0.1,eta=0.1):
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    proc_num = 10
-    repeats=10
-    for i in xrange(proc_num - 1):
-        comm.send([tops,alpha,eta,repeats], dest=i + 1)
-    era = 0
-    scores = []
+    read = read.create(filename)
+    read.create_old(old)
+    num2 = read.get_allpos()
+    target = int(num2*stop)
     while True:
-        i = era * proc_num + rank
-        if i + 1 > repeats:
-            break
-        scores.extend(similarity_tune(tops=tops,alpha=alpha,eta=eta,seed=i))
-        era = era + 1
-    for i in range(proc_num - 1):
-        tmp = comm.recv(source=i + 1)
-        scores.extend(tmp)
+        pos, neg, total = read.get_numbers()
+        # print("%d/ %d" % (pos, pos + neg))
 
-    n=len(scores[0])
-    x=[[j[i] for j in scores] for i in xrange(n)]
-    # print(x)
-    print([np.median(xx) for xx in x])
-    iqr=[np.percentile(xx,75)-np.percentile(xx,25) for xx in x]
-    print(iqr)
-    return [iqr[-1],iqr[-2]]
-
-def generate_data(file,norm=2):
-    tops=30
-
-    read = MAR()
-    read = read.create(file)
-    body_a = [read.body["Document Title"][index] + " " + read.body["Abstract"][index] for index in
-                   xrange(len(read.body["Document Title"]))]
-    label_a = read.body['label']
-
-    tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False)
-    tf_a = tfer.fit_transform(body_a).astype(np.int32)
-
-    clt = lda.LDA(n_topics=tops, n_iter=200, alpha=0.8, eta=0.8)
-    dis = csr_matrix(clt.fit_transform(tf_a))
-
-    if norm!=1:
-        dis = normalize(dis,ord=norm)
-
-
-    sum_a = dis.sum(axis=0)/dis.shape[0]
-
-
-
-
-    # Target similarity
-    pos_a = [i for i in xrange(len(label_a)) if label_a[i]=='yes']
-
-    dis_pos = dis[pos_a]
-    sum_pos_a = dis_pos.sum(axis=0)/dis_pos.shape[0]
-
-    second = np.argsort(sum_pos_a)[::-1][0,1]
-
-    indices = np.argsort(dis[:,second].toarray().flat)[:len(pos_a)]
-
-    fields = ["Document Title", "Abstract", "Year", "PDF Link", "label", "code"]
-    with open("../workspace/coded/Syn_" + str(file), "wb") as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=',')
-        csvwriter.writerow(fields)
-        for ind in xrange(len(read.body["Year"])):
-            content = [read.body[field][ind] for field in fields]
-            if ind in indices:
-                content[-2]="yes"
-            else:
-                content[-2]="no"
-            csvwriter.writerow(content)
-
-
-    set_trace()
-
-
-def generate_term(file,sim=0.5):
-    tops=30
-    pre=0.01
-
-    read = MAR()
-    read = read.create(file)
-    body = read.csr_mat
-    label = read.body['label']
-
-    pos = [i for i in xrange(len(label)) if label[i] == 'yes']
-
-    dis_pos = body[pos]
-    sum_pos = dis_pos.sum(axis=0)
-    sum_pos = sum_pos/np.linalg.norm(sum_pos,2)
-
-    cos = body*sum_pos.transpose()
-    best_fit = np.argsort(np.abs(cos - sim).flat)[0]
-    best_vec = body[best_fit]
-    cos2 = body*best_vec.transpose()
-
-    median = np.median(cos2.toarray().flat)
-    label2 = []
-    for dis in cos2.toarray().flat:
-        chance = pre*(dis/median)
-        if random.random()<chance:
-            label2.append("yes")
+        if pos-last_pos:
+            life=lifes
         else:
-            label2.append("no")
-
-    pos2 = [i for i in xrange(len(label)) if label2[i] == 'yes']
-    print(len(pos2))
-    dis_pos2 = body[pos2]
-    sum_pos2 = dis_pos2.sum(axis=0)
-    sum_pos2 = sum_pos2 / np.linalg.norm(sum_pos2, 2)
-    sims = (sum_pos*sum_pos2.transpose())[0,0]
-    print(sims)
-    fields = ["Document Title", "Abstract", "Year", "PDF Link", "label", "code"]
-    with open(("../workspace/coded/%d" %int(sims*100))+ str(file), "wb") as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=',')
-        csvwriter.writerow(fields)
-        for ind in xrange(len(read.body["Year"])):
-            content = [read.body[field][ind] for field in fields]
-            content[-2] = label2[ind]
-            csvwriter.writerow(content)
+            life=life-1
+        last_pos=pos
 
 
-    set_trace()
+        if pos >= target:
+            break
+        if pos >0 and life<1:
+            a,b,ids,c =read.train_reuse()
+            for id in ids:
+                read.code(id, read.body["label"][id])
+        else:
+            a, b, ids, c = read.train()
+            for id in ids:
+                read.code(id, read.body["label"][id])
+    return read
 
 
-
-
-
-
-
-## Start rule (clustering)
-def init_sample(data,n_clusters,samples):
-    cluster=KMeans(n_clusters=n_clusters)
-    cluster.fit(data)
-    result=cluster.labels_
-    x=list(set(result))
-    pool=[]
-    for key in x:
-        a=[i for i in xrange(data.shape[0])if result[i]==key]
-        pool.extend(list(np.random.choice(a,samples,replace=False)))
-    return pool
 
 if __name__ == "__main__":
     eval(cmd())

@@ -447,7 +447,11 @@ def time_not(first,second):
     with open("../dump/time_"+first.split('.')[0]+"_"+second.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(result,handle)
 
-
+def simple(first):
+    first = str(first)
+    a = START_AUTO(first)
+    a.export()
+    a.plot()
 
 def START(filename):
     stop=0.90
@@ -603,6 +607,31 @@ def UPDATE_REUSE(filename,old):
                 read.code(id, read.body["label"][id])
     return read
 
+def START_AUTO(filename):
+    read = MAR()
+    read = read.create(filename)
+    pos_last=0
+    full_life=3
+    life=full_life
+    while True:
+        pos, neg, total = read.get_numbers()
+        print("%d/ %d" % (pos,pos+neg))
+        if pos >= 10:
+            if pos==pos_last:
+                life=life-1
+                if life==0:
+                    break
+            else:
+                life=full_life
+        if pos==0:
+            for id in read.random():
+                read.code(id, read.body["label"][id])
+        else:
+            a,b,ids,c =read.train()
+            for id in ids:
+                read.code(id, read.body["label"][id])
+        pos_last=pos
+    return read
 
 if __name__ == "__main__":
     eval(cmd())

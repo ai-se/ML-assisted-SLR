@@ -27,7 +27,7 @@
  - Download and setup MAR tool from [here](https://github.com/ai-se/MAR) 
 
 ## 6. Use MAR to select studies relevant to your project (INDIVIDUAL)
- - Each member of the group, use MAR to select relevant studies. Do **NOT** exchanging information with other members. [HOW](https://github.com/ai-se/MAR/issues/4)
+ - Each member of the group, use MAR to select relevant studies. Do **NOT** exchange information with other members. [HOW](https://github.com/ai-se/MAR/issues/4)
  - Save the exported data file as "groupID_unitID.csv".
  
 ## 7. Synthesize results (GROUP)

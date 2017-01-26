@@ -12,7 +12,7 @@
    + Example: software AND (("Document Title":defect) OR ("Document Title":fault) OR ("Document Title":error) OR ("Document Title":bug)) AND (("Document Title":predict*) OR ("Document Title":detect*) OR ("Document Title":assess*) OR ("Document Title":pron*) OR ("Document Title":estimat*))
  - Try it on IEEExplorer
  - Refine the binary search string so that:
-   + No less than 3000 results are returnedd
+   + No less than 3000 results are returned
    + Try not to miss possible studies in your target topic
    + Don't be scared for the large number, you won't read all of them.
 

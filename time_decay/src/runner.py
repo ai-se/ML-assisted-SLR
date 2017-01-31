@@ -381,7 +381,8 @@ def exp():
             if a==b:
                 continue
             else:
-                time_not(a,b)
+                # time_not(a,b)
+                update_or_reuse(a,b)
 
 def update_or_reuse(first,second):
     first = str(first)
@@ -575,7 +576,7 @@ def REUSE(filename,old):
 
 def UPDATE_REUSE(filename,old):
     stop=0.9
-    lifes=2
+    lifes=3
     life=lifes
     last_pos=0
 
@@ -598,6 +599,7 @@ def UPDATE_REUSE(filename,old):
         if pos >= target:
             break
         if pos >0 and life<1:
+            lifes=0
             a,b,ids,c =read.train_reuse()
             for id in ids:
                 read.code(id, read.body["label"][id])

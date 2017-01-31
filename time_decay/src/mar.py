@@ -236,6 +236,7 @@ class MAR(object):
         except:
             pass
 
+        # print("%d,%d,%d" %(len(left),len(negs),len(unlabeled)))
 
         labels = np.array([x if x != 'undetermined' else 'no' for x in self.body['code']])
         all_neg = list(negs) + list(unlabeled)

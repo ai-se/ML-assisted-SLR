@@ -393,6 +393,10 @@ def update_or_reuse(first,second):
         a = START(first)
         a.export()
 
+        e = UPDATE_REUSE(second, first)
+        result["update-reuse"].append(e.record)
+        e.restart()
+
         d = START(second)
         result["start"].append(d.record)
         d.restart()
@@ -401,9 +405,7 @@ def update_or_reuse(first,second):
         result["reuse"].append(c.record)
         c.restart()
 
-        e = UPDATE_REUSE(second, first)
-        result["update-reuse"].append(e.record)
-        e.restart()
+
 
         b = UPDATE(second,first)
         result["update"].append(b.record)
@@ -576,7 +578,7 @@ def REUSE(filename,old):
 
 def UPDATE_REUSE(filename,old):
     stop=0.9
-    lifes=3
+    lifes=2
     life=lifes
     last_pos=0
 
@@ -599,11 +601,13 @@ def UPDATE_REUSE(filename,old):
         if pos >= target:
             break
         if pos >0 and life<1:
+            # print("reuse")
             lifes=0
             a,b,ids,c =read.train_reuse()
             for id in ids:
                 read.code(id, read.body["label"][id])
         else:
+            # print("update")
             a, b, ids, c = read.train()
             for id in ids:
                 read.code(id, read.body["label"][id])

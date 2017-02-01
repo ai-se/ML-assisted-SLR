@@ -375,7 +375,7 @@ def update_exp():
         pickle.dump(result,handle)
 
 def exp():
-    data = ["Hall.csv","Wahono.csv","Abdellatif.csv"]
+    data = ["Hall.csv","Wahono.csv","Isel.csv"]
     for a in data:
         for b in data:
             if a==b:
@@ -464,7 +464,7 @@ def START(filename):
     target = int(read.get_allpos()*stop)
     while True:
         pos, neg, total = read.get_numbers()
-        # print("%d, %d" %(pos,pos+neg))
+        print("%d, %d" %(pos,pos+neg))
         if pos >= target:
             break
         if pos==0:

@@ -199,6 +199,9 @@ class MAR(object):
             unlabeled = np.random.choice(unlabeled,size=np.max((len(decayed),self.atleast)),replace=False)
         except:
             pass
+
+        unlabeled=[]
+
         labels=np.array([x if x!='undetermined' else 'no' for x in self.body['code']])
         all_neg=list(negs)+list(unlabeled)
         all = list(decayed)+list(unlabeled)

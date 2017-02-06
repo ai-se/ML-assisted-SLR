@@ -375,7 +375,7 @@ def update_exp():
         pickle.dump(result,handle)
 
 def exp():
-    data = ["Hall.csv","Wahono.csv","Isel.csv"]
+    data = ["Hall.csv","Wahono.csv","Danijel.csv"]
     for a in data:
         for b in data:
             if a==b:
@@ -464,7 +464,7 @@ def START(filename):
     target = int(read.get_allpos()*stop)
     while True:
         pos, neg, total = read.get_numbers()
-        print("%d, %d" %(pos,pos+neg))
+        # print("%d, %d" %(pos,pos+neg))
         if pos >= target:
             break
         if pos==0:
@@ -581,6 +581,7 @@ def UPDATE_REUSE(filename,old):
     lifes=2
     life=lifes
     last_pos=0
+    thres=5
 
     read = MAR()
     read = read.create(filename)
@@ -600,7 +601,8 @@ def UPDATE_REUSE(filename,old):
 
         if pos >= target:
             break
-        if pos >0 and life<1:
+        # if (pos >= thres or pos==0) and life<1:
+        if (pos >= thres) and life<1:
             # print("reuse")
             lifes=0
             a,b,ids,c =read.train_reuse()

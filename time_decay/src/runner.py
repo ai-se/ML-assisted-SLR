@@ -450,6 +450,29 @@ def time_not(first,second):
     with open("../dump/time_"+first.split('.')[0]+"_"+second.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(result,handle)
 
+def pos_only(first,second):
+    first = str(first)
+    second = str(second)
+    repeats=30
+    result={"POS":[],"UPDATE":[]}
+    for i in xrange(repeats):
+        a = START(first)
+        a.export()
+
+        b = POS(second,first)
+        result["POS"].append(b.record)
+        b.restart()
+
+        c = UPDATE(second,first)
+        result["UPDATE"].append(c.record)
+        c.restart()
+
+        a.restart()
+        print("Repeat #{id} finished\r".format(id=i), end="")
+        # print(i, end=" ")
+    with open("../dump/pos_"+first.split('.')[0]+"_"+second.split('.')[0]+".pickle","wb") as handle:
+        pickle.dump(result,handle)
+
 def simple(first):
     first = str(first)
     a = START_AUTO(first)
@@ -529,6 +552,24 @@ def UPDATE(filename,old):
         if pos >= target:
             break
         a,b,ids,c =read.train()
+        for id in ids:
+            read.code(id, read.body["label"][id])
+    return read
+
+def POS(filename,old):
+    stop=0.9
+
+    read = MAR()
+    read = read.create(filename)
+    read.create_old(old)
+    num2 = read.get_allpos()
+    target = int(num2*stop)
+    while True:
+        pos, neg, total = read.get_numbers()
+        # print("%d/ %d" % (pos,pos+neg))
+        if pos >= target:
+            break
+        a,b,ids,c =read.train_pos()
         for id in ids:
             read.code(id, read.body["label"][id])
     return read

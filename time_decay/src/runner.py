@@ -454,7 +454,7 @@ def pos_only(first,second):
     first = str(first)
     second = str(second)
     repeats=30
-    result={"POS":[],"UPDATE":[]}
+    result={"POS":[],"UPDATE":[],"UPDATE+pne":[]}
     for i in xrange(repeats):
         a = START(first)
         a.export()
@@ -466,6 +466,10 @@ def pos_only(first,second):
         c = UPDATE(second,first)
         result["UPDATE"].append(c.record)
         c.restart()
+
+        d = UPDATE(second,first,pne=True)
+        result["UPDATE+pne"].append(d.record)
+        d.restart()
 
         a.restart()
         print("Repeat #{id} finished\r".format(id=i), end="")
@@ -538,7 +542,7 @@ def TIME_START(filename):
                 read.code(id, read.body["label"][id])
     return read
 
-def UPDATE(filename,old):
+def UPDATE(filename,old,pne=False):
     stop=0.9
 
     read = MAR()
@@ -551,7 +555,7 @@ def UPDATE(filename,old):
         # print("%d/ %d" % (pos,pos+neg))
         if pos >= target:
             break
-        a,b,ids,c =read.train()
+        a,b,ids,c =read.train(pne)
         for id in ids:
             read.code(id, read.body["label"][id])
     return read

@@ -188,7 +188,7 @@ class MAR(object):
             pass
 
     ## Train model ##
-    def train(self):
+    def train(self,pne=False):
         clf = svm.SVC(kernel='linear', probability=True)
         poses = np.where(np.array(self.body['code']) == "yes")[0]
         negs = np.where(np.array(self.body['code']) == "no")[0]
@@ -200,7 +200,8 @@ class MAR(object):
         except:
             pass
 
-        unlabeled=[]
+        if not pne:
+            unlabeled=[]
 
         labels=np.array([x if x!='undetermined' else 'no' for x in self.body['code']])
         all_neg=list(negs)+list(unlabeled)

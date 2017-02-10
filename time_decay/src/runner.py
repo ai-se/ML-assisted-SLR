@@ -227,7 +227,7 @@ def use_or_not(file):
     plt.savefig("../figure/"+str(file).split('_')[1]+".png")
 
 
-def update_repeat_draw(file):
+def draw(file):
     font = {'family': 'cursive',
             'weight': 'bold',
             'size': 20}
@@ -454,7 +454,7 @@ def pos_only(first,second):
     first = str(first)
     second = str(second)
     repeats=30
-    result={"POS":[],"UPDATE":[],"UPDATE+pne":[]}
+    result={"POS":[],"UPDATE":[]}
     for i in xrange(repeats):
         a = START(first)
         a.export()
@@ -467,9 +467,9 @@ def pos_only(first,second):
         result["UPDATE"].append(c.record)
         c.restart()
 
-        d = UPDATE(second,first,pne=True)
-        result["UPDATE+pne"].append(d.record)
-        d.restart()
+        # d = UPDATE(second,first,pne=True)
+        # result["UPDATE+pne"].append(d.record)
+        # d.restart()
 
         a.restart()
         print("Repeat #{id} finished\r".format(id=i), end="")

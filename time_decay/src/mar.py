@@ -212,7 +212,10 @@ class MAR(object):
         if len(poses)>=self.enough:
 
             train_dist = clf.decision_function(self.csr_mat[all_neg])
-            negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(left)]
+            pos_at = list(clf.classes_).index("yes")
+            if pos_at:
+                train_dist=-train_dist
+            negs_sel = np.argsort(train_dist)[::-1][:len(left)]
             sample = list(left) + list(np.array(all_neg)[negs_sel])
             clf.fit(self.csr_mat[sample], labels[sample])
             self.estimate_curve(clf)
@@ -250,7 +253,10 @@ class MAR(object):
         ## aggressive undersampling ##
         if len(poses) >= self.enough:
             train_dist = clf.decision_function(self.csr_mat[all_neg])
-            negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(left)]
+            pos_at = list(clf.classes_).index("yes")
+            if pos_at:
+                train_dist=-train_dist
+            negs_sel = np.argsort(train_dist)[::-1][:len(left)]
             sample = list(left) + list(np.array(all_neg)[negs_sel])
             clf.fit(self.csr_mat[sample], labels[sample])
             self.estimate_curve(clf)
@@ -320,7 +326,10 @@ class MAR(object):
         ## aggressive undersampling ##
         if len(poses) >= self.enough:
             train_dist = clf.decision_function(self.csr_mat[all_neg])
-            negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(left)]
+            pos_at = list(clf.classes_).index("yes")
+            if pos_at:
+                train_dist=-train_dist
+            negs_sel = np.argsort(train_dist)[::-1][:len(left)]
             sample = list(left) + list(np.array(all_neg)[negs_sel])
             clf.fit(self.csr_mat[sample], labels[sample])
             self.estimate_curve(clf)
@@ -358,7 +367,10 @@ class MAR(object):
         ## aggressive undersampling ##
         if len(poses) >= self.enough:
             train_dist = clf.decision_function(self.csr_mat[all_neg])
-            negs_sel = np.argsort(np.abs(train_dist))[::-1][:len(left)]
+            pos_at = list(clf.classes_).index("yes")
+            if pos_at:
+                train_dist=-train_dist
+            negs_sel = np.argsort(train_dist)[::-1][:len(left)]
             sample = list(left) + list(np.array(all_neg)[negs_sel])
             clf.fit(self.csr_mat[sample], labels[sample])
             self.estimate_curve(clf)

@@ -331,48 +331,7 @@ def bestNworst(results):
     return stats
 
 ##### UPDATE exp
-def update_exp():
-    repeats=30
-    result={"start_1":[],"start_2":[], "start_3":[],"all_2":[],"partial_2":[],"update_3":[],"reuse_4":[],"start_4":[]}
-    for i in xrange(repeats):
-        a = START("Hall2007-.csv")
-        result["start_1"].append(a.record)
-        a.export()
 
-        b = START("Hall2007+.csv")
-        result["start_2"].append(b.record)
-        b.restart()
-
-        cc = UPDATE_ALL("Hall2007+.csv", "Hall2007-.csv")
-        result["all_2"].append(cc.record)
-        cc.restart()
-
-        c = UPDATE("Hall2007+.csv","Hall2007-.csv")
-        result["partial_2"].append(c.record)
-        c.export()
-        c.restart()
-
-        d = START("Wahono.csv")
-        result["start_3"].append(d.record)
-        d.restart()
-
-        e = UPDATE("Wahono.csv","Hall2007+.csv")
-        result["update_3"].append(e.record)
-        e.export()
-        e.restart()
-
-        f = START("Abdellatif.csv")
-        result["start_4"].append(f.record)
-        f.restart()
-
-        f = REUSE("Abdellatif.csv", "Wahono.csv")
-        result["reuse_4"].append(f.record)
-        f.restart()
-
-        # print("Repeat #{id} finished\r".format(id=i), end="")
-        print(i, end=" ")
-    with open("../dump/everything.pickle","wb") as handle:
-        pickle.dump(result,handle)
 
 def exp():
     data = ["Hall.csv","Wahono.csv","Danijel.csv"]
@@ -450,31 +409,41 @@ def time_not(first,second):
     with open("../dump/time_"+first.split('.')[0]+"_"+second.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(result,handle)
 
-def pos_only(first,second):
+def update_exp():
+    update("Hall2007-.csv","Hall2007+.csv","Hall.csv")
+    update("Wahono2009-.csv","Wahono2009+.csv","Wahono.csv")
+    update("Danijel2005-.csv","Danijel2005+.csv","Danijel.csv")
+
+def update(first,second,all):
     first = str(first)
     second = str(second)
     repeats=30
-    result={"POS":[],"UPDATE":[]}
+    result={"POS_2":[],"UPDATE_2":[],"FASTREAD_2":[],"FASTREAD_1":[],"FASTREAD_0":[]}
     for i in xrange(repeats):
         a = START(first)
         a.export()
+        result["FASTREAD_1"].append(a.record)
 
         b = POS(second,first)
-        result["POS"].append(b.record)
+        result["POS_2"].append(b.record)
         b.restart()
 
         c = UPDATE(second,first)
-        result["UPDATE"].append(c.record)
+        result["UPDATE_2"].append(c.record)
         c.restart()
 
-        # d = UPDATE(second,first,pne=True)
-        # result["UPDATE+pne"].append(d.record)
-        # d.restart()
+        d = START(second)
+        result["FASTREAD_2"].append(d.record)
+        d.restart()
+
+        e = START(all)
+        result["FASTREAD_0"].append(e.record)
+        e.restart()
 
         a.restart()
         print("Repeat #{id} finished\r".format(id=i), end="")
         # print(i, end=" ")
-    with open("../dump/pos_"+first.split('.')[0]+"_"+second.split('.')[0]+".pickle","wb") as handle:
+    with open("../dump/UPDATE_"+all.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(result,handle)
 
 def simple(first):

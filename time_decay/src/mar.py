@@ -48,7 +48,7 @@ class MAR(object):
                 self.flag=False
         return self
 
-    ### Use previous knowledge
+    ### Use previous knowledge, labeled only
     def create_old(self, filename):
         with open("../workspace/coded/" + str(filename), "r") as csvfile:
             content = [x for x in csv.reader(csvfile, delimiter=',')]
@@ -71,6 +71,7 @@ class MAR(object):
 
         self.preprocess()
         self.save()
+
 
     def loadfile(self):
         with open("../workspace/data/" + str(self.filename), "r") as csvfile:

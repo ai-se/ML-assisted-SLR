@@ -411,7 +411,7 @@ def time_not(first,second):
 
 def update_exp():
     update("Hall2007-.csv","Hall2007+.csv","Hall.csv")
-    update("Wahono2009-.csv","Wahono2009+.csv","Wahono.csv")
+    update("Wahono2008-.csv","Wahono2008+.csv","Wahono.csv")
     update("Danijel2005-.csv","Danijel2005+.csv","Danijel.csv")
 
 def update(first,second,all):

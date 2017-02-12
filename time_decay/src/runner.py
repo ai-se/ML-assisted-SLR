@@ -267,7 +267,7 @@ def draw(file):
 
     for i in nums:
         plt.figure(int(i))
-        plt.ylabel("Retrieval Rate")
+        plt.ylabel("Study Retrieval")
         plt.xlabel("Studies Reviewed")
         plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=2, borderaxespad=0.)
         plt.savefig("../figure/"+str(file)+str(i)+".eps")

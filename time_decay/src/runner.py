@@ -15,7 +15,7 @@ from sklearn import svm
 from collections import Counter
 from scipy.sparse import csr_matrix
 from sklearn.cluster import KMeans
-import lda
+
 from time import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from mar import MAR
@@ -254,6 +254,10 @@ def draw(file):
         a = key.split("_")[0]
         if a=="start":
             a='FASTREAD'
+        if a=="POS":
+            a='UPDATE_POS'
+        if a=="UPDATE":
+            a='UPDATE_ALL'
         try:
             b = key.split("_")[1]
         except:
@@ -267,7 +271,7 @@ def draw(file):
 
     for i in nums:
         plt.figure(int(i))
-        plt.ylabel("Study Retrieval")
+        plt.ylabel(str(file).split("_")[1]+"\nRelevant Studies")
         plt.xlabel("Studies Reviewed")
         plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=2, borderaxespad=0.)
         plt.savefig("../figure/"+str(file)+str(i)+".eps")

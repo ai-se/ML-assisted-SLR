@@ -226,6 +226,37 @@ def use_or_not(file):
     plt.savefig("../figure/"+str(file).split('_')[1]+".eps")
     plt.savefig("../figure/"+str(file).split('_')[1]+".png")
 
+def stats(file):
+
+    with open("../dump/"+str(file)+".pickle", "r") as f:
+        results=pickle.load(f)
+    name=file.split('_')[0]
+    test=[]
+    for key in results:
+        a=key.split('_')[0]
+        try:
+            b=key.split('_')[1]
+        except:
+            b='0'
+        if b=="2" and name=="UPDATE":
+            if a=="POS":
+                a="UPDATE_POS"
+            elif a=="UPDATE":
+                a="UPDATE_ALL"
+            tmp=[]
+            for r in results[key]:
+                tmp.append(r['x'][-1])
+            print(a+": max %d" %max(tmp))
+            test.append([a]+tmp)
+        elif name!="UPDATE":
+            tmp=[]
+            for r in results[key]:
+                tmp.append(r['x'][-1])
+            test.append([a]+tmp)
+            print(a+": max %d" %max(tmp))
+    rdivDemo(test,isLatex=False)
+
+
 
 def draw(file):
     font = {'family': 'cursive',

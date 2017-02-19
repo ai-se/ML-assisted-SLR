@@ -20,7 +20,7 @@ from time import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from mar import MAR
 
-from cliff_delta import delta
+
 
 
 
@@ -254,8 +254,7 @@ def stats(file):
                 tmp.append(r['x'][-1])
             test.append([a]+tmp)
             print(a+": max %d" %max(tmp))
-    rdivDemo(test,isLatex=False)
-    delta(test[0],test[1])
+    rdivDemo(test,isLatex=True)
     set_trace()
 
 

@@ -239,10 +239,10 @@ class MAR(object):
 
         decayed = list(left) + list(negs)
         unlabeled = np.where(np.array(self.body['code']) == "undetermined")[0]
-        try:
-            unlabeled = np.random.choice(unlabeled,size=np.max((len(decayed),self.atleast)),replace=False)
-        except:
-            pass
+        # try:
+        #     unlabeled = np.random.choice(unlabeled,size=np.max((len(decayed),self.atleast)),replace=False)
+        # except:
+        #     pass
 
         # print("%d,%d,%d" %(len(left),len(negs),len(unlabeled)))
 

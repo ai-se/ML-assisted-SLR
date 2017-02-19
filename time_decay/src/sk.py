@@ -421,8 +421,7 @@ the effect size test (and only go to bootstrapping in effect size passes:
 
 
 def different(l1, l2):
-  # return bootstrap(l1,l2) and a12(l2,l1)
-  return a12(l2, l1) and bootstrap(l1, l2)
+  return abs(a12slow(l2, l1)-0.5)*2>=0.147 and bootstrap(l1, l2)
 
 """
 
@@ -566,6 +565,7 @@ def rdivDemo(data, isLatex=False, globalMinMax=False, high=100, low=0):
                data)
     print ""
     ranks = []
+
     for x in scottknott(data, useA12=True):
       ranks += [(x.rank, x.median(), x)]
     all = []

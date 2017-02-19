@@ -20,7 +20,7 @@ from time import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from mar import MAR
 
-
+from cliff_delta import delta
 
 
 
@@ -255,6 +255,11 @@ def stats(file):
             test.append([a]+tmp)
             print(a+": max %d" %max(tmp))
     rdivDemo(test,isLatex=False)
+    delta(test[0],test[1])
+    set_trace()
+
+
+
 
 
 
@@ -377,6 +382,11 @@ def exp():
             else:
                 # time_not(a,b)
                 update_or_reuse(a,b)
+
+def exp2():
+    update_or_reuse("Hall2007-.csv","Hall2007+.csv")
+    update_or_reuse("Wahono2008-.csv","Wahono2008+.csv")
+    update_or_reuse("Danijel2005-.csv","Danijel2005+.csv")
 
 def update_or_reuse(first,second):
     first = str(first)

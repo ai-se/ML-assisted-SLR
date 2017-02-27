@@ -2,7 +2,7 @@ from __future__ import division, print_function
 
 
 
-from ES_CORE import ESHandler
+# from ES_CORE import ESHandler
 from model import SVM
 from injest import Vessel,defaults
 import numpy as np
@@ -24,13 +24,13 @@ from sklearn.decomposition import LatentDirichletAllocation
 from time import time
 
 
-
-es = ESHandler(force_injest=False)
-container = Vessel(
-        OPT=None,
-        SVM=None,
-        round=0
-)
+#
+# es = ESHandler(force_injest=False)
+# container = Vessel(
+#         OPT=None,
+#         SVM=None,
+#         round=0
+# )
 
 stepsize = 50
 
@@ -926,14 +926,14 @@ def IST_dom_draw_noiqr(set):
 
     #################
 
-
+    lines=['-','--','-.',':']
     ### start with P_U_S_A (Patient Active Learning), compare last code first ##
     ### P_U_S_A vs. P_U_S_N ####
     plt.figure(4)
 
 
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$")
-    line, = plt.plot(medians1['x'], medians1["simple_active"], label="$PUS\\bar{A}$", color="red")
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$",linestyle=lines[0])
+    line, = plt.plot(medians1['x'], medians1["simple_active"], label="$PUS\\bar{A}$", color="red",linestyle=lines[1])
 
     # plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
     plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
@@ -958,8 +958,8 @@ def IST_dom_draw_noiqr(set):
     plt.figure(3)
 
 
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$")
-    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="$PU\\bar{S}A$", color="red")
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$",linestyle=lines[0])
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="$PU\\bar{S}A$", color="red",linestyle=lines[1])
 
     # plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
     plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
@@ -983,8 +983,8 @@ def IST_dom_draw_noiqr(set):
     ### P_U_C_A vs. P_C_C_A ####
     plt.figure(2)
 
-    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="$PU\\bar{S}A$")
-    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="$P\\bar{U}\\bar{S}A$", color="red")
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="$PU\\bar{S}A$",linestyle=lines[0])
+    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="$P\\bar{U}\\bar{S}A$", color="red",linestyle=lines[1])
 
     # plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
     plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
@@ -1008,12 +1008,12 @@ def IST_dom_draw_noiqr(set):
     ### P_U_C_A vs. P_C_C_A vs. H_U_C_A vs. H_C_C_A####
     plt.figure(1)
 
-    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="$PU\\bar{S}A$")
-    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="$P\\bar{U}\\bar{S}A$")
+    line, = plt.plot(medians1['x'], medians1["semi_continuous_aggressive"], label="$PU\\bar{S}A$",linestyle=lines[0])
+    line, = plt.plot(medians1['x'], medians1["new_continuous_aggressive"], label="$P\\bar{U}\\bar{S}A$",linestyle=lines[1],color="red")
 
 
-    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="$\\bar{P}U\\bar{S}A$")
-    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="$\\bar{P}\\bar{U}\\bar{S}A$")
+    line, = plt.plot(medians0['x'], medians0["semi_continuous_aggressive"], label="$\\bar{P}U\\bar{S}A$",linestyle=lines[2],color="green")
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="$\\bar{P}\\bar{U}\\bar{S}A$",linestyle=lines[3],color="brown")
 
 
     # plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="black",marker='o')
@@ -1041,10 +1041,10 @@ def IST_dom_draw_noiqr(set):
     plt.figure(0)
 
 
-    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="$\\bar{P}\\bar{U}\\bar{S}A$ (FASTREAD)")
-    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Continuous Active Learning)")
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"], label="$\\bar{P}\\bar{U}\\bar{S}A$ (FASTREAD)",linestyle=lines[0])
+    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Continuous Active Learning)",linestyle=lines[1],color="red")
 
-    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$ (Patient Active Learning)")
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$ (Patient Active Learning)",linestyle=lines[2],color="green")
 
 
     # plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="black",marker='o')
@@ -1066,6 +1066,38 @@ def IST_dom_draw_noiqr(set):
     plt.legend(bbox_to_anchor=(0.9, 0.70), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/IST_0_" + set + ".eps")
     plt.savefig("../figure/IST_0_" + set + ".png")
+
+    ### compare baselines with linear review ##
+    ### H_C_C_N vs. P_U_S_A vs. linear review ####
+    plt.figure(10)
+
+
+    line, = plt.plot(medians0['x'], medians0["linear_review"], label="Linear Review",linestyle=lines[0])
+    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Continuous Active Learning)",linestyle=lines[1],color="red")
+
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$ (Patient Active Learning)",linestyle=lines[2],color="green")
+
+
+
+    # plt.plot(medians0['x'][medians0['stable']], medians0["simple_active"][medians0['stable']], color="black",marker='o')
+    plt.plot(medians0['x'][medians0['begin']], medians0["simple_active"][medians0['begin']], color="white", marker='o')
+    # plt.plot(medians1['x'][medians1['stable']], medians1["simple_active"][medians1['stable']], color="black",marker='o')
+    plt.plot(medians1['x'][medians1['begin']], medians1["simple_active"][medians1['begin']], color="white", marker='o')
+
+
+    tick = 500
+    x=[i*500 for i in xrange(int(docnum/tick)) if i*500<= int(Display*10)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.ylabel(set+"\nRecall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.70), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/IST_B_" + set + ".eps")
+    plt.savefig("../figure/IST_B_" + set + ".png")
 
 
 def PoR(set):

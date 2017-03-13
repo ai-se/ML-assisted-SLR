@@ -459,3 +459,14 @@ class MAR(object):
     def restart(self):
         os.remove("./memory/"+self.name+".pickle")
 
+    ## Get missed relevant docs ##
+    def get_rest(self):
+        rest=[x for x in xrange(len(self.body['label'])) if self.body['label'][x]=='yes' and self.body['code'][x]!='yes']
+        rests={}
+        fields = ["Document Title", "Abstract", "Year", "PDF Link"]
+        for r in rest:
+            rests[r]={}
+            for f in fields:
+                rests[r][f]=self.body[f][r]
+        return rests
+

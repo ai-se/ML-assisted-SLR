@@ -257,6 +257,33 @@ def stats(file):
     rdivDemo(test,isLatex=True)
     set_trace()
 
+def pro_simple(first):
+
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/rest_"+first+".pickle","rb") as handle:
+        rest=pickle.load(handle)
+    coun = Counter(sum(rest.keys(), []))
+    order = np.argsort(coun.values())[::-1]
+    x= np.array(coun.keys())[order]
+    y= np.array(coun.values())[order]
+    xx = range(len(x))
+
+    plt.figure()
+    plt.plot(xx, y)
+    plt.ylabel("Number of times left")
+    plt.xlabel("Candidate ID")
+    plt.xticks(xx, x)
+    plt.savefig("../figure/left_"+str(first)+".eps")
+    plt.savefig("../figure/left_"+str(first)+".png")
 
 
 
@@ -491,10 +518,18 @@ def update(first,second,all):
         pickle.dump(result,handle)
 
 def simple(first):
-    first = str(first)
-    a = START_AUTO(first)
-    a.export()
-    a.plot()
+    repeats=30
+    rest=[]
+    for i in xrange(repeats):
+        first = str(first)
+        a = START(first)
+        tmp=a.get_rest()
+        rest.append(tmp)
+    with open("../dump/rest_"+first.split('.')[0]+".pickle","wb") as handle:
+        pickle.dump(rest,handle)
+
+
+
 
 def START(filename):
     stop=0.90

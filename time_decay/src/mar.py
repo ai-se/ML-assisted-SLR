@@ -188,8 +188,8 @@ class MAR(object):
         ### Term frequency as feature, L2 normalization ##########
         tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=u'l2', use_idf=False,
                         vocabulary=self.voc,decode_error="ignore")
-        tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False,
-                        vocabulary=self.voc,decode_error="ignore")
+        # tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False,
+        #                 vocabulary=self.voc,decode_error="ignore")
         self.csr_mat=tfer.fit_transform(content)
         ########################################################
         return

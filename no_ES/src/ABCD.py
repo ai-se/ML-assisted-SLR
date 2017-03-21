@@ -60,7 +60,8 @@ class ABCD():
 
     def __call__(self):
         uniques = set(self.actual)
-	result = {}
+
+        result = {}
         for u in list(uniques):
             result[u] = counter(self.actual, self.predicted, indx=u)
-	return result
+        return result

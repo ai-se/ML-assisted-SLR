@@ -99,6 +99,47 @@ class MAR(object):
             self.body["time"]=[0]*(len(content) - 1)
         return
 
+    def create_lda(self,filename):
+        self.filename=filename
+        self.name=self.filename.split(".")[0]
+        self.flag=True
+        self.hasLabel=True
+        self.record={"x":[],"pos":[]}
+        self.body={}
+        self.est_num=[]
+        self.lastprob=0
+        self.offset=0.5
+        self.interval=3
+        self.last_pos=0
+        self.last_neg=0
+
+
+        try:
+            ## if model already exists, load it ##
+            return self.load()
+        except:
+            ## otherwise read from file ##
+            try:
+                self.loadfile()
+                self.preprocess()
+                import lda
+                from scipy.sparse import csr_matrix
+                lda1 = lda.LDA(n_topics=100, alpha=0.1, eta=0.01, n_iter=200)
+                self.csr_mat = csr_matrix(lda1.fit_transform(self.csr_mat))
+                self.save()
+            except:
+                ## cannot find file in workspace ##
+                self.flag=False
+        return self
+
+    def export_feature(self):
+        with open("../workspace/coded/feature_" + str(self.name) + ".csv", "wb") as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=',')
+            for i in xrange(self.csr_mat.shape[0]):
+                for j in range(self.csr_mat.indptr[i],self.csr_mat.indptr[i+1]):
+                    csvwriter.writerow([i+1,self.csr_mat.indices[j]+1,self.csr_mat.data[j]])
+        return
+
     def get_numbers(self):
         total = len(self.body["code"]) - self.last_pos - self.last_neg
         pos = Counter(self.body["code"])["yes"] - self.last_pos
@@ -146,6 +187,8 @@ class MAR(object):
 
         ### Term frequency as feature, L2 normalization ##########
         tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=u'l2', use_idf=False,
+                        vocabulary=self.voc,decode_error="ignore")
+        tfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False,
                         vocabulary=self.voc,decode_error="ignore")
         self.csr_mat=tfer.fit_transform(content)
         ########################################################
@@ -463,10 +506,12 @@ class MAR(object):
     def get_rest(self):
         rest=[x for x in xrange(len(self.body['label'])) if self.body['label'][x]=='yes' and self.body['code'][x]!='yes']
         rests={}
-        fields = ["Document Title", "Abstract", "Year", "PDF Link"]
+        # fields = ["Document Title", "Abstract", "Year", "PDF Link"]
+        fields = ["Document Title"]
         for r in rest:
             rests[r]={}
             for f in fields:
                 rests[r][f]=self.body[f][r]
+        set_trace()
         return rests
 

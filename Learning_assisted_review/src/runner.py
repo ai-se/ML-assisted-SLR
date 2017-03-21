@@ -13,7 +13,7 @@ import pickle
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
-from sk import rdivDemo
+from sk import rdivDemo,a12slow
 import unicodedata
 from sklearn import svm
 from collections import Counter
@@ -420,7 +420,7 @@ def IST_split_draw(set):
 
     plt.figure(0)
 
-    line, = plt.plot(medians1['x'], medians1["simple_active"], label="$PUS\\bar{N}$")
+    line, = plt.plot(medians1['x'], medians1["simple_active"], label="$PUS\\bar{A}$")
     plt.plot(iqrs1['x'], iqrs1["simple_active"], "-.", color=line.get_color())
     line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$")
     plt.plot(iqrs1['x'], iqrs1["aggressive_undersampling"], "-.", color=line.get_color())
@@ -1210,7 +1210,44 @@ def PoR2():
     plt.savefig("../figure/PoR2.png")
 
 
+def X90(H,P):
+    def get90(r,what):
+        target = int(r[0]['linear_review'][-1]*0.9)
+        out=[]
+        for x in r:
+            for i,y in enumerate(x[what]):
+                if y>=target:
+                    break
+            out.append(x['x'][i])
+        return out
 
+    all={}
+    all["Linear Review"]=get90(H,'linear_review')
+
+    all["$PUSA$"]=get90(P,'aggressive_undersampling')
+    all["$PUS\\bar{A}$"]=get90(P,'simple_active')
+    all["$P\\bar{U}\\bar{S}\\bar{A}$"]=get90(P,'continuous_active')
+    all["$P\\bar{U}\\bar{S}A$"]=get90(P,'new_continuous_aggressive')
+    all["$PU\\bar{S}\\bar{A}$"]=get90(P,'semi_continuous')
+    all["$PU\\bar{S}A$"]=get90(P,'semi_continuous_aggressive')
+
+    all["$\\bar{P}USA$"]=get90(H,'aggressive_undersampling')
+    all["$\\bar{P}US\\bar{A}$"]=get90(H,'simple_active')
+    all["$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$"]=get90(H,'continuous_active')
+    all["$\\bar{P}\\bar{U}\\bar{S}A$"]=get90(H,'new_continuous_aggressive')
+    all["$\\bar{P}U\\bar{S}\\bar{A}$"]=get90(H,'semi_continuous')
+    all["$\\bar{P}U\\bar{S}A$"]=get90(H,'semi_continuous_aggressive')
+
+    return all
+
+
+def stat(set):
+    with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
+        result0=pickle.load(f)
+    with open("../dump/repeat_"+set+"_5.pickle", "r") as f:
+        result1 = pickle.load(f)
+    all=X90(result0,result1)
+    rdivDemo(all,isLatex=False)
 
 
 

@@ -27,7 +27,7 @@ class counter():
             Prec = self.TP / (self.TP + self.FP)
             Acc = (self.TP + self.TN) / (self.TP + self.FN + self.TN + self.FP)
             F = 2 * (Prec * Sen) / (Prec + Sen)
-            F1 = 2 * self.TP / (2 * self.TP + self.FP + self.FN)
+            F2 = 3 * (Prec * Sen) / (2 * Prec + Sen)
             G = 2 * Sen * Spec / (Sen + Spec)
             G1 = Sen * Spec / (Sen + Spec)
             return {
@@ -36,7 +36,8 @@ class counter():
                 "Spec": Spec,
                 "Acc" : Acc,
                 "F1"  : F,
-                "G1"  : G
+                "G1"  : G,
+                "F2"  : F2
             }
 
         except ZeroDivisionError:
@@ -46,7 +47,8 @@ class counter():
                 "Spec": 0,
                 "Acc" : 0,
                 "F1"  : 0,
-                "G1"  : 0
+                "G1"  : 0,
+                "F2"  : 0
             }
 
 class ABCD():
@@ -58,5 +60,8 @@ class ABCD():
 
     def __call__(self):
         uniques = set(self.actual)
+
+        result = {}
         for u in list(uniques):
-            yield counter(self.actual, self.predicted, indx=u)
+            result[u] = counter(self.actual, self.predicted, indx=u)
+        return result

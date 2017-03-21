@@ -421,8 +421,7 @@ the effect size test (and only go to bootstrapping in effect size passes:
 
 
 def different(l1, l2):
-  # return bootstrap(l1,l2) and a12(l2,l1)
-  return a12(l2, l1) and bootstrap(l1, l2)
+  return abs(a12slow(l2, l1)-0.5)*2>=0.147 and bootstrap(l1, l2)
 
 """
 
@@ -453,7 +452,7 @@ For examples on using this code, see _rdivDemo_ (below).
 """
 
 
-def scottknott(data, cohen=0.3, small=3, useA12=False, epsilon=0.01):
+def scottknott(data, cohen=0.3, small=3, useA12=True, epsilon=0.01):
   """Recursively split data, maximizing delta of
   the expected value of the mean before and
   after the splits.
@@ -463,6 +462,7 @@ def scottknott(data, cohen=0.3, small=3, useA12=False, epsilon=0.01):
   if useA12:
     same = lambda l, r: not different(l.all, r.all)
   big = lambda n: n > small
+
   return rdiv(data, all, minMu, big, same, epsilon)
 
 
@@ -550,6 +550,12 @@ Driver for the demos:
 
 
 def rdivDemo(data, isLatex=False, globalMinMax=False, high=100, low=0):
+  if type(data)==type([]):
+    data = map(lambda lst: Num(lst[0], lst[1:]),
+               data)
+  else:
+    data = map(lambda lst: Num(lst, data[lst]),
+               data)
   if isLatex:
     #     print(r"""\documentclass{article}
     #     \usepackage{colortbl} % not sure if needed
@@ -562,10 +568,11 @@ def rdivDemo(data, isLatex=False, globalMinMax=False, high=100, low=0):
     #     """)
     def z(x):
       return int(80 * (x - lo) / (hi - lo + 0.00001))
-    data = map(lambda lst: Num(lst[0], lst[1:]),
-               data)
+
+
     print ""
     ranks = []
+
     for x in scottknott(data, useA12=True):
       ranks += [(x.rank, x.median(), x)]
     all = []
@@ -604,8 +611,7 @@ def rdivDemo(data, isLatex=False, globalMinMax=False, high=100, low=0):
   else:
     def z(x):
       return int(100 * (x - lo) / (hi - lo + 0.00001))
-    data = map(lambda lst: Num(lst[0], lst[1:]),
-               data)
+
     print ""
     ranks = []
     for x in scottknott(data, useA12=True):

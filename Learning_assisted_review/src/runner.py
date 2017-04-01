@@ -1216,7 +1216,7 @@ def X90(H,P):
         out=[]
         for x in r:
             for i,y in enumerate(x[what]):
-                if y>=target:
+                if y>target:
                     break
             out.append(x['x'][i])
         return out
@@ -1247,7 +1247,7 @@ def stat(set):
     with open("../dump/repeat_"+set+"_5.pickle", "r") as f:
         result1 = pickle.load(f)
     all=X90(result0,result1)
-    rdivDemo(all,isLatex=False)
+    rdivDemo(all,isLatex=True)
 
 
 

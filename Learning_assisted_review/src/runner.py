@@ -1216,7 +1216,7 @@ def X90(H,P):
         out=[]
         for x in r:
             for i,y in enumerate(x[what]):
-                if y>target:
+                if y>=target:
                     break
             out.append(x['x'][i])
         return out

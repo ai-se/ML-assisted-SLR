@@ -139,7 +139,7 @@ def pro_simple(first):
 
 
 def draw(file):
-    font = {'family': 'cursive',
+    font = {'family': 'normal',
             'weight': 'bold',
             'size': 20}
 
@@ -156,7 +156,7 @@ def draw(file):
     stats=bestNworst(results)
     colors=['blue','purple','green','brown','red']
     lines=['-','--','-.',':']
-    five=['best','$Q_1$','median','$Q_3$','worst']
+    five=['$0th$','$25th$','$50th$','$75th$','$100th$']
 
     nums = set([])
     line=[0,0,0,0,0]
@@ -175,16 +175,20 @@ def draw(file):
             b = 0
         nums = nums | set([b])
         plt.figure(int(b))
-        for j,ind in enumerate(stats[key]):
-            if ind == 50 or ind == 100:
-                plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a).capitalize())
+
+        if key=="linear":
+            plt.plot(stats[key][50]['x'], stats[key][50]['pos'],linestyle=lines[line[int(b)]],color='black',label="Linear Review")
+        else:
+            for j,ind in enumerate(stats[key]):
+                if ind == 50 or ind == 75 or ind==25:
+                    plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a).capitalize())
         line[int(b)]+=1
 
     for i in nums:
         plt.figure(int(i))
         plt.ylabel(str(file).split("_")[1]+"\nRelevant Studies")
         plt.xlabel("Studies Reviewed")
-        plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=2, borderaxespad=0.)
+        plt.legend(bbox_to_anchor=(0.9, 0.40), loc=1, ncol=2, borderaxespad=0.)
         plt.savefig("../figure/"+str(file)+str(i)+".eps")
         plt.savefig("../figure/"+str(file)+str(i)+".png")
 
@@ -377,7 +381,22 @@ def simple(first):
     with open("../dump/rest_"+first.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(rest,handle)
 
+def repeat_auto(first):
+    repeats=30
+    rec={"linear":[],"fastread":[]}
+    for i in xrange(repeats):
+        first = str(first)
+        a = START_AUTO(first)
+        rec['fastread'].append(a.record)
+        a.restart()
+        b=LINEAR(first)
+        rec['linear'].append(b.record)
+        b.restart()
 
+    with open("../dump/"+first.split('.')[0]+".pickle","wb") as handle:
+        pickle.dump(rec,handle)
+
+## basic units
 
 
 def START(filename):
@@ -582,6 +601,66 @@ def START_AUTO(filename):
                 read.code(id, read.body["label"][id])
         pos_last=pos
     return read
+
+def START_ERROR(filename):
+    read = MAR()
+    read = read.create(filename)
+    pos_last=0
+    full_life=3
+    human_error=0.2
+    life=full_life
+    while True:
+        pos, neg, total = read.get_numbers()
+        print("%d/ %d" % (pos,pos+neg))
+        if pos >= 10:
+            if pos==pos_last:
+                life=life-1
+                if life==0:
+                    break
+            else:
+                life=full_life
+        if pos==0:
+            for id in read.random():
+                if read.body["label"][id]=="no":
+                    if random.random()<human_error**2:
+                        hl="yes"
+                    else:
+                        hl="no"
+                elif read.body["label"][id]=="yes":
+                    if random.random()<2*(human_error-human_error**2):
+                        hl="no"
+                    else:
+                        hl="yes"
+                read.code(id, hl)
+        else:
+            a,b,ids,c =read.train()
+            for id in ids:
+                if read.body["label"][id]=="no":
+                    if random.random()<human_error**2:
+                        hl="yes"
+                    else:
+                        hl="no"
+                elif read.body["label"][id]=="yes":
+                    if random.random()<2*(human_error-human_error**2):
+                        hl="no"
+                    else:
+                        hl="yes"
+                read.code(id, hl)
+        pos_last=pos
+    read.export()
+    return read
+
+def LINEAR(filename):
+    read = MAR()
+    read = read.create(filename)
+    while True:
+        pos, neg, total = read.get_numbers()
+        if total-(pos+neg)<10:
+            break
+        for id in read.random():
+            read.code(id, read.body["label"][id])
+    return read
+
 
 if __name__ == "__main__":
     eval(cmd())

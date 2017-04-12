@@ -180,8 +180,8 @@ def draw(file):
             plt.plot(stats[key][50]['x'], stats[key][50]['pos'],linestyle=lines[line[int(b)]],color='black',label="Linear Review")
         else:
             for j,ind in enumerate(stats[key]):
-                if ind == 50 or ind == 75 or ind==25:
-                    plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a).capitalize())
+                # if ind == 50 or ind == 75 or ind==25:
+                plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a).capitalize())
         line[int(b)]+=1
 
     for i in nums:
@@ -592,7 +592,7 @@ def START_AUTO(filename):
                     break
             else:
                 life=full_life
-        if pos==0:
+        if pos<6:
             for id in read.random():
                 read.code(id, read.body["label"][id])
         else:

@@ -592,7 +592,7 @@ def START_AUTO(filename):
                     break
             else:
                 life=full_life
-        if pos<6:
+        if pos==0 or pos+neg<40:
             for id in read.random():
                 read.code(id, read.body["label"][id])
         else:

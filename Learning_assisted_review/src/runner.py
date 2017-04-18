@@ -1301,6 +1301,40 @@ def numbers(set):
     set_trace()
 
 ##### Draw percentile
+
+def demo_draw(set,far):
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 5, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 8)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
+        result1=pickle.load(f)
+
+    ##wrap and normalize ##
+    medians1, iqrs1 = wrap_repeat(result1)
+    # medians0 = rescale(medians0)
+    # iqrs0 = rescale(iqrs0)
+    # medians1 = rescale(medians1)
+    # iqrs1 = rescale(iqrs1)
+    #################
+
+
+
+    line, = plt.plot(medians1['x'][:far], medians1["new_continuous_aggressive"][:far])
+    plt.ylim([0,100])
+    plt.xlim([0,500])
+    plt.ylabel("Relevant Found")
+    plt.xlabel("Documents Reviewed")
+    plt.legend(bbox_to_anchor=(0.95, 0.70), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/tmp.png")
+
+
 def draw_percentile(set):
     font = {'family': 'default',
             # 'weight': 'bold',

@@ -1315,20 +1315,26 @@ def demo_draw(set,far):
 
     with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
         result1=pickle.load(f)
+    with open("../dump/repeat_"+set+"_5.pickle", "r") as f:
+        result5=pickle.load(f)
 
     ##wrap and normalize ##
     medians1, iqrs1 = wrap_repeat(result1)
-    # medians0 = rescale(medians0)
+    medians5, iqrs5 = wrap_repeat(result5)
     # iqrs0 = rescale(iqrs0)
     # medians1 = rescale(medians1)
     # iqrs1 = rescale(iqrs1)
     #################
 
 
-
-    line, = plt.plot(medians1['x'][:far], medians1["new_continuous_aggressive"][:far])
-    plt.ylim([0,100])
-    plt.xlim([0,500])
+    line, = plt.plot(medians5['x'][:far], medians5["linear_review"][:far])
+    line, = plt.plot(medians1['x'][:far], medians1["continuous_active"][:far])
+    line, = plt.plot(medians5['x'][:far], medians5["aggressive_undersampling"][:far])
+    plt.plot(medians5['x'][medians5['begin']], medians5["linear_review"][medians5['begin']], color="white", marker='o')
+    plt.plot(medians1['x'][medians1['begin']], medians1["linear_review"][medians1['begin']], color="white", marker='o')
+    plt.plot(medians5['x'][medians5['stable']], medians5["aggressive_undersampling"][medians5['stable']], color="black", marker='o')
+    plt.ylim([0,60])
+    plt.xlim([0,1500])
     plt.ylabel("Relevant Found")
     plt.xlabel("Documents Reviewed")
     plt.legend(bbox_to_anchor=(0.95, 0.70), loc=1, ncol=1, borderaxespad=0.)

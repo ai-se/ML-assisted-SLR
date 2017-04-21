@@ -1314,18 +1314,22 @@ def demo_draw(set,far):
     medians1, iqrs1 = wrap_repeat(result1)
     medians5, iqrs5 = wrap_repeat(result5)
     # iqrs0 = rescale(iqrs0)
-    # medians1 = rescale(medians1)
+    medians1 = rescaleY(medians1,62)
     # iqrs1 = rescale(iqrs1)
     #################
     lines = ['-', '--', '-.', ':']
 
-    line, = plt.plot(medians5['x'][:far], medians5["linear_review"][:far],label="Linear Review",linestyle=lines[0], color='black')
-    line, = plt.plot(medians1['x'][:far], medians1["continuous_active"][:far], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Continuous Active Learning)",linestyle=lines[1],color="red")
-    line, = plt.plot(medians5['x'][:far], medians5["aggressive_undersampling"][:far], label="$PUSA$ (Patient Active Learning)",linestyle=lines[2],color="green")
-    plt.plot(medians5['x'][int(medians5['begin'])], medians5["linear_review"][int(medians5['begin'])], color="white", marker='o')
-    plt.plot(medians1['x'][int(medians1['begin'])], medians1["linear_review"][int(medians1['begin'])], color="white", marker='o')
-    plt.plot(medians5['x'][int(medians5['stable'])], medians5["aggressive_undersampling"][int(medians5['stable'])], color="black", marker='o')
-    plt.ylim([0,60])
+    # line, = plt.plot(medians5['x'][:far], medians5["linear_review"][:far],label="Linear Review",linestyle=lines[0], color='black')
+    # line, = plt.plot(medians1['x'][:far], medians1["continuous_active"][:far], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Continuous Active Learning)",linestyle=lines[1],color="red")
+    # line, = plt.plot(medians5['x'][:far], medians5["aggressive_undersampling"][:far], label="$PUSA$ (Patient Active Learning)",linestyle=lines[2],color="green")
+    # plt.plot(medians5['x'][int(medians5['begin'])], medians5["linear_review"][int(medians5['begin'])], color="white", marker='o')
+    # plt.plot(medians1['x'][int(medians1['begin'])], medians1["linear_review"][int(medians1['begin'])], color="white", marker='o')
+    # plt.plot(medians5['x'][int(medians5['stable'])], medians5["aggressive_undersampling"][int(medians5['stable'])], color="black", marker='o')
+
+
+    line, = plt.plot(medians1['x'][:far], medians1["new_continuous_aggressive"][:far],label="FASTREAD",linestyle=lines[0], color='blue')
+
+    plt.ylim([0,1])
     plt.xlim([0,1500])
     plt.ylabel("Relevant Found")
     plt.xlabel("Documents Reviewed")

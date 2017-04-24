@@ -1372,7 +1372,7 @@ def demo_base(set):
 
 
     line, = plt.plot(medians0['x'], medians0["linear_review"], label="Linear Review",linestyle=lines[0], color='black')
-    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Cormack'10)",linestyle=lines[1],color="red")
+    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Cormack'14)",linestyle=lines[1],color="red")
 
     line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$ (Wallace\'10)",linestyle=lines[2],color="green")
 
@@ -1419,7 +1419,7 @@ def demo_draw(set,far):
     medians1, iqrs1 = wrap_repeat(result1)
     medians5, iqrs5 = wrap_repeat(result5)
     # iqrs0 = rescale(iqrs0)
-    medians1 = rescaleY(medians1,62)
+    # medians1 = rescaleY(medians1,62)
     # iqrs1 = rescale(iqrs1)
     #################
     lines = ['-', '--', '-.', ':']
@@ -1432,9 +1432,9 @@ def demo_draw(set,far):
     plt.plot(medians5['x'][int(medians5['stable'])], medians5["aggressive_undersampling"][int(medians5['stable'])], color="black", marker='o')
 
 
-    line, = plt.plot(medians1['x'][:far], medians1["new_continuous_aggressive"][:far],label="FASTREAD",linestyle=lines[0], color='blue')
+    # line, = plt.plot(medians1['x'][:far], medians1["new_continuous_aggressive"][:far],label="FASTREAD",linestyle=lines[0], color='blue')
 
-    plt.ylim([0,1])
+    plt.ylim([0,60])
     plt.xlim([0,1500])
     plt.ylabel("Recall")
     plt.xlabel("Documents Reviewed")

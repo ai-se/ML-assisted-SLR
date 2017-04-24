@@ -1294,6 +1294,111 @@ def numbers(set):
 
 ##### Draw percentile
 
+def demo_base(set):
+    font = {'family': 'default',
+            # 'weight': 'bold',
+            'size': 30}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 25, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/repeat_"+set+"_1.pickle", "r") as f:
+        result0=pickle.load(f)
+    with open("../dump/repeat_"+set+"_5.pickle", "r") as f:
+        result1 = pickle.load(f)
+
+    ##wrap and normalize ##
+
+
+    medians0, iqrs0 = wrap_repeat(result0)
+    medians1, iqrs1 = wrap_repeat(result1)
+
+    posnum = medians0['simple_active'][-1]
+    docnum = medians0['x'][-1]
+
+    medians0 = rescaleY(medians0,posnum)
+    iqrs0 = rescaleY(iqrs0,posnum)
+    medians1 = rescaleY(medians1,posnum)
+    iqrs1 = rescaleY(iqrs1,posnum)
+    #################
+
+    ###### cut ######
+    Display = 250
+    medians0 = cutListinDict(medians0,Display)
+    medians1 = cutListinDict(medians1,Display)
+
+
+       #################
+
+    lines = ['-', '--', '-.', ':']
+
+    ### compare best with baselines ##
+    ### H_C_C_A vs. H_C_C_N vs. P_U_S_A ####
+    plt.figure(0)
+
+    line, = plt.plot(medians0['x'], medians0["new_continuous_aggressive"],
+                     label="$\\bar{P}\\bar{U}\\bar{S}A$ (FASTREAD)", linestyle=lines[0])
+    line, = plt.plot(medians0['x'], medians0["continuous_active"],
+                     label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Cormack\'14)", linestyle=lines[1],
+                     color="red")
+
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$ (Wallace\'10)",
+                     linestyle=lines[2], color="green")
+
+    # plt.plot(medians0['x'][int(medians0['stable'])], medians0["simple_active"][int(medians0['stable'])], color="black",marker='o')
+    plt.plot(medians0['x'][int(medians0['begin'])], medians0["simple_active"][int(medians0['begin'])], color="white", marker='o')
+    # plt.plot(medians1['x'][int(medians1['stable'])], medians1["simple_active"][int(medians1['stable'])], color="black",marker='o')
+    plt.plot(medians1['x'][int(medians1['begin'])], medians1["simple_active"][int(medians1['begin'])], color="white", marker='o')
+
+    tick = 500
+    x = [i * 500 for i in xrange(int(docnum / tick)) if i * 500 <= int(Display * 10)]
+
+    xlabels = [str(z) + "\n(" + '%.1f' % (z / docnum * 100) + "%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.ylabel(set + "\nRecall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.70), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/IST_0_" + set + ".eps")
+    plt.savefig("../figure/IST_0_" + set + ".png")
+
+    ### compare baselines with linear review ##
+    ### H_C_C_N vs. P_U_S_A vs. linear review ####
+    plt.figure(10)
+
+
+    line, = plt.plot(medians0['x'], medians0["linear_review"], label="Linear Review",linestyle=lines[0], color='black')
+    line, = plt.plot(medians0['x'], medians0["continuous_active"], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Cormack'10)",linestyle=lines[1],color="red")
+
+    line, = plt.plot(medians1['x'], medians1["aggressive_undersampling"], label="$PUSA$ (Wallace\'10)",linestyle=lines[2],color="green")
+
+
+
+    # plt.plot(medians0['x'][int(medians0['stable'])], medians0["simple_active"][int(medians0['stable'])], color="black",marker='o')
+    plt.plot(medians0['x'][int(medians0['begin'])], medians0["simple_active"][int(medians0['begin'])], color="white", marker='o')
+    # plt.plot(medians1['x'][int(medians1['stable'])], medians1["simple_active"][int(medians1['stable'])], color="black",marker='o')
+    plt.plot(medians1['x'][int(medians1['begin'])], medians1["simple_active"][int(medians1['begin'])], color="white", marker='o')
+
+
+    tick = 500
+    x=[i*500 for i in xrange(int(docnum/tick)) if i*500<= int(Display*10)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.ylabel(set+"\nRecall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.70), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/IST_B_" + set + ".eps")
+    plt.savefig("../figure/IST_B_" + set + ".png")
+
+
 def demo_draw(set,far):
     font = {'family': 'normal',
             'weight': 'bold',
@@ -1319,19 +1424,19 @@ def demo_draw(set,far):
     #################
     lines = ['-', '--', '-.', ':']
 
-    # line, = plt.plot(medians5['x'][:far], medians5["linear_review"][:far],label="Linear Review",linestyle=lines[0], color='black')
-    # line, = plt.plot(medians1['x'][:far], medians1["continuous_active"][:far], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Continuous Active Learning)",linestyle=lines[1],color="red")
-    # line, = plt.plot(medians5['x'][:far], medians5["aggressive_undersampling"][:far], label="$PUSA$ (Patient Active Learning)",linestyle=lines[2],color="green")
-    # plt.plot(medians5['x'][int(medians5['begin'])], medians5["linear_review"][int(medians5['begin'])], color="white", marker='o')
-    # plt.plot(medians1['x'][int(medians1['begin'])], medians1["linear_review"][int(medians1['begin'])], color="white", marker='o')
-    # plt.plot(medians5['x'][int(medians5['stable'])], medians5["aggressive_undersampling"][int(medians5['stable'])], color="black", marker='o')
+    line, = plt.plot(medians5['x'][:far], medians5["linear_review"][:far],label="Linear Review",linestyle=lines[0], color='black')
+    line, = plt.plot(medians1['x'][:far], medians1["continuous_active"][:far], label="$\\bar{P}\\bar{U}\\bar{S}\\bar{A}$ (Cormack\'14)",linestyle=lines[1],color="red")
+    line, = plt.plot(medians5['x'][:far], medians5["aggressive_undersampling"][:far], label="$PUSA$ (Wallace\'10)",linestyle=lines[2],color="green")
+    plt.plot(medians5['x'][int(medians5['begin'])], medians5["linear_review"][int(medians5['begin'])], color="white", marker='o')
+    plt.plot(medians1['x'][int(medians1['begin'])], medians1["linear_review"][int(medians1['begin'])], color="white", marker='o')
+    plt.plot(medians5['x'][int(medians5['stable'])], medians5["aggressive_undersampling"][int(medians5['stable'])], color="black", marker='o')
 
 
     line, = plt.plot(medians1['x'][:far], medians1["new_continuous_aggressive"][:far],label="FASTREAD",linestyle=lines[0], color='blue')
 
     plt.ylim([0,1])
     plt.xlim([0,1500])
-    plt.ylabel("Relevant Found")
+    plt.ylabel("Recall")
     plt.xlabel("Documents Reviewed")
     plt.legend(bbox_to_anchor=(0.95, 0.50), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/tmp.png")
@@ -2070,6 +2175,173 @@ def init_sample(data,n_clusters,samples):
         a=[i for i in xrange(data.shape[0])if result[i]==key]
         pool.extend(list(np.random.choice(a,samples,replace=False)))
     return pool
+
+
+def simulate(seed):
+    import random
+    random.seed(seed)
+    np.random.seed(seed+1)
+    x=[]
+    y=[]
+    size=200
+    for i in xrange(size):
+        xtmp=[random.random(),random.random()]
+        x.append(xtmp)
+        if random.random()<(2-sum(xtmp))/2-0.5:
+            y.append(1)
+        else:
+            y.append(0)
+    x=np.array(x)
+    y=np.array(y)
+    pos=np.where(y == 1)[0]
+    neg=np.where(y == 0)[0]
+
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 20}
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (12, 8)}
+    plt.rcParams.update(paras)
+
+    plt.figure(0)
+    plt.scatter(x[pos,0],x[pos,1], marker='o', s=500, color='grey')
+    plt.scatter(x[neg, 0], x[neg, 1], marker='x', s=500, color='grey')
+
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/simu0.png")
+
+    pool=range(size)
+    known=np.random.choice(pool,10,replace=False)
+    pool=list(set(pool)-set(known))
+    k_pos = np.array(known)[np.where(y[known] == 1)[0]]
+    k_neg = np.array(known)[np.where(y[known] == 0)[0]]
+    p_pos = np.array(pool)[np.where(y[pool] == 1)[0]]
+    p_neg = np.array(pool)[np.where(y[pool] == 0)[0]]
+    plt.figure(1)
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='green')
+    plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
+
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/simu1.png")
+
+    clf1 = svm.SVC(kernel='linear',probability=True)
+    clf1.fit(x[known], y[known])
+    x0 = (-1 +0.0006- clf1.intercept_[0]) / clf1.coef_[0][0]
+    y0 = (-1 +0.0006 - clf1.intercept_[0]) / clf1.coef_[0][1]
+    plt.figure(11)
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='green')
+    plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
+    plt.plot([0,x0],[y0,0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/simu11.png")
+
+    next = np.array(pool)[np.argsort(clf1.predict_proba(x[pool])[:, clf1.classes_[0]])[::-1][:10]]
+    known1 = list(known)+list(next)
+    pool1 = list(set(pool) - set(known1))
+    k_pos = np.array(known1)[np.where(y[known1] == 1)[0]]
+    k_neg = np.array(known1)[np.where(y[known1] == 0)[0]]
+    p_pos = np.array(pool1)[np.where(y[pool1] == 1)[0]]
+    p_neg = np.array(pool1)[np.where(y[pool1] == 0)[0]]
+    clf1 = svm.SVC(kernel='linear', probability=True)
+    clf1.fit(x[known1], y[known1])
+    x0 = (-1 + 0.005 - clf1.intercept_[0]) / clf1.coef_[0][0]
+    y0 = (-1 + 0.005 - clf1.intercept_[0]) / clf1.coef_[0][1]
+
+    plt.figure(12)
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='green')
+    plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
+    plt.plot([0, x0], [y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/simu12.png")
+
+
+
+
+
+
+
+    known2 = list(known)+list(np.random.choice(pool, 20, replace=False))
+    pool2 = list(set(pool) - set(known2))
+    k_pos = np.array(known2)[np.where(y[known2] == 1)[0]]
+    k_neg = np.array(known2)[np.where(y[known2] == 0)[0]]
+    p_pos = np.array(pool2)[np.where(y[pool2] == 1)[0]]
+    p_neg = np.array(pool2)[np.where(y[pool2] == 0)[0]]
+    plt.figure(2)
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='green')
+    plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
+
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/simu2.png")
+
+    clf2 = svm.SVC(kernel='linear', probability=True)
+    clf2.fit(x[known2], y[known2])
+    x0 = (-1 +0.002  - clf2.intercept_[0]) / clf2.coef_[0][0]
+    y0 = (-1  - clf2.intercept_[0]) / clf2.coef_[0][1]
+    x1 = (-1 +0.002  - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
+    plt.figure(21)
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='green')
+    plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
+    plt.plot([x0, x1], [0, 1], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/simu21.png")
+
+    next = np.array(pool2)[np.argsort(np.abs(clf2.decision_function(x[pool2])+1))[:10]]
+    known2 = list(known2) + list(next)
+    pool2 = list(set(pool) - set(known2))
+    k_pos = np.array(known2)[np.where(y[known2] == 1)[0]]
+    k_neg = np.array(known2)[np.where(y[known2] == 0)[0]]
+    p_pos = np.array(pool2)[np.where(y[pool2] == 1)[0]]
+    p_neg = np.array(pool2)[np.where(y[pool2] == 0)[0]]
+    clf2 = svm.SVC(kernel='linear', probability=True)
+    clf2.fit(x[known2], y[known2])
+    x0 = (-1 +0.05 - clf2.intercept_[0]) / clf2.coef_[0][0]
+    y0 = (-1 +0.05- clf2.intercept_[0]) / clf2.coef_[0][1]
+    x1 = (-1  - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
+    plt.figure(22)
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='green')
+    plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
+    plt.plot([0, x0], [y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/simu22.png")
+
+    kept = np.array(k_neg)[np.argsort(clf2.predict_proba(x[k_neg])[:, clf2.classes_[0]])[::-1][:len(k_pos)]]
+    clf2 = svm.SVC(kernel='linear', probability=True)
+    clf2.fit(x[list(k_pos)+list(kept)], y[list(k_pos)+list(kept)])
+    x0 = ( - clf2.intercept_[0]) / clf2.coef_[0][0]
+    y0 = (- clf2.intercept_[0]) / clf2.coef_[0][1]
+    x1 = (-1 - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
+    plt.figure(23)
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='green')
+    plt.scatter(x[kept, 0], x[kept, 1], marker='x', s=500, color='red')
+    plt.plot([0, x0], [y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/simu23.png")
+
+
 
 if __name__ == "__main__":
     eval(cmd())

@@ -1419,7 +1419,8 @@ def demo_draw(set,far):
     medians1, iqrs1 = wrap_repeat(result1)
     medians5, iqrs5 = wrap_repeat(result5)
     # iqrs0 = rescale(iqrs0)
-    # medians1 = rescaleY(medians1,62)
+    medians1 = rescaleY(medians1,62)
+    medians5 = rescaleY(medians5,62)
     # iqrs1 = rescale(iqrs1)
     #################
     lines = ['-', '--', '-.', ':']
@@ -1434,7 +1435,7 @@ def demo_draw(set,far):
 
     # line, = plt.plot(medians1['x'][:far], medians1["new_continuous_aggressive"][:far],label="FASTREAD",linestyle=lines[0], color='blue')
 
-    plt.ylim([0,60])
+    plt.ylim([0,1])
     plt.xlim([0,1500])
     plt.ylabel("Recall")
     plt.xlabel("Documents Reviewed")

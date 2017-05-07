@@ -2198,7 +2198,7 @@ def simulate(seed):
 
     font = {'family': 'normal',
             'weight': 'bold',
-            'size': 20}
+            'size': 40}
 
     plt.rc('font', **font)
     paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,

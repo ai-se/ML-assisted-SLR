@@ -8,7 +8,7 @@ import pickle
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
-from sk import rdivDemo
+from sk import rdivDemo,a12slow
 import unicodedata
 import random
 from sklearn import svm
@@ -397,6 +397,22 @@ def repeat_auto(first):
 
     with open("../dump/"+first.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(rec,handle)
+
+
+def stats(file):
+    with open("../dump/"+file+".pickle", "r") as f:
+        result=pickle.load(f)
+    all={}
+    for key in result:
+        try:
+            if key.split('_')[1]!='2':
+                continue
+        except:
+            pass
+        all[key.split('_')[0]]=[x['x'][-1] for x in result[key]]
+    rdivDemo(all, isLatex=True)
+
+
 
 ## basic units
 

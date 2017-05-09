@@ -2206,8 +2206,8 @@ def simulate(seed):
     plt.rcParams.update(paras)
 
     plt.figure(0)
-    plt.scatter(x[pos,0],x[pos,1], marker='o', s=500, color='grey')
-    plt.scatter(x[neg, 0], x[neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[pos,0],x[pos,1], marker='o', s=500, color='0.75')
+    plt.scatter(x[neg, 0], x[neg, 1], marker='x', s=500, color='0.75')
 
     plt.xlim([0, 1])
     plt.ylim([0, 1])
@@ -2221,8 +2221,8 @@ def simulate(seed):
     p_pos = np.array(pool)[np.where(y[pool] == 1)[0]]
     p_neg = np.array(pool)[np.where(y[pool] == 0)[0]]
     plt.figure(1)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
 
@@ -2235,8 +2235,8 @@ def simulate(seed):
     x0 = (-1 +0.0006- clf1.intercept_[0]) / clf1.coef_[0][0]
     y0 = (-1 +0.0006 - clf1.intercept_[0]) / clf1.coef_[0][1]
     plt.figure(11)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
     plt.plot([0,x0],[y0,0], color='black')
@@ -2257,8 +2257,8 @@ def simulate(seed):
     y0 = (-1 + 0.005 - clf1.intercept_[0]) / clf1.coef_[0][1]
 
     plt.figure(12)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
     plt.plot([0, x0], [y0, 0], color='black')
@@ -2273,8 +2273,8 @@ def simulate(seed):
     y0 = (- clf1.intercept_[0]) / clf1.coef_[0][1]
     x1 = (-1 - clf1.intercept_[0] - clf1.coef_[0][1]) / clf1.coef_[0][0]
     plt.figure(13)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[kept, 0], x[kept, 1], marker='x', s=500, color='red')
     plt.plot([0, x0], [y0, 0], color='black')
@@ -2298,8 +2298,8 @@ def simulate(seed):
     neg3 = np.where(y2 == 0)[0]
 
     plt.figure(3)
-    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='grey')
-    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='grey')
+    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='0.75')
 
     plt.xlim([0, 1])
     plt.ylim([0, 1])
@@ -2308,8 +2308,8 @@ def simulate(seed):
 
     ## update all
     plt.figure(311)
-    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='grey')
-    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='grey')
+    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='X', s=500, linewidths=5, facecolors='none', edgecolors='red')
     # plt.plot([0, x0], [y0, 0], color='black')
@@ -2319,8 +2319,8 @@ def simulate(seed):
 
 
     plt.figure(31)
-    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='grey')
-    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='grey')
+    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
     plt.scatter(x[kept, 0], x[kept, 1], marker='X', s=500, linewidths=5, facecolors='none', edgecolors='red')
     plt.plot([0, x0], [y0, 0], color='black')
@@ -2348,8 +2348,8 @@ def simulate(seed):
     x0 = (- clf3.intercept_[0]) / clf3.coef_[0][0]
     y0 = (- clf3.intercept_[0]) / clf3.coef_[0][1]
     plt.figure(32)
-    plt.scatter(x2[p_pos3, 0], x2[p_pos3, 1], marker='o', s=500, color='grey')
-    plt.scatter(x2[p_neg3, 0], x2[p_neg3, 1], marker='x', s=500, color='grey')
+    plt.scatter(x2[p_pos3, 0], x2[p_pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[p_neg3, 0], x2[p_neg3, 1], marker='x', s=500, color='0.75')
     plt.scatter(x2[k_pos3, 0], x2[k_pos3, 1], marker='o', s=500, color='blue')
     plt.scatter(x2[k_neg3[-2:], 0], x2[k_neg3[-2:], 1], marker='x', s=500, color='red')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
@@ -2364,8 +2364,8 @@ def simulate(seed):
 
     ## update pos
     plt.figure(411)
-    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='grey')
-    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='grey')
+    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
     # plt.plot([0, x0], [y0, 0], color='black')
     plt.xlim([0, 1])
@@ -2383,8 +2383,8 @@ def simulate(seed):
 
 
     plt.figure(41)
-    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='grey')
-    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='grey')
+    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
     plt.scatter(x2[pne4, 0], x2[pne4, 1], marker='D', s=500, linewidths=5, facecolors='none', edgecolors='purple')
 
@@ -2408,8 +2408,8 @@ def simulate(seed):
     y0 = (- clf4.intercept_[0]) / clf4.coef_[0][1]
 
     plt.figure(42)
-    plt.scatter(x2[p_pos4, 0], x2[p_pos4, 1], marker='o', s=500, color='grey')
-    plt.scatter(x2[p_neg4, 0], x2[p_neg4, 1], marker='x', s=500, color='grey')
+    plt.scatter(x2[p_pos4, 0], x2[p_pos4, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[p_neg4, 0], x2[p_neg4, 1], marker='x', s=500, color='0.75')
     plt.scatter(x2[k_pos4, 0], x2[k_pos4, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
     plt.scatter(x2[pne4, 0], x2[pne4, 1], marker='D', s=500, linewidths=5, facecolors='none', edgecolors='purple')
@@ -2426,8 +2426,8 @@ def simulate(seed):
     y0 = (- clf4.intercept_[0]) / clf4.coef_[0][1]
 
     plt.figure(43)
-    plt.scatter(x2[p_pos4, 0], x2[p_pos4, 1], marker='o', s=500, color='grey')
-    plt.scatter(x2[p_neg4, 0], x2[p_neg4, 1], marker='x', s=500, color='grey')
+    plt.scatter(x2[p_pos4, 0], x2[p_pos4, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[p_neg4, 0], x2[p_neg4, 1], marker='x', s=500, color='0.75')
     plt.scatter(x2[k_pos4, 0], x2[k_pos4, 1], marker='o', s=500, color='blue')
     plt.scatter(x2[pne4, 0], x2[pne4, 1], marker='D', s=500, linewidths=5, facecolors='none', edgecolors='purple')
 
@@ -2454,8 +2454,8 @@ def simulate(seed):
     p_pos = np.array(pool2)[np.where(y[pool2] == 1)[0]]
     p_neg = np.array(pool2)[np.where(y[pool2] == 0)[0]]
     plt.figure(2)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
 
@@ -2469,8 +2469,8 @@ def simulate(seed):
     y0 = (-1  - clf2.intercept_[0]) / clf2.coef_[0][1]
     x1 = (-1 +0.002  - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
     plt.figure(21)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
     plt.plot([x0, x1], [0, 1], color='black')
@@ -2491,8 +2491,8 @@ def simulate(seed):
     y0 = (-1 +0.05- clf2.intercept_[0]) / clf2.coef_[0][1]
     x1 = (-1  - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
     plt.figure(22)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
     plt.plot([0, x0], [y0, 0], color='black')
@@ -2507,8 +2507,8 @@ def simulate(seed):
     y0 = (- clf2.intercept_[0]) / clf2.coef_[0][1]
     x1 = (-1 - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
     plt.figure(23)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[kept, 0], x[kept, 1], marker='x', s=500, color='red')
     plt.plot([0, x0], [y0, 0], color='black')

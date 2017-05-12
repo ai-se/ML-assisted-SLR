@@ -8,7 +8,7 @@ import pickle
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
-from sk import rdivDemo
+from sk import rdivDemo,a12slow
 import unicodedata
 import random
 from sklearn import svm
@@ -211,7 +211,6 @@ def update_median_draw(file):
     colors=['blue','purple','green','brown','red']
     lines=['-','--','-.',':']
     five=['best','$Q_1$','median','$Q_3$','worst']
-
     nums = set([])
     line=[0,0,0,0,0]
     for key in stats:
@@ -226,7 +225,7 @@ def update_median_draw(file):
         plt.figure(int(b))
         for j,ind in enumerate(stats[key]):
             if ind==50:
-                plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],color=colors[j],label=five[j]+"_"+str(a).capitalize())
+                plt.plot(stats[key][ind]['x'], stats[key][ind]['pos'],linestyle=lines[line[int(b)]],label=five[j]+"_"+str(a).capitalize())
         line[int(b)]+=1
 
     for i in nums:
@@ -241,6 +240,9 @@ def bestNworst(results):
     stats={}
 
     for key in results:
+
+        if results[key]==[]:
+            continue
         stats[key]={}
         result=results[key]
         order = np.argsort([r['x'][-1] for r in result])
@@ -344,13 +346,13 @@ def update(first,second,all):
     repeats=30
     result={"POS_2":[],"UPDATE_2":[],"FASTREAD_2":[],"FASTREAD_1":[],"FASTREAD_0":[]}
     for i in xrange(repeats):
-        a = START(first)
-        a.export()
-        result["FASTREAD_1"].append(a.record)
+        # a = START(first)
+        # a.export()
+        # result["FASTREAD_1"].append(a.record)
 
-        b = POS(second,first)
-        result["POS_2"].append(b.record)
-        b.restart()
+        # b = POS(second,first)
+        # result["POS_2"].append(b.record)
+        # b.restart()
 
         c = UPDATE(second,first)
         result["UPDATE_2"].append(c.record)
@@ -360,11 +362,11 @@ def update(first,second,all):
         result["FASTREAD_2"].append(d.record)
         d.restart()
 
-        e = START(all)
-        result["FASTREAD_0"].append(e.record)
-        e.restart()
-
-        a.restart()
+        # e = START(all)
+        # result["FASTREAD_0"].append(e.record)
+        # e.restart()
+        #
+        # a.restart()
         print("Repeat #{id} finished\r".format(id=i), end="")
         # print(i, end=" ")
     with open("../dump/UPDATE_"+all.split('.')[0]+".pickle","wb") as handle:
@@ -395,6 +397,22 @@ def repeat_auto(first):
 
     with open("../dump/"+first.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(rec,handle)
+
+
+def stats(file):
+    with open("../dump/"+file+".pickle", "r") as f:
+        result=pickle.load(f)
+    all={}
+    for key in result:
+        try:
+            if key.split('_')[1]!='2':
+                continue
+        except:
+            pass
+        all[key.split('_')[0]]=[x['x'][-1] for x in result[key]]
+    rdivDemo(all, isLatex=True)
+
+
 
 ## basic units
 
@@ -458,7 +476,7 @@ def TIME_START(filename):
                 read.code(id, read.body["label"][id])
     return read
 
-def UPDATE(filename,old,pne=False):
+def UPDATE(filename,old,pne=True):
     stop=0.9
 
     read = MAR()
@@ -468,7 +486,7 @@ def UPDATE(filename,old,pne=False):
     target = int(num2*stop)
     while True:
         pos, neg, total = read.get_numbers()
-        # print("%d/ %d" % (pos,pos+neg))
+        print("%d/ %d" % (pos,pos+neg))
         if pos >= target:
             break
         a,b,ids,c =read.train(pne)
@@ -513,7 +531,7 @@ def REUSE_RANDOM(filename,old):
             read.code(id, read.body["label"][id])
     return read
 
-def REUSE(filename,old):
+def REUSE(filename,old,pne=True):
     stop=0.9
     thres=5
 
@@ -524,15 +542,15 @@ def REUSE(filename,old):
     target = int(num2*stop)
     while True:
         pos, neg, total = read.get_numbers()
-        # print("%d/ %d" % (pos,pos+neg))
+        print("%d/ %d" % (pos,pos+neg))
         if pos >= target:
             break
         if pos < thres:
-            a,b,ids,c =read.train()
+            a,b,ids,c =read.train(pne)
             for id in ids:
                 read.code(id, read.body["label"][id])
         else:
-            a, b, ids, c = read.train_reuse()
+            a, b, ids, c = read.train_reuse(pne)
             for id in ids:
                 read.code(id, read.body["label"][id])
     return read
@@ -580,18 +598,11 @@ def START_AUTO(filename):
     read = MAR()
     read = read.create(filename)
     pos_last=0
-    full_life=3
+    full_life=5
     life=full_life
     while True:
         pos, neg, total = read.get_numbers()
         print("%d/ %d" % (pos,pos+neg))
-        if pos >= 10:
-            if pos==pos_last:
-                life=life-1
-                if life==0:
-                    break
-            else:
-                life=full_life
         if pos==0 or pos+neg<40:
             for id in read.random():
                 read.code(id, read.body["label"][id])
@@ -599,7 +610,36 @@ def START_AUTO(filename):
             a,b,ids,c =read.train()
             for id in ids:
                 read.code(id, read.body["label"][id])
+            if pos==pos_last:
+                life=life-1
+                if life==0:
+                    break
+            else:
+                life=full_life
         pos_last=pos
+    return read
+
+def UPDATE_AUTO(filename,old,pne=True):
+
+    read = MAR()
+    read = read.create(filename)
+    read.create_old(old)
+    pos_last=-1
+    full_life=5
+    life=full_life
+    while True:
+        pos, neg, total = read.get_numbers()
+        print("%d/ %d" % (pos,pos+neg))
+        if pos == pos_last:
+            life = life - 1
+            if life == 0:
+                break
+        else:
+            life = full_life
+        a,b,ids,c =read.train(pne)
+        for id in ids:
+            read.code(id, read.body["label"][id])
+        pos_last = pos
     return read
 
 def START_ERROR(filename):

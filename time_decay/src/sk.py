@@ -452,7 +452,7 @@ For examples on using this code, see _rdivDemo_ (below).
 """
 
 
-def scottknott(data, cohen=0.3, small=3, useA12=False, epsilon=0.01):
+def scottknott(data, cohen=0.3, small=3, useA12=True, epsilon=0.01):
   """Recursively split data, maximizing delta of
   the expected value of the mean before and
   after the splits.
@@ -462,6 +462,7 @@ def scottknott(data, cohen=0.3, small=3, useA12=False, epsilon=0.01):
   if useA12:
     same = lambda l, r: not different(l.all, r.all)
   big = lambda n: n > small
+
   return rdiv(data, all, minMu, big, same, epsilon)
 
 
@@ -549,6 +550,12 @@ Driver for the demos:
 
 
 def rdivDemo(data, isLatex=False, globalMinMax=False, high=100, low=0):
+  if type(data)==type([]):
+    data = map(lambda lst: Num(lst[0], lst[1:]),
+               data)
+  else:
+    data = map(lambda lst: Num(lst, data[lst]),
+               data)
   if isLatex:
     #     print(r"""\documentclass{article}
     #     \usepackage{colortbl} % not sure if needed
@@ -561,8 +568,8 @@ def rdivDemo(data, isLatex=False, globalMinMax=False, high=100, low=0):
     #     """)
     def z(x):
       return int(80 * (x - lo) / (hi - lo + 0.00001))
-    data = map(lambda lst: Num(lst[0], lst[1:]),
-               data)
+
+
     print ""
     ranks = []
 
@@ -604,8 +611,7 @@ def rdivDemo(data, isLatex=False, globalMinMax=False, high=100, low=0):
   else:
     def z(x):
       return int(100 * (x - lo) / (hi - lo + 0.00001))
-    data = map(lambda lst: Num(lst[0], lst[1:]),
-               data)
+
     print ""
     ranks = []
     for x in scottknott(data, useA12=True):

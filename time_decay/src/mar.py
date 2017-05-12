@@ -67,7 +67,7 @@ class MAR(object):
             ind = header.index("label")
             self.body["label"].extend([c[ind] for c in content[1:] if c[ind0]!="undetermined"])
         except:
-            self.body["label"].extend(["unknown"] * (len([c[ind0] for c in content[1:] if c[ind0]!="undetermined"])))
+            self.body["label"].extend([c[ind0] for c in content[1:] if c[ind0]!="undetermined"])
 
         self.preprocess()
         self.save()
@@ -269,7 +269,7 @@ class MAR(object):
         return uncertain_id, uncertain_prob, certain_id, certain_prob
 
     ## reuse
-    def train_reuse(self):
+    def train_reuse(self,pne=True):
         clf = svm.SVC(kernel='linear', probability=True)
         poses = np.where(np.array(self.body['code']) == "yes")[0]
         negs = np.where(np.array(self.body['code']) == "no")[0]
@@ -280,8 +280,18 @@ class MAR(object):
         if len(left)==0:
             return [], [], self.random(), []
 
+
+
         decayed = list(left) + list(negs)
+
         unlabeled = np.where(np.array(self.body['code']) == "undetermined")[0]
+        try:
+            unlabeled = np.random.choice(unlabeled, size=np.max((len(decayed), self.atleast)), replace=False)
+        except:
+            pass
+
+        if not pne:
+            unlabeled = []
         # try:
         #     unlabeled = np.random.choice(unlabeled,size=np.max((len(decayed),self.atleast)),replace=False)
         # except:

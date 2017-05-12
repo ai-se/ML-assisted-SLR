@@ -1468,14 +1468,14 @@ def draw_percentile(set):
 
     for i,ind in enumerate(np.sort(stats['new_continuous_aggressive'].keys())):
         plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile")
-        plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i])
+        # plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i])
 
     plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     # plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=2, borderaxespad=0.)
     plt.legend(bbox_to_anchor=(0.7, 0.80), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/percentile_"+set+".eps")
-    plt.savefig("../figure/percentile_"+set+".png")
+    plt.savefig("../figure/percentile1_"+set+".eps")
+    plt.savefig("../figure/percentile1_"+set+".png")
 
 def draw_HCCA(set):
     font = {'family': 'cursive',
@@ -2199,7 +2199,7 @@ def simulate(seed):
 
     font = {'family': 'normal',
             'weight': 'bold',
-            'size': 20}
+            'size': 40}
 
     plt.rc('font', **font)
     paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
@@ -2207,12 +2207,12 @@ def simulate(seed):
     plt.rcParams.update(paras)
 
     plt.figure(0)
-    plt.scatter(x[pos,0],x[pos,1], marker='o', s=500, color='grey')
-    plt.scatter(x[neg, 0], x[neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[pos,0],x[pos,1], marker='o', s=500, color='0.75')
+    plt.scatter(x[neg, 0], x[neg, 1], marker='x', s=500, color='0.75')
 
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    plt.savefig("../figure/simu0.png")
+    plt.savefig("../figure/sim/simu0.png")
 
     pool=range(size)
     known=np.random.choice(pool,10,replace=False)
@@ -2222,28 +2222,28 @@ def simulate(seed):
     p_pos = np.array(pool)[np.where(y[pool] == 1)[0]]
     p_neg = np.array(pool)[np.where(y[pool] == 0)[0]]
     plt.figure(1)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
 
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    plt.savefig("../figure/simu1.png")
+    plt.savefig("../figure/sim/simu1.png")
 
     clf1 = svm.SVC(kernel='linear',probability=True)
     clf1.fit(x[known], y[known])
     x0 = (-1 +0.0006- clf1.intercept_[0]) / clf1.coef_[0][0]
     y0 = (-1 +0.0006 - clf1.intercept_[0]) / clf1.coef_[0][1]
     plt.figure(11)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
     plt.plot([0,x0],[y0,0], color='black')
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    plt.savefig("../figure/simu11.png")
+    plt.savefig("../figure/sim/simu11.png")
 
     next = np.array(pool)[np.argsort(clf1.predict_proba(x[pool])[:, clf1.classes_[0]])[::-1][:10]]
     known1 = list(known)+list(next)
@@ -2258,14 +2258,189 @@ def simulate(seed):
     y0 = (-1 + 0.005 - clf1.intercept_[0]) / clf1.coef_[0][1]
 
     plt.figure(12)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
     plt.plot([0, x0], [y0, 0], color='black')
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    plt.savefig("../figure/simu12.png")
+    plt.savefig("../figure/sim/simu12.png")
+
+    kept = np.array(k_neg)[np.argsort(clf1.predict_proba(x[k_neg])[:, clf1.classes_[0]])[::-1][:len(k_pos)]]
+    clf1 = svm.SVC(kernel='linear', probability=True)
+    clf1.fit(x[list(k_pos) + list(kept)], y[list(k_pos) + list(kept)])
+    x0 = (- clf1.intercept_[0]) / clf1.coef_[0][0]
+    y0 = (- clf1.intercept_[0]) / clf1.coef_[0][1]
+    x1 = (-1 - clf1.intercept_[0] - clf1.coef_[0][1]) / clf1.coef_[0][0]
+    plt.figure(13)
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
+    plt.scatter(x[kept, 0], x[kept, 1], marker='x', s=500, color='red')
+    plt.plot([0, x0], [y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/sim/simu13.png")
+
+    x2 = []
+    y2 = []
+    size = 200
+    for i in xrange(size):
+        xtmp = [random.random(), random.random()]
+        x2.append(xtmp)
+        if random.random() < (2 - sum(xtmp)) / 2 - 0.5:
+            y2.append(1)
+        else:
+            y2.append(0)
+    x2 = np.array(x2)
+    y2 = np.array(y2)
+    pos3 = np.where(y2 == 1)[0]
+    neg3 = np.where(y2 == 0)[0]
+
+    plt.figure(3)
+    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='0.75')
+
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/sim/simu3.png")
+
+
+    ## update all
+    plt.figure(311)
+    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='0.75')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
+    plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='X', s=500, linewidths=5, facecolors='none', edgecolors='red')
+    # plt.plot([0, x0], [y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/sim/simu311.png")
+
+
+    plt.figure(31)
+    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='0.75')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
+    plt.scatter(x[kept, 0], x[kept, 1], marker='X', s=500, linewidths=5, facecolors='none', edgecolors='red')
+    plt.plot([0, x0], [y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/sim/simu31.png")
+
+
+
+
+    pool3 = range(size)
+    next = np.array(pool3)[np.argsort(clf1.predict_proba(x2[pool3])[:, clf1.classes_[0]])[:10]]
+    known3=[]
+    known3 = list(known3) + list(next)
+    pool3 = list(set(pool3) - set(known3))
+    clf3 = svm.SVC(kernel='linear', probability=True)
+    clf3.fit(list(x2[known3])+list(x[known1]), list(y2[known3])+list(y[known1]))
+    k_pos3 = np.array(known3)[np.where(y2[known3] == 1)[0]]
+    k_neg3 = np.array(known3)[np.where(y2[known3] == 0)[0]]
+    p_pos3 = np.array(pool3)[np.where(y2[pool3] == 1)[0]]
+    p_neg3 = np.array(pool3)[np.where(y2[pool3] == 0)[0]]
+
+    kept3 = np.array(k_neg)[np.argsort(clf3.predict_proba(x[k_neg])[:, clf3.classes_[0]])[:len(k_pos3)+len(k_pos)-2]]
+    clf3.fit(list(x2[k_pos3])+list(x[kept3]) + list(x[k_pos]), list(y2[k_pos3])+ list(y[kept3])+ list(y[k_pos]))
+    x0 = (- clf3.intercept_[0]) / clf3.coef_[0][0]
+    y0 = (- clf3.intercept_[0]) / clf3.coef_[0][1]
+    plt.figure(32)
+    plt.scatter(x2[p_pos3, 0], x2[p_pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[p_neg3, 0], x2[p_neg3, 1], marker='x', s=500, color='0.75')
+    plt.scatter(x2[k_pos3, 0], x2[k_pos3, 1], marker='o', s=500, color='blue')
+    plt.scatter(x2[k_neg3[-2:], 0], x2[k_neg3[-2:], 1], marker='x', s=500, color='red')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
+    plt.scatter(x[kept3, 0], x[kept3, 1], marker='X', s=500, linewidths=5, facecolors='none', edgecolors='red')
+    plt.plot([0, x0], [y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/sim/simu32.png")
+
+
+
+
+    ## update pos
+    plt.figure(411)
+    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='0.75')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
+    # plt.plot([0, x0], [y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/sim/simu411.png")
+
+    known4=[]
+    pool4 = range(size)
+    pne4 = np.argsort(np.sum(x2[pool4],axis=1))[::-1][:len(k_pos)]
+
+    clf4 = svm.SVC(kernel='linear', probability=True)
+    clf4.fit(list(x2[pne4]) + list(x[k_pos]), list(y2[pne4]) + list(y[k_pos]))
+    x0 = (- clf4.intercept_[0]) / clf4.coef_[0][0]
+    y0 = (- clf4.intercept_[0]) / clf4.coef_[0][1]
+
+
+    plt.figure(41)
+    plt.scatter(x2[pos3, 0], x2[pos3, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[neg3, 0], x2[neg3, 1], marker='x', s=500, color='0.75')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
+    plt.scatter(x2[pne4, 0], x2[pne4, 1], marker='D', s=500, linewidths=5, facecolors='none', edgecolors='purple')
+
+    plt.plot([0, x0], [y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/sim/simu41.png")
+
+    next = np.array(pool4)[np.argsort(clf4.predict_proba(x2[pool4])[:, clf4.classes_[0]])[:10]]
+    known4 = list(known4) + list(next)
+    pool4 = list(set(pool4) - set(known4))
+    k_pos4 = np.array(known4)[np.where(y2[known4] == 1)[0]]
+    k_neg4 = np.array(known4)[np.where(y2[known4] == 0)[0]]
+    p_pos4 = np.array(pool4)[np.where(y2[pool4] == 1)[0]]
+    p_neg4 = np.array(pool4)[np.where(y2[pool4] == 0)[0]]
+
+    pne4 =np.array(pool4)[ np.argsort(np.sum(x2[pool4], axis=1))[::-1][:len(k_pos)+len(k_pos4)]]
+
+    clf4.fit(list(x2[k_pos4]) + list(x[k_pos]) + list(x2[pne4]), list(y2[k_pos4]) + list(y[k_pos]) + list(y2[pne4]))
+    x0 = (- clf4.intercept_[0]) / clf4.coef_[0][0]
+    y0 = (- clf4.intercept_[0]) / clf4.coef_[0][1]
+
+    plt.figure(42)
+    plt.scatter(x2[p_pos4, 0], x2[p_pos4, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[p_neg4, 0], x2[p_neg4, 1], marker='x', s=500, color='0.75')
+    plt.scatter(x2[k_pos4, 0], x2[k_pos4, 1], marker='o', s=500, color='blue')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, linewidths=5, facecolors='none', edgecolors='blue')
+    plt.scatter(x2[pne4, 0], x2[pne4, 1], marker='D', s=500, linewidths=5, facecolors='none', edgecolors='purple')
+
+    plt.plot([0, x0], [y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/sim/simu42.png")
+
+    ## reuse
+    pne4 = np.array(pool4)[np.argsort(np.sum(x2[pool4], axis=1))[::-1][:len(k_pos4)]]
+    clf4.fit(list(x2[k_pos4]) +  list(x2[pne4]), list(y2[k_pos4]) +  list(y2[pne4]))
+    x0 = (- clf4.intercept_[0]) / clf4.coef_[0][0]
+    y0 = (- clf4.intercept_[0]) / clf4.coef_[0][1]
+
+    plt.figure(43)
+    plt.scatter(x2[p_pos4, 0], x2[p_pos4, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x2[p_neg4, 0], x2[p_neg4, 1], marker='x', s=500, color='0.75')
+    plt.scatter(x2[k_pos4, 0], x2[k_pos4, 1], marker='o', s=500, color='blue')
+    plt.scatter(x2[pne4, 0], x2[pne4, 1], marker='D', s=500, linewidths=5, facecolors='none', edgecolors='purple')
+
+    plt.plot([0, x0], [y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/sim/simu43.png")
+
+
+
+
+
 
 
 
@@ -2280,14 +2455,14 @@ def simulate(seed):
     p_pos = np.array(pool2)[np.where(y[pool2] == 1)[0]]
     p_neg = np.array(pool2)[np.where(y[pool2] == 0)[0]]
     plt.figure(2)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
 
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    plt.savefig("../figure/simu2.png")
+    plt.savefig("../figure/sim/simu2.png")
 
     clf2 = svm.SVC(kernel='linear', probability=True)
     clf2.fit(x[known2], y[known2])
@@ -2295,14 +2470,14 @@ def simulate(seed):
     y0 = (-1  - clf2.intercept_[0]) / clf2.coef_[0][1]
     x1 = (-1 +0.002  - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
     plt.figure(21)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
     plt.plot([x0, x1], [0, 1], color='black')
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    plt.savefig("../figure/simu21.png")
+    plt.savefig("../figure/sim/simu21.png")
 
     next = np.array(pool2)[np.argsort(np.abs(clf2.decision_function(x[pool2])+1))[:10]]
     known2 = list(known2) + list(next)
@@ -2317,14 +2492,14 @@ def simulate(seed):
     y0 = (-1 +0.05- clf2.intercept_[0]) / clf2.coef_[0][1]
     x1 = (-1  - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
     plt.figure(22)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
     plt.plot([0, x0], [y0, 0], color='black')
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    plt.savefig("../figure/simu22.png")
+    plt.savefig("../figure/sim/simu22.png")
 
     kept = np.array(k_neg)[np.argsort(clf2.predict_proba(x[k_neg])[:, clf2.classes_[0]])[::-1][:len(k_pos)]]
     clf2 = svm.SVC(kernel='linear', probability=True)
@@ -2333,14 +2508,14 @@ def simulate(seed):
     y0 = (- clf2.intercept_[0]) / clf2.coef_[0][1]
     x1 = (-1 - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
     plt.figure(23)
-    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='grey')
-    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='grey')
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
     plt.scatter(x[kept, 0], x[kept, 1], marker='x', s=500, color='red')
     plt.plot([0, x0], [y0, 0], color='black')
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    plt.savefig("../figure/simu23.png")
+    plt.savefig("../figure/sim/simu23.png")
 
 
 

@@ -1467,14 +1467,14 @@ def draw_percentile(set):
 
     for i,ind in enumerate(np.sort(stats['new_continuous_aggressive'].keys())):
         plt.plot(results[0]['x'][:len(stats["new_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["new_continuous_aggressive"][ind]),color=colors[i],label=str(ind)+"th Percentile")
-        plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i])
+        # plt.plot(results[0]['x'][:len(stats["semi_continuous_aggressive"][ind])], map(lambda x: x/pos_num, stats["semi_continuous_aggressive"][ind]), "-.", color=colors[i])
 
     plt.ylabel(set+"\nRecall")
     plt.xlabel("Studies Reviewed")
     # plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=2, borderaxespad=0.)
     plt.legend(bbox_to_anchor=(0.7, 0.80), loc=1, ncol=1, borderaxespad=0.)
-    plt.savefig("../figure/percentile_"+set+".eps")
-    plt.savefig("../figure/percentile_"+set+".png")
+    plt.savefig("../figure/percentile1_"+set+".eps")
+    plt.savefig("../figure/percentile1_"+set+".png")
 
 def draw_HCCA(set):
     font = {'family': 'cursive',

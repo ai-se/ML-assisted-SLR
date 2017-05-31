@@ -19,6 +19,7 @@ from sklearn.cluster import KMeans
 from time import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from mar import MAR
+from wallace import Wallace
 
 
 
@@ -251,6 +252,21 @@ def bestNworst(results):
 
     return stats
 
+
+def stats(file):
+    with open("../dump/"+file+".pickle", "r") as f:
+        result=pickle.load(f)
+    all={}
+    for key in result:
+        try:
+            if key.split('_')[1]!='2':
+                continue
+        except:
+            pass
+        all[key.split('_')[0]]=[x['x'][-1] for x in result[key]]
+    rdivDemo(all, isLatex=True)
+
+
 ##### UPDATE exp
 
 
@@ -372,7 +388,7 @@ def update(first,second,all):
     with open("../dump/UPDATE_"+all.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(result,handle)
 
-def simple(first):
+def rest(first):
     repeats=30
     rest=[]
     for i in xrange(repeats):
@@ -382,6 +398,31 @@ def simple(first):
         rest.append(tmp)
     with open("../dump/rest_"+first.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(rest,handle)
+
+
+def test_estimate(first):
+    repeats=30
+    result={'pos':[],'est':[]}
+    for i in xrange(repeats):
+        first = str(first)
+        a = START(first)
+        result['est'].append(a.record_est)
+        result['pos'].append(a.record)
+        print(i,end=" ")
+    with open("../dump/est_"+first.split('.')[0]+".pickle","wb") as handle:
+        pickle.dump(result,handle)
+
+def test_wallace(first):
+    repeats=30
+    result={'pos':[],'est':[]}
+    for i in xrange(repeats):
+        first = str(first)
+        a = START_Wallace(first)
+        result['est'].append(a.record_est)
+        result['pos'].append(a.record)
+        print(i,end=" ")
+    with open("../dump/wallace_"+first.split('.')[0]+".pickle","wb") as handle:
+        pickle.dump(result,handle)
 
 def repeat_auto(first):
     repeats=30
@@ -399,28 +440,18 @@ def repeat_auto(first):
         pickle.dump(rec,handle)
 
 
-def stats(file):
-    with open("../dump/"+file+".pickle", "r") as f:
-        result=pickle.load(f)
-    all={}
-    for key in result:
-        try:
-            if key.split('_')[1]!='2':
-                continue
-        except:
-            pass
-        all[key.split('_')[0]]=[x['x'][-1] for x in result[key]]
-    rdivDemo(all, isLatex=True)
 
 
 
 ## basic units
 
-
-def START(filename):
+def START_Wallace(filename):
     stop=0.90
+    thres = 40
 
-    read = MAR()
+    read = Wallace()
+    read = read.create(filename)
+    read.restart()
     read = read.create(filename)
     target = int(read.get_allpos()*stop)
     while True:
@@ -428,7 +459,30 @@ def START(filename):
         # print("%d, %d" %(pos,pos+neg))
         if pos >= target:
             break
-        if pos==0:
+        if pos==0 or pos+neg<thres:
+            for id in read.random():
+                read.code(id, read.body["label"][id])
+        else:
+            a,b,ids,c =read.train(pne=True)
+            for id in ids:
+                read.code(id, read.body["label"][id])
+    return read
+
+def START(filename):
+    stop=0.90
+    thres = 40
+
+    read = MAR()
+    read = read.create(filename)
+    read.restart()
+    read = read.create(filename)
+    target = int(read.get_allpos()*stop)
+    while True:
+        pos, neg, total = read.get_numbers()
+        # print("%d, %d" %(pos,pos+neg))
+        if pos >= target:
+            break
+        if pos==0 or pos+neg<thres:
             for id in read.random():
                 read.code(id, read.body["label"][id])
         else:

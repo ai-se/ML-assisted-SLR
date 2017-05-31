@@ -29,6 +29,7 @@ class MAR(object):
         self.est=[]
         self.last_pos=0
         self.last_neg=0
+        self.record_est={"x":[],"semi":[],"sigmoid":[]}
 
 
         try:
@@ -203,7 +204,21 @@ class MAR(object):
                     can=[]
             return sample
 
+        ### just labeled
+        poses = np.where(np.array(self.body['code']) == "yes")[0]
+        negs = np.where(np.array(self.body['code']) == "no")[0]
+        decayed = list(poses) + list(negs)
+        y = [1] * len(poses) + [0] * len(negs)
+        prob = clf.decision_function(self.csr_mat)
+        prob = np.array([[x] for x in prob])
 
+        es = linear_model.LogisticRegression(penalty='l2', fit_intercept=True)
+
+        es.fit(prob[decayed], y)
+        pos_at = list(es.classes_).index(1)
+        pre = es.predict_proba(prob)[:, pos_at]
+        est1 = len(poses)-self.last_pos + sum(pre[self.pool])
+        ###############################################
 
         # prob = clf.predict_proba(self.csr_mat)[:,:1]
         prob = clf.decision_function(self.csr_mat)
@@ -216,6 +231,7 @@ class MAR(object):
 
         lifes=3
         life=lifes
+        pos_num=Counter(y)[1]
         while (True):
             es.fit(prob, y)
             pos_at = list(es.classes_).index(1)
@@ -238,8 +254,14 @@ class MAR(object):
             else:
                 life=lifes
             pos_num_last = pos_num
+        esty=pos_num-self.last_pos
+        self.record_est['x'].append(len(poses)+len(negs)-self.last_pos-self.last_neg)
+        self.record_est['semi'].append(esty)
+        self.record_est['sigmoid'].append(est1)
         pre = es.predict_proba(prob)[:, pos_at]
-        return pos_num,pre
+        return esty,pre
+
+
 
 
     ## Train model ##

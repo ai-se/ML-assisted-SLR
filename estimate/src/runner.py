@@ -136,6 +136,65 @@ def pro_simple(first):
     plt.savefig("../figure/left_"+str(first)+".png")
 
 
+def draw_est(file):
+
+    true=106
+    total=8991
+
+
+
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/"+str(file)+".pickle", "r") as f:
+        results=pickle.load(f)
+
+
+    stats=bestNworst(results)
+    colors=['blue','purple','green','brown','red']
+    lines=['-','--','-.',':']
+    five=['$0th$','$25th$','$50th$','$75th$','$100th$']
+
+    nums = set([])
+    line=[0,0,0,0,0]
+    plt.figure(1)
+    for j, ind in enumerate(stats['pos']):
+        # if ind == 50 or ind == 0 or ind==100:
+        if ind == 50:
+            plt.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true)
+    plt.ylabel(str(file).split("_")[1] + "\nRecall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.40), loc=1, ncol=2, borderaxespad=0.)
+    plt.savefig("../figure/recall_" + str(file) + ".eps")
+    plt.savefig("../figure/recall_" + str(file) + ".png")
+
+    plt.figure(2)
+    for j, ind in enumerate(stats['est']):
+        # if ind == 50 or ind == 0 or ind==100:
+        if ind == 50:
+            plt.plot(stats['est'][ind]['x'], [true/total]*len(stats['est'][ind]['x']), linestyle=lines[0], label='true')
+            index=1
+            for key in stats['est'][ind]:
+                if key=='x':
+                    continue
+                # plt.plot(stats['est'][ind]['x'], stats['est'][ind][key],linestyle=lines[index],label=key)
+                plt.plot(stats['est'][ind]['x'], np.array(stats['est'][ind][key])/total, linestyle=lines[index], label=key)
+                index=index+1
+
+    plt.ylabel(str(file).split("_")[1] + "\nPrevalence")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=2, borderaxespad=0.)
+    plt.savefig("../figure/prev_" + str(file) + ".eps")
+    plt.savefig("../figure/prev_" + str(file) + ".png")
+
+
 
 
 
@@ -252,19 +311,6 @@ def bestNworst(results):
 
     return stats
 
-
-def stats(file):
-    with open("../dump/"+file+".pickle", "r") as f:
-        result=pickle.load(f)
-    all={}
-    for key in result:
-        try:
-            if key.split('_')[1]!='2':
-                continue
-        except:
-            pass
-        all[key.split('_')[0]]=[x['x'][-1] for x in result[key]]
-    rdivDemo(all, isLatex=True)
 
 
 ##### UPDATE exp

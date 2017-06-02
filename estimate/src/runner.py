@@ -138,8 +138,8 @@ def pro_simple(first):
 
 def draw_est(file):
 
-    true=106
-    total=8991
+    true=62
+    total=7002
 
 
 
@@ -498,6 +498,7 @@ def START_Wallace(filename):
     read = Wallace()
     read = read.create(filename)
     read.restart()
+    read = Wallace()
     read = read.create(filename)
     target = int(read.get_allpos()*stop)
     while True:
@@ -521,6 +522,7 @@ def START(filename):
     read = MAR()
     read = read.create(filename)
     read.restart()
+    read = MAR()
     read = read.create(filename)
     target = int(read.get_allpos()*stop)
     while True:

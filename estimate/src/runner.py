@@ -138,8 +138,8 @@ def pro_simple(first):
 
 def draw_est(file):
 
-    true=62
-    total=7002
+    true=48
+    total=6000
 
 
 

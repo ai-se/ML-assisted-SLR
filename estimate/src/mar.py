@@ -204,7 +204,31 @@ class MAR(object):
                     can=[]
             return sample
 
+        # def prob_sample(probs):
+        #     order=np.argsort(probs)[::-1]
+        #     count=0
+        #     can=[]
+        #     sample=[]
+        #     where = 1
+        #     for i,x in enumerate(probs[order]):
+        #         count=count+x
+        #         can.append(order[i])
+        #         if count>=where:
+        #             # sample.append(np.random.choice(can,1)[0])
+        #             sample.append(can[0])
+        #             where=where+1
+        #             can=[]
+        #     return sample
+
+        # def prob_sample(probs):
+        #     sample=[]
+        #     for i,x in enumerate(probs):
+        #         if random.random<x:
+        #             sample.append(i)
+        #     return sample
+
         ### just labeled
+
         poses = np.where(np.array(self.body['code']) == "yes")[0]
         negs = np.where(np.array(self.body['code']) == "no")[0]
         decayed = list(poses) + list(negs)
@@ -226,7 +250,10 @@ class MAR(object):
 
         y=np.array([1 if x=='yes' else 0 for x in self.body['code']])
         y0=np.copy(y)
+
+
         es = linear_model.LogisticRegression(penalty='l2',fit_intercept =True)
+
         pos_num_last=Counter(y)[1]
 
         lifes=3
@@ -516,7 +543,6 @@ class MAR(object):
         if Counter(self.body['code'])['yes']>=self.enough:
             est=self.est[self.pool]
             order=np.argsort(est)[::-1]
-            count=0
             xx=[self.record["x"][-1]]
             yy=[self.record["pos"][-1]]
             for x in xrange(int(len(order)/self.step)):
@@ -524,6 +550,8 @@ class MAR(object):
                 if delta>=0.1:
                     yy.append(yy[-1]+delta)
                     xx.append(xx[-1]+self.step)
+                else:
+                    break
             plt.plot(xx, yy, "-.")
         ####################
         plt.ylabel("Relevant Found")
@@ -558,3 +586,17 @@ class MAR(object):
         set_trace()
         return rests
 
+    def cache_est(self):
+        est = self.est[self.pool]
+        order = np.argsort(est)[::-1]
+        xx = [self.record["x"][-1]]
+        yy = [self.record["pos"][-1]]
+        for x in xrange(int(len(order) / self.step)):
+            delta = sum(est[order[x * self.step:(x + 1) * self.step]])
+            if delta >= 0.1:
+                yy.append(yy[-1] + delta)
+                xx.append(xx[-1] + self.step)
+            else:
+                break
+        self.xx=xx
+        self.yy=yy

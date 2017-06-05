@@ -486,7 +486,28 @@ def repeat_auto(first):
         pickle.dump(rec,handle)
 
 
+def one_cache_est(filename):
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
 
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    read = START_est(filename)
+
+    plt.figure()
+    plt.plot(read.record['x'], read.record['pos'], label="Actual Curve")
+    try:
+        plt.plot(read.xx, read.yy, '-.',label="Estimated Curve")
+    except:
+        pass
+    plt.ylabel("Relevant Found")
+    plt.xlabel("Documents Reviewed")
+    plt.savefig("../figure/cache_" + str(filename).split('.')[0] + ".eps")
+    plt.savefig("../figure/cache_" + str(filename).split('.')[0] + ".png")
 
 
 ## basic units
@@ -535,6 +556,36 @@ def START(filename):
                 read.code(id, read.body["label"][id])
         else:
             a,b,ids,c =read.train(pne=True)
+            for id in ids:
+                read.code(id, read.body["label"][id])
+    return read
+
+def START_est(filename):
+    stop=0.90
+    thres = 40
+    flag = True
+
+    read = MAR()
+    read = read.create(filename)
+    read.restart()
+    read = MAR()
+    read = read.create(filename)
+    target = int(read.get_allpos()*stop)
+    while True:
+        pos, neg, total = read.get_numbers()
+        # print("%d, %d" %(pos,pos+neg))
+        if pos >= target:
+            break
+        if pos==0 or pos+neg<thres:
+            for id in read.random():
+                read.code(id, read.body["label"][id])
+        else:
+            a,b,ids,c =read.train(pne=True)
+
+            if pos >= read.enough and flag:
+                read.cache_est()
+                flag= False
+
             for id in ids:
                 read.code(id, read.body["label"][id])
     return read

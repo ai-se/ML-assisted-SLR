@@ -286,8 +286,37 @@ class MAR(object):
         self.record_est['semi'].append(esty)
         self.record_est['sigmoid'].append(est1)
         pre = es.predict_proba(prob)[:, pos_at]
-        return esty,pre
 
+        ###
+        pre = es.predict_proba(prob[self.pool])[:, pos_at]
+        y = np.copy(y0)
+        for x in self.pool[np.argsort(pre)[-pos_num+len(poses):]]:
+            y[x]=1
+        es.fit(prob, y)
+        pos_at = list(es.classes_).index(1)
+        pre = es.predict_proba(prob)[:, pos_at]
+        ###
+
+        ##### simu curve #######
+        # self.simcurve={'x':[self.record['x'][-1]],'pos':[self.record['pos'][-1]]}
+        # already=decayed
+        # pool=np.where(np.array(self.body['code']) == "undetermined")[0]
+        # clff=svm.SVC(kernel='linear', probability=True)
+        # while True:
+        #     clff.fit(self.csr_mat[already], y[already])
+        #     pos_at = list(clff.classes_).index(1)
+        #     prob = clff.predict_proba(self.csr_mat[pool])[:, pos_at]
+        #     sample = pool[np.argsort(prob)[::-1][:self.step]]
+        #     already = already+list(sample)
+        #     pool = np.array(list(set(pool)-set(sample)))
+        #     self.simcurve['x'].append(self.simcurve['x'][-1]+self.step)
+        #     self.simcurve['pos'].append(Counter(y[already])[1])
+        #     if self.simcurve['pos'][-1] > int(Counter(y)[1]*0.9) or self.simcurve['pos'][-1]==self.simcurve['pos'][-2]:
+        #         break
+        # set_trace()
+        ########################
+
+        return esty,pre
 
 
 

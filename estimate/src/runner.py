@@ -584,6 +584,8 @@ def START_est(filename):
 
             if pos >= read.enough and flag:
                 read.cache_est()
+                # read.xx=read.simcurve['x']
+                # read.yy=read.simcurve['pos']
                 flag= False
 
             for id in ids:

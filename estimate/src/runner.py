@@ -501,7 +501,8 @@ def one_cache_est(filename):
     plt.figure()
     plt.plot(read.record['x'], read.record['pos'], label="Actual Curve")
     try:
-        plt.plot(read.xx, read.yy, '-.',label="Estimated Curve")
+        plt.plot(read.xx, read.yy, '-.',label="Estimated Curve 1")
+        plt.plot(read.xx2, read.yy2, '--', label="Estimated Curve 2")
     except:
         pass
     plt.ylabel("Relevant Found")

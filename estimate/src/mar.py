@@ -288,13 +288,13 @@ class MAR(object):
         pre = es.predict_proba(prob)[:, pos_at]
 
         ###
-        pre = es.predict_proba(prob[self.pool])[:, pos_at]
+        pre2 = es.predict_proba(prob[self.pool])[:, pos_at]
         y = np.copy(y0)
-        for x in self.pool[np.argsort(pre)[-pos_num+len(poses):]]:
+        for x in self.pool[np.argsort(pre2)[-pos_num+len(poses):]]:
             y[x]=1
         es.fit(prob, y)
         pos_at = list(es.classes_).index(1)
-        pre = es.predict_proba(prob)[:, pos_at]
+        pre2 = es.predict_proba(prob)[:, pos_at]
         ###
 
         ##### simu curve #######
@@ -316,7 +316,7 @@ class MAR(object):
         # set_trace()
         ########################
 
-        return esty,pre
+        return esty,pre,pre2
 
 
 
@@ -352,7 +352,7 @@ class MAR(object):
             sample = list(left) + list(np.array(all_neg)[negs_sel])
             clf.fit(self.csr_mat[sample], labels[sample])
 
-        est_num, self.est = self.estimate_curve(clf)
+        est_num, self.est, self.est2 = self.estimate_curve(clf)
         uncertain_id, uncertain_prob = self.uncertain(clf)
         certain_id, certain_prob = self.certain(clf)
         return uncertain_id, self.est[uncertain_id], certain_id, self.est[certain_id]
@@ -570,7 +570,7 @@ class MAR(object):
         plt.plot(self.record['x'], self.record["pos"])
         ### estimation ####
         if Counter(self.body['code'])['yes']>=self.enough:
-            est=self.est[self.pool]
+            est=self.est2[self.pool]
             order=np.argsort(est)[::-1]
             xx=[self.record["x"][-1]]
             yy=[self.record["pos"][-1]]
@@ -629,3 +629,17 @@ class MAR(object):
                 break
         self.xx=xx
         self.yy=yy
+
+        est = self.est2[self.pool]
+        order = np.argsort(est)[::-1]
+        xx2 = [self.record["x"][-1]]
+        yy2 = [self.record["pos"][-1]]
+        for x in xrange(int(len(order) / self.step)):
+            delta = sum(est[order[x * self.step:(x + 1) * self.step]])
+            if delta >= 0.1:
+                yy2.append(yy[-1] + delta)
+                xx2.append(xx[-1] + self.step)
+            else:
+                break
+        self.xx2 = xx2
+        self.yy2 = yy2

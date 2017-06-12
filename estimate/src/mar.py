@@ -231,6 +231,8 @@ class MAR(object):
 
         poses = np.where(np.array(self.body['code']) == "yes")[0]
         negs = np.where(np.array(self.body['code']) == "no")[0]
+
+
         decayed = list(poses) + list(negs)
         y = [1] * len(poses) + [0] * len(negs)
         prob = clf.decision_function(self.csr_mat)
@@ -637,8 +639,8 @@ class MAR(object):
         for x in xrange(int(len(order) / self.step)):
             delta = sum(est[order[x * self.step:(x + 1) * self.step]])
             if delta >= 0.1:
-                yy2.append(yy[-1] + delta)
-                xx2.append(xx[-1] + self.step)
+                yy2.append(yy2[-1] + delta)
+                xx2.append(xx2[-1] + self.step)
             else:
                 break
         self.xx2 = xx2

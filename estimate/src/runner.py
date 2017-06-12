@@ -138,8 +138,8 @@ def pro_simple(first):
 
 def draw_est(file):
 
-    true=48
-    total=6000
+    true=62
+    total=7002
 
 
 
@@ -583,7 +583,7 @@ def START_est(filename):
         else:
             a,b,ids,c =read.train(pne=True)
 
-            if pos >= read.enough and flag:
+            if pos >= 60 and flag:
                 read.cache_est()
                 # read.xx=read.simcurve['x']
                 # read.yy=read.simcurve['pos']

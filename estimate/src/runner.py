@@ -549,14 +549,14 @@ def START(filename):
     target = int(read.get_allpos()*stop)
     while True:
         pos, neg, total = read.get_numbers()
-        # print("%d, %d" %(pos,pos+neg))
+        print("%d, %d" %(pos,pos+neg))
         if pos >= target:
             break
         if pos==0 or pos+neg<thres:
             for id in read.random():
                 read.code(id, read.body["label"][id])
         else:
-            a,b,ids,c =read.train(pne=True)
+            a,b,ids,c =read.train(weighting=True)
             for id in ids:
                 read.code(id, read.body["label"][id])
     return read
@@ -846,6 +846,9 @@ def START_ERROR(filename):
     read.export()
     return read
 
+
+
+###################################
 def LINEAR(filename):
     read = MAR()
     read = read.create(filename)

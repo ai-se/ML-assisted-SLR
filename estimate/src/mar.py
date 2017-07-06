@@ -323,8 +323,8 @@ class MAR(object):
 
 
     ## Train model ##
-    def train(self,pne=True):
-        clf = svm.SVC(kernel='linear', probability=True)
+    def train(self,pne=True,weighting=False):
+        clf = svm.SVC(kernel='linear', probability=True, class_weight='balanced') if weighting else svm.SVC(kernel='linear', probability=True)
         poses = np.where(np.array(self.body['code']) == "yes")[0]
         negs = np.where(np.array(self.body['code']) == "no")[0]
         left = poses

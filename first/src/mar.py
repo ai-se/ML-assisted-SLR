@@ -147,9 +147,10 @@ class MAR(object):
         return
     
     def syn_error(self):
-        self.body['syn_error'] = [Counter([self.body['label'][j] for j, vecb in enumerate(self.csr_mat) if
+        tmp = [Counter([self.body['label'][j] for j, vecb in enumerate(self.csr_mat) if
                                            (vec * vecb.transpose()).toarray()[0, 0] >= self.syn_thres]) for vec in
-                                  self.csr_mat[-10:]]
+                                  self.csr_mat]
+        self.body['syn_error'] = [x['yes']/sum(x.values()) for x in tmp]
         set_trace()
 
     def export_feature(self):

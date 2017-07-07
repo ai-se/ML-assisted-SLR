@@ -913,7 +913,7 @@ def Codes(filename, code):
                 read.code(id, read.body["label"][id])
         else:
             a,b,c,d,e =read.train(weighting=weighting)
-            if pos < 30 and uncertain:
+            if pos < 10 and uncertain:
                 for id in a:
                     read.code(id, read.body["label"][id])
             else:
@@ -948,7 +948,7 @@ def run_Codes(filename):
                         read = Codes(filename,code)
                         result[code].append(read.record)
                         print("%s: %d" %(code,i))
-    with open("../dump/codes_"+filename.split('.')[0]+".pickle","wb") as handle:
+    with open("../dump/codes1_"+filename.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(result,handle)
 
 def summary(filename):

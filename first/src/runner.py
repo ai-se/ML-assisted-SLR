@@ -955,15 +955,25 @@ def summary(filename):
     with open("../dump/"+str(filename)+".pickle", "rb") as f:
         results=pickle.load(f)
     test=[]
+    total = results['linear'][0]['x'][-1]
+    wss95 = []
     for key in results:
         # if 'M' in key:
         #     continue
         tmp=[]
+        tmp_wss = []
         for r in results[key]:
-            tmp.append(r['x'][-1])
+            if key == 'linear':
+                tmp.append(int(r['x'][-1]*0.95))
+                tmp_wss.append(0.05 - (total - int(r['x'][-1]*0.95)) / total)
+            else:
+                tmp.append(r['x'][-1])
+                tmp_wss.append(0.05 - (total-r['x'][-1])/total)
         test.append([key]+tmp)
+        wss95.append([key]+tmp_wss)
     rdivDemo(test,isLatex=False)
     set_trace()
+    rdivDemo(wss95, isLatex=False)
 
 def draw_selected(file):
     font = {'family': 'cursive',
@@ -985,7 +995,7 @@ def draw_selected(file):
     lines=['-','--','-.',':']
     five=['best','$Q_1$','median','$Q_3$','worst']
     line=[0,0,0,0,0]
-    keys = ['HCTA', 'HCTW', 'HCTM']
+    keys = ['HUTA', 'HUTW', 'HUTM']
     for i,key in enumerate(keys):
         for j,ind in enumerate(stats[key]):
             if ind==50 or ind==0 or ind==100:
@@ -1000,6 +1010,63 @@ def draw_selected(file):
     plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/"+str(file)+".eps")
     plt.savefig("../figure/"+str(file)+".png")
+
+def draw_selected2(file):
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+    with open("../dump/"+str(file)+".pickle", "r") as f:
+        results=pickle.load(f)
+
+
+
+    colors=['blue','purple','green','brown','red']
+    lines=['-','--','-.',':']
+    five=['best','$Q_1$','median','$Q_3$','worst']
+    line=[0,0,0,0,0]
+    keys = ['HUTA', 'HUTW', 'HUTM']
+    what = 11
+    for i,key in enumerate(keys):
+        plt.plot(results[key][what]['x'], results[key][what]['pos'],linestyle=lines[i],label=str(key).capitalize())
+
+    # plt.plot(stats['linear'][50]['x'], stats['linear'][50]['pos'], linestyle=lines[i+1],
+    #          label=five[j] + "_" + str(key).capitalize(), color='green')
+
+
+    plt.ylabel("Recall")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.60), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/"+str(file)+".eps")
+    plt.savefig("../figure/"+str(file)+".png")
+
+
+def MISSING(filename):
+    with open("../workspace/data/" + str(filename), "r") as csvfile:
+        content = [x for x in csv.reader(csvfile, delimiter=',')]
+    field = 'content'
+    header = content[0]
+    ind = header.index(field)
+    cont = [c[ind] for c in content[1:]]
+    yes = np.where(np.array(cont) == "yes")[0]
+    total = len(yes)
+    print(total)
+    repeats=30
+    code = 'HUTM'
+
+    rec = []
+    for i in xrange(repeats):
+        read = Codes(filename,code)
+        yes_code = np.where(np.array(read.body['code']) == "yes")[0]
+        incl = len(set(yes) & set(yes_code))
+        rec.append(incl)
+    print(rec)
 
 
 ##################

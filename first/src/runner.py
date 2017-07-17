@@ -952,7 +952,7 @@ def run_Codes(filename):
         pickle.dump(result,handle)
 
 def summary(filename):
-    with open("../dump/"+str(filename)+".pickle", "rb") as f:
+    with open("../dump/"+str(filename)+".pickle", "r") as f:
         results=pickle.load(f)
     test=[]
     total = results['linear'][0]['x'][-1]
@@ -971,7 +971,7 @@ def summary(filename):
                 tmp_wss.append(0.05 - (total-r['x'][-1])/total)
         test.append([key]+tmp)
         wss95.append([key]+tmp_wss)
-    rdivDemo(test,isLatex=False)
+    rdivDemo(test,isLatex=True)
     set_trace()
     rdivDemo(wss95, isLatex=False)
 
@@ -1068,6 +1068,26 @@ def MISSING(filename):
         rec.append(incl)
     print(rec)
 
+def MISSING2(filename):
+    with open("../workspace/data/" + str(filename), "r") as csvfile:
+        content = [x for x in csv.reader(csvfile, delimiter=',')]
+    field = 'abs'
+    header = content[0]
+    ind = header.index(field)
+    cont = [c[ind] for c in content[1:]]
+    yes = np.where(np.array(cont) == "yes")[0]
+    total = len(yes)
+    print(total)
+    repeats=30
+    code = 'HUTM'
+
+    rec = []
+    for i in xrange(repeats):
+        read = Codes(filename,code)
+        yes_code = np.where(np.array(read.body['code']) != "undetermined")[0]
+        incl = len(set(yes) & set(yes_code))
+        rec.append(incl)
+    print(rec)
 
 ##################
 def ERROR(filename):

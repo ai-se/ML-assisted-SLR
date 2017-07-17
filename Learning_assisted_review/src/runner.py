@@ -2235,6 +2235,7 @@ def init_sample(data,n_clusters,samples):
 
 
 def simulate(seed):
+    seed = 2
     import random
     random.seed(seed)
     np.random.seed(seed+1)
@@ -2544,10 +2545,31 @@ def simulate(seed):
     p_neg = np.array(pool2)[np.where(y[pool2] == 0)[0]]
     clf2 = svm.SVC(kernel='linear', probability=True)
     clf2.fit(x[known2], y[known2])
-    x0 = (-1 +0.05 - clf2.intercept_[0]) / clf2.coef_[0][0]
-    y0 = (-1 +0.05- clf2.intercept_[0]) / clf2.coef_[0][1]
-    x1 = (-1  - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
+    # x0 = (-1 +0.05 - clf2.intercept_[0]) / clf2.coef_[0][0]
+    # y0 = (-1 +0.05- clf2.intercept_[0]) / clf2.coef_[0][1]
+    # x1 = (-1  - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
+    x0 = (- clf2.intercept_[0]) / clf2.coef_[0][0]
+    y0 = (- clf2.intercept_[0]) / clf2.coef_[0][1]
+    x1 = (-1 - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
     plt.figure(22)
+    plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
+    plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
+    plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
+    plt.scatter(x[k_neg, 0], x[k_neg, 1], marker='x', s=500, color='red')
+    plt.plot([0, -0.005*x0], [-0.005*y0, 0], color='black')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.savefig("../figure/sim/simu22.png")
+
+    clf2 = svm.SVC(kernel='linear', probability=True, class_weight = "balanced")
+    clf2.fit(x[known2], y[known2])
+    # x0 = (-1 +0.05 - clf2.intercept_[0]) / clf2.coef_[0][0]
+    # y0 = (-1 +0.05- clf2.intercept_[0]) / clf2.coef_[0][1]
+    # x1 = (-1  - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
+    x0 = (- clf2.intercept_[0]) / clf2.coef_[0][0]
+    y0 = (- clf2.intercept_[0]) / clf2.coef_[0][1]
+    x1 = (-1 - clf2.intercept_[0] - clf2.coef_[0][1]) / clf2.coef_[0][0]
+    plt.figure(24)
     plt.scatter(x[p_pos, 0], x[p_pos, 1], marker='o', s=500, color='0.75')
     plt.scatter(x[p_neg, 0], x[p_neg, 1], marker='x', s=500, color='0.75')
     plt.scatter(x[k_pos, 0], x[k_pos, 1], marker='o', s=500, color='blue')
@@ -2555,7 +2577,8 @@ def simulate(seed):
     plt.plot([0, x0], [y0, 0], color='black')
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    plt.savefig("../figure/sim/simu22.png")
+    plt.savefig("../figure/sim/simu24.png")
+
 
     kept = np.array(k_neg)[np.argsort(clf2.predict_proba(x[k_neg])[:, clf2.classes_[0]])[::-1][:len(k_pos)]]
     clf2 = svm.SVC(kernel='linear', probability=True)

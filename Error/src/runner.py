@@ -1007,6 +1007,7 @@ def ERROR(filename):
     read = MAR()
     read = read.create(filename)
     read.lda()
+    read.syn_thres = 0.8
     read.syn_error()
 
 def Code_Error(filename, code):

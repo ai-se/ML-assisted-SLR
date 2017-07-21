@@ -1028,7 +1028,6 @@ def Code_Error(filename, code):
     read = read.create(filename)
     if not ("A" in code or "M" in code):
         read.enough = 100000
-    target = int(read.get_allpos()*stop)
     while True:
         pos, neg, total = read.get_numbers()
         try:
@@ -1042,7 +1041,7 @@ def Code_Error(filename, code):
                 read.code_error(id, read.body["label"][id])
         else:
             a,b,c,d =read.train(weighting=weighting)
-            if read.est_num*0.95<pos:
+            if read.est_num*stop<pos:
                 break
             if pos < 30 and uncertain:
                 for id in a:
@@ -1071,7 +1070,6 @@ def Code_noError(filename, code):
     read = read.create(filename)
     if not ("A" in code or "M" in code):
         read.enough = 100000
-    target = int(read.get_allpos()*stop)
     while True:
         pos, neg, total = read.get_numbers()
         try:
@@ -1085,7 +1083,7 @@ def Code_noError(filename, code):
                 read.code(id, read.body["label"][id])
         else:
             a,b,c,d =read.train(weighting=weighting)
-            if read.est_num*0.95<pos:
+            if read.est_num*stop<pos:
                 break
             if pos < 30 and uncertain:
                 for id in a:

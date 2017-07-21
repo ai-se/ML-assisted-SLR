@@ -913,7 +913,7 @@ def Codes(filename, code):
                 read.code(id, read.body["label"][id])
         else:
             a,b,c,d,e =read.train(weighting=weighting)
-            if pos < 10 and uncertain:
+            if pos < 30 and uncertain:
                 for id in a:
                     read.code(id, read.body["label"][id])
             else:
@@ -948,7 +948,7 @@ def run_Codes(filename):
                         read = Codes(filename,code)
                         result[code].append(read.record)
                         print("%s: %d" %(code,i))
-    with open("../dump/codes1_"+filename.split('.')[0]+".pickle","wb") as handle:
+    with open("../dump/codes_"+filename.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(result,handle)
 
 def summary(filename):
@@ -1088,6 +1088,62 @@ def MISSING2(filename):
         incl = len(set(yes) & set(yes_code))
         rec.append(incl)
     print(rec)
+
+def blocks():
+    import re
+    x="  1 &         HUTW &    350  &  80 & 0.91 & 0.01 \\1 &         HUTA &    360  &  140 & 0.91 & 0.02 \\1 &         HUTM &    360  &  140 & 0.91 & 0.02 \\1 &         HCTW &    370  &  50 & 0.91 & 0.01 \\\hline  2 &         HCTM &    400  &  90 & 0.90 & 0.01 \\2 &         HCTA &    410  &  140 & 0.90 & 0.02 \\2 &         HUTN &    430  &  100 & 0.90 & 0.01 \\2 &         HCTN &    460  &  70 & 0.90 & 0.01 \\\hline  3 &         HUSM &    630  &  160 & 0.88 & 0.03 \\3 &         PCTW &    640  &  190 & 0.88 & 0.02 \\3 &         PUTW &    640  &  220 & 0.88 & 0.03 \\\hline  4 &         PCTN &    680  &  210 & 0.87 & 0.03 \\4 &         PUTN &    680  &  200 & 0.87 & 0.03 \\4 &         PUTM &    690  &  230 & 0.87 & 0.03 \\4 &         PCTA &    730  &  260 & 0.87 & 0.03 \\4 &         PCTM &    720  &  230 & 0.87 & 0.03 \\4 &         PUTA &    730  &  230 & 0.87 & 0.03 \\\hline  5 &         HUSW &    790  &  320 & 0.86 & 0.04 \\5 &         HUSA &    790  &  200 & 0.86 & 0.03 \\5 &         PUSW &    840  &  280 & 0.86 & 0.03 \\5 &         PUSM &    860  &  320 & 0.85 & 0.04 \\5 &         PUSA &    970  &  310 & 0.84 & 0.04 \\\hline  6 &         PCSW &    1560  &  580 & 0.77 & 0.07 \\6 &         PCSM &    1560  &  580 & 0.77 & 0.07 \\7 &         PUSN &    1680  &  1390 & 0.76 & 0.18 \\7 &         PCSN &    1990  &  690 & 0.72 & 0.09 \\7 &         PCSA &    1990  &  690 & 0.72 & 0.09 \\\hline  8 &         HUSN &    2270  &  1230 & 0.69 & 0.16 \\\hline  9 &         HCSA &    7500  &  5170 & 0.03 & 0.58 \\9 &         HCSN &    7500  &  5170 & 0.03 & 0.58 \\9 &       linear &    8464  &  0 & 0 & 0 \\9 &         HCSM &    8840  &  5340 & -0.04 & 0.60 \\9 &         HCSW &    8840  &  5340 & -0.04 & 0.60 \\"
+    x=re.sub('\hline','',x)
+    x = re.sub(' ', '', x)
+    xx = x.split('\\')
+    new = np.array([a.split('&') for a in xx if a!=""])
+    title = new[:,1]
+    code0=['H','P']
+    code1=['U','C']
+    code2=['T','S']
+    code3=['M','A','W','N']
+
+    order0=''
+    for c1 in code1:
+        for c2 in code2:
+            for c3 in code3:
+                for c0 in code0:
+                    code = c0+c1+c2+c3
+                    order0=order0+' & '.join(new[list(title).index(code)])+'\\\\ \n'
+                order0=order0+'\\hline \n'
+    print(order0)
+    set_trace()
+    order1 = ''
+    for c0 in code0:
+        for c2 in code2:
+            for c3 in code3:
+                for c1 in code1:
+                    code = c0 + c1 + c2 + c3
+                    order1 = order1 + ' & '.join(new[list(title).index(code)]) + '\\\\ \n'
+                order1 = order1 + '\\hline \n'
+    print(order1)
+    set_trace()
+    order2 = ''
+    for c0 in code0:
+        for c1 in code1:
+            for c3 in code3:
+                for c2 in code2:
+                    code = c0 + c1 + c2 + c3
+                    order2 = order2 + ' & '.join(new[list(title).index(code)]) + '\\\\ \n'
+                order2 = order2 + '\\hline \n'
+    print(order2)
+    set_trace()
+    order3 = ''
+    for c0 in code0:
+        for c1 in code1:
+            for c2 in code2:
+                for c3 in code3:
+                    code = c0 + c1 + c2 + c3
+                    order3 = order3 + ' & '.join(new[list(title).index(code)]) + '\\\\ \n'
+                order3 = order3 + '\\hline \n'
+    print(order3)
+    set_trace()
+
+
 
 ##################
 def ERROR(filename):

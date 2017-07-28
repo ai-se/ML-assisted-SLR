@@ -1109,5 +1109,14 @@ def Code_noError_repeats(filename, code="HUTM"):
         pickle.dump(record,handle)
 
 
+def sum_result(filename):
+    with open("../dump/"+filename+".pickle","rb") as handle:
+        record = pickle.load(handle)
+    result={'x':[],'pos':[]}
+    for r in record:
+        result['x'].append(r['x'][-1])
+        result['pos'].append(r['pos'][-1])
+    set_trace()
+
 if __name__ == "__main__":
     eval(cmd())

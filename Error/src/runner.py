@@ -632,8 +632,8 @@ def TIME_START(filename):
                 read.code(id, read.body["label"][id])
     return read
 
-def UPDATE(filename,old,pne=True):
-    stop=0.9
+def UPDATE(filename,old,stop='true',pne=True):
+    stop=0.95
 
     read = MAR()
     read = read.create(filename)
@@ -643,11 +643,20 @@ def UPDATE(filename,old,pne=True):
     while True:
         pos, neg, total = read.get_numbers()
         print("%d/ %d" % (pos,pos+neg))
-        if pos >= target:
-            break
-        a,b,ids,c =read.train(pne)
-        for id in ids:
-            read.code(id, read.body["label"][id])
+        a, b, c, d = read.train(pne)
+        if stop=='est':
+            if stop*read.est_num <= pos:
+                break
+        else:
+            if pos >= target:
+                break
+
+        if pos < 30 and uncertain:
+            for id in a:
+                read.code(id, read.body["label"][id])
+        else:
+            for id in c:
+                read.code(id, read.body["label"][id])
     return read
 
 def POS(filename,old):
@@ -1082,8 +1091,8 @@ def Code_noError(filename, code):
             for id in read.random():
                 read.code(id, read.body["label"][id])
         else:
-            a,b,c,d =read.train(weighting=weighting)
-            if read.est_num*stop<pos:
+            a,b,c,d =read.train(weighting=weighting,pne=False)
+            if read.est_num*stop<=pos:
                 break
             if pos < 30 and uncertain:
                 for id in a:
@@ -1092,6 +1101,13 @@ def Code_noError(filename, code):
                 for id in c:
                     read.code(id, read.body["label"][id])
     return read
+
+def Code_noError_repeats(filename, code="HUTM"):
+    repeats=30
+    record = [Code_noError(filename, code).record for i in xrange(repeats)]
+    with open("../dump/stop0_"+filename.split('.')[0]+".pickle","wb") as handle:
+        pickle.dump(record,handle)
+
 
 if __name__ == "__main__":
     eval(cmd())

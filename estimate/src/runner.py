@@ -137,9 +137,22 @@ def pro_simple(first):
 
 
 def draw_est(file):
-
-    true=62
-    total=7002
+    which=str(file).split('_')[-1]
+    if which=="Wahono":
+        true=62
+        total=7002
+    elif which =="Hall":
+        true = 106
+        total = 8991
+    elif which =="Danijel":
+        true = 48
+        total = 6000
+    elif which =="all3":
+        true = 45
+        total = 1704
+    else:
+        true = 45
+        total = 1704
 
 
 
@@ -447,11 +460,12 @@ def rest(first):
 
 
 def test_estimate(first):
-    repeats=30
+    repeats=1
     result={'pos':[],'est':[]}
     for i in xrange(repeats):
+        np.random.seed(i)
         first = str(first)
-        a = START(first)
+        a = Code_noError(first, "HUTM")
         result['est'].append(a.record_est)
         result['pos'].append(a.record)
         print(i,end=" ")
@@ -459,9 +473,10 @@ def test_estimate(first):
         pickle.dump(result,handle)
 
 def test_wallace(first):
-    repeats=30
+    repeats=1
     result={'pos':[],'est':[]}
     for i in xrange(repeats):
+        np.random.seed(i)
         first = str(first)
         a = START_Wallace(first)
         result['est'].append(a.record_est)
@@ -514,19 +529,18 @@ def one_cache_est(filename):
 ## basic units
 
 def START_Wallace(filename):
-    stop=0.90
-    thres = 40
+    thres = 0
 
     read = Wallace()
     read = read.create(filename)
     read.restart()
     read = Wallace()
     read = read.create(filename)
-    target = int(read.get_allpos()*stop)
+    target = 2000
     while True:
         pos, neg, total = read.get_numbers()
-        # print("%d, %d" %(pos,pos+neg))
-        if pos >= target:
+        print("%d, %d" %(pos,pos+neg))
+        if pos+neg >= target or pos+neg >= total:
             break
         if pos==0 or pos+neg<thres:
             for id in read.random():
@@ -859,7 +873,48 @@ def LINEAR(filename):
         for id in read.random():
             read.code(id, read.body["label"][id])
     return read
+####################################
+def Code_noError(filename, code):
+    target=2000
+    thres = 0
+    if "P" in code:
+        starting = 5
+    else:
+        starting = 1
 
+    weighting = "W" in code or "M" in code
+    uncertain = "U" in code
+
+    read = MAR()
+    read = read.create(filename)
+    read.restart()
+    read = MAR()
+    read = read.create(filename)
+    if not ("A" in code or "M" in code):
+        read.enough = 100000
+    while True:
+        pos, neg, total = read.get_numbers()
+        if pos+neg >= target or pos+neg >= total:
+            break
+        # try:
+        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        # except:
+        #     print("%d, %d" % (pos, pos + neg))
+        # if pos >= target:
+        #     break
+        if pos < starting or pos+neg<thres:
+            for id in read.random():
+                read.code(id, read.body["label"][id])
+        else:
+            a,b,c,d =read.train(weighting=weighting,pne=False)
+
+            if pos < 30 and uncertain:
+                for id in a:
+                    read.code(id, read.body["label"][id])
+            else:
+                for id in c:
+                    read.code(id, read.body["label"][id])
+    return read
 
 if __name__ == "__main__":
     eval(cmd())

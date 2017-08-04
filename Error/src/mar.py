@@ -350,7 +350,7 @@ class MAR(object):
 
         pos_num_last = Counter(y0)[1]
 
-        lifes = 3
+        lifes = 1
         life = lifes
         pos_num = Counter(y0)[1]
 
@@ -490,7 +490,7 @@ class MAR(object):
         decayed = list(left) + list(negs)
         unlabeled = np.where(np.array(self.body['code']) == "undetermined")[0]
         try:
-            unlabeled = np.random.choice(unlabeled,size=np.max((len(decayed),self.atleast)),replace=False)
+            unlabeled = np.random.choice(unlabeled,size=np.max((len(left),self.atleast)),replace=False)
         except:
             pass
 

@@ -38,13 +38,16 @@ class MAR(object):
             ## if model already exists, load it ##
             return self.load()
         except:
+            # print("Loading data")
             ## otherwise read from file ##
             try:
                 self.loadfile()
+                # print("Preprocessing")
                 self.preprocess()
                 self.save()
             except:
                 ## cannot find file in workspace ##
+                print("Data file not found")
                 self.flag=False
         return self
 
@@ -68,6 +71,30 @@ class MAR(object):
             self.body["label"].extend([c[ind] for c in content[1:] if c[ind0]!="undetermined"])
         except:
             self.body["label"].extend([c[ind0] for c in content[1:] if c[ind0]!="undetermined"])
+
+        self.preprocess()
+        self.save()
+
+    ### Use previous knowledge, pos only
+    def create_pos(self, filename):
+        with open("../workspace/coded/" + str(filename), "r") as csvfile:
+            content = [x for x in csv.reader(csvfile, delimiter=',')]
+        fields = ["Document Title", "Abstract", "Year", "PDF Link", "code", "time"]
+        header = content[0]
+        ind0 = header.index("code")
+        self.last_pos = len([c[ind0] for c in content[1:] if c[ind0] == "yes"])
+        self.last_neg = 0
+        for field in fields:
+            ind = header.index(field)
+            if field == "time":
+                self.body[field].extend([float(c[ind]) for c in content[1:] if c[ind0] == "yes"])
+            else:
+                self.body[field].extend([c[ind] for c in content[1:] if c[ind0] == "yes"])
+        try:
+            ind = header.index("label")
+            self.body["label"].extend([c[ind] for c in content[1:] if c[ind0]=="yes"])
+        except:
+            self.body["label"].extend([c[ind0] for c in content[1:] if c[ind0]=="yes"])
 
         self.preprocess()
         self.save()
@@ -242,6 +269,7 @@ class MAR(object):
         from sklearn import linear_model
         import random
 
+
         # def prob_sample(probs):
         #     order = np.argsort(probs)[::-1]
         #     count = 0
@@ -302,15 +330,23 @@ class MAR(object):
             all = list(set(poses) | set(negs) | set(self.pool))
         else:
             all = range(len(y))
-
         ####
         # overweight=1
         # all=overweight*(list(poses)+list(negs))+all
         ####
         ####
-        overweight = 0
-        all = overweight * (list(poses)) + all
         ####
+
+        ##
+        # C = Counter(y[all])[1] / num_neg
+        # es = linear_model.LogisticRegression(penalty='l2', fit_intercept=True, C=C)
+        #
+        # es.fit(prob[all], y[all])
+        # pos_at = list(es.classes_).index(1)
+        #
+        # pre0 = es.predict_proba(prob[self.pool])[:, pos_at]
+        ##
+
 
         pos_num_last = Counter(y0)[1]
 
@@ -319,16 +355,7 @@ class MAR(object):
         pos_num = Counter(y0)[1]
 
         while (True):
-            try:
-                if num_neg:
-                    C = Counter(y[all])[1] / num_neg/ (overweight+1)
-                    # C = Counter(y[all])[1] / num_neg
-                elif reuse:
-                    C = Counter(y[all])[1] / len(negs)/ (overweight+1)
-                else:
-                    C = Counter(y[all])[1] / (len(negs)+self.last_neg)/ (overweight+1)
-            except:
-                C = 1
+            C = Counter(y[all])[1]/ num_neg
             es = linear_model.LogisticRegression(penalty='l2', fit_intercept=True, C=C)
 
             es.fit(prob[all], y[all])
@@ -336,6 +363,9 @@ class MAR(object):
 
 
             pre = es.predict_proba(prob[self.pool])[:, pos_at]
+
+            # pre= pre0*0.1+pre*0.9
+            # pre0=pre
 
             y = np.copy(y0)
 
@@ -347,6 +377,10 @@ class MAR(object):
             #     y[x]=1
 
             pos_num = Counter(y)[1]
+            # crit=(pos_num-Counter(y0)[1])/pos_num
+            # crit = (pos_num - pos_num_last) / pos_num_last
+            # if crit<0.05:
+            #     break
             if pos_num == pos_num_last:
                 life = life - 1
                 if life == 0:
@@ -418,7 +452,34 @@ class MAR(object):
         ###########
         return esty, pre
 
+    ## BM25 ##
+    def BM25(self,query):
+        b=0.75
+        k1=1.5
 
+        ### Combine title and abstract for training ###########
+        content = [self.body["Document Title"][index] + " " + self.body["Abstract"][index] for index in
+                   xrange(len(self.body["Document Title"]))]
+        #######################################################
+
+        ### Feature selection by tfidf in order to keep vocabulary ###
+
+        tfidfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False, smooth_idf=False,
+                                  sublinear_tf=False, decode_error="ignore")
+        tf = tfidfer.fit_transform(content)
+        d_avg = np.mean(np.sum(tf, axis=1))
+        score = {}
+        for word in query:
+            score[word]=[]
+            id= tfidfer.vocabulary_[word]
+            df = sum([1 for wc in tf[:,id] if wc>0])
+            idf = np.log((len(content)-df+0.5)/(df+0.5))
+            for i in xrange(len(content)):
+                score[word].append(idf*tf[i,id]/(tf[i,id]+k1*((1-b)+b*np.sum(tf[0],axis=1)[0,0]/d_avg)))
+        self.bm = np.sum(score.values(),axis=0)
+
+    def BM25_get(self):
+        return self.pool[np.argsort(self.bm[self.pool])[::-1][:self.step]]
 
     ## Train model ##
     def train(self,pne=True,weighting=True):
@@ -511,7 +572,6 @@ class MAR(object):
             negs_sel = np.argsort(train_dist)[::-1][:len(left)]
             sample = list(left) + list(np.array(all_neg)[negs_sel])
             clf.fit(self.csr_mat[sample], labels[sample])
-            self.estimate_curve(clf)
         elif pne:
             train_dist = clf.decision_function(self.csr_mat[unlabeled])
             pos_at = list(clf.classes_).index("yes")
@@ -521,10 +581,14 @@ class MAR(object):
             sample = list(decayed) + list(np.array(unlabeled)[unlabel_sel])
             clf.fit(self.csr_mat[sample], labels[sample])
 
-        est_num, probs = self.estimate_curve(clf, reuse=True , num_neg=len(sample)-len(left))
         uncertain_id, uncertain_prob = self.uncertain(clf)
         certain_id, certain_prob = self.certain(clf)
-        return uncertain_id, probs[uncertain_id], certain_id, probs[certain_id]
+
+        if self.enable_est:
+            self.est_num, self.est = self.estimate_curve(clf, reuse=False, num_neg=len(sample)-len(left))
+            return uncertain_id, self.est[uncertain_id], certain_id, self.est[certain_id]
+        else:
+            return uncertain_id, uncertain_prob, certain_id, certain_prob
 
     ## not in use currently
     def train_reuse_random(self):
@@ -599,46 +663,6 @@ class MAR(object):
         certain_id, certain_prob = self.certain(clf)
         return uncertain_id, uncertain_prob, certain_id, certain_prob
 
-    ## not in use currently
-    def train_pos(self):
-        clf = svm.SVC(kernel='linear', probability=True)
-        poses = np.where(np.array(self.body['code']) == "yes")[0]
-        negs = np.where(np.array(self.body['code']) == "no")[0]
-
-        left = poses
-        negs = np.array(negs)[np.argsort(np.array(self.body['time'])[negs])[self.last_neg:]]
-
-        if len(left)==0:
-            return [], [], self.random(), []
-
-        decayed = list(left) + list(negs)
-        unlabeled = np.where(np.array(self.body['code']) == "undetermined")[0]
-        try:
-            unlabeled = np.random.choice(unlabeled,size=np.max((len(decayed),self.atleast)),replace=False)
-        except:
-            pass
-
-        # print("%d,%d,%d" %(len(left),len(negs),len(unlabeled)))
-
-        labels = np.array([x if x != 'undetermined' else 'no' for x in self.body['code']])
-        all_neg = list(negs) + list(unlabeled)
-        all = list(decayed) + list(unlabeled)
-
-        clf.fit(self.csr_mat[all], labels[all])
-        ## aggressive undersampling ##
-        if len(poses) >= self.enough:
-            train_dist = clf.decision_function(self.csr_mat[all_neg])
-            pos_at = list(clf.classes_).index("yes")
-            if pos_at:
-                train_dist=-train_dist
-            negs_sel = np.argsort(train_dist)[::-1][:len(left)]
-            sample = list(left) + list(np.array(all_neg)[negs_sel])
-            clf.fit(self.csr_mat[sample], labels[sample])
-            self.estimate_curve(clf)
-
-        uncertain_id, uncertain_prob = self.uncertain(clf)
-        certain_id, certain_prob = self.certain(clf)
-        return uncertain_id, uncertain_prob, certain_id, certain_prob
 
     ## Get certain ##
     def certain(self,clf):

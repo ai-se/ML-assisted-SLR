@@ -632,132 +632,9 @@ def TIME_START(filename):
                 read.code(id, read.body["label"][id])
     return read
 
-def UPDATE(filename,old,stop='true',pne=True):
-    stop=0.95
-
-    read = MAR()
-    read = read.create(filename)
-    read.create_old(old)
-    num2 = read.get_allpos()
-    target = int(num2*stop)
-    while True:
-        pos, neg, total = read.get_numbers()
-        print("%d/ %d" % (pos,pos+neg))
-        a, b, c, d = read.train(pne)
-        if stop=='est':
-            if stop*read.est_num <= pos:
-                break
-        else:
-            if pos >= target:
-                break
-
-        if pos < 30 and uncertain:
-            for id in a:
-                read.code(id, read.body["label"][id])
-        else:
-            for id in c:
-                read.code(id, read.body["label"][id])
-    return read
-
-def POS(filename,old):
-    stop=0.9
-
-    read = MAR()
-    read = read.create(filename)
-    read.create_old(old)
-    num2 = read.get_allpos()
-    target = int(num2*stop)
-    while True:
-        pos, neg, total = read.get_numbers()
-        # print("%d/ %d" % (pos,pos+neg))
-        if pos >= target:
-            break
-        a,b,ids,c =read.train_pos()
-        for id in ids:
-            read.code(id, read.body["label"][id])
-    return read
 
 
-def REUSE_RANDOM(filename,old):
-    stop=0.9
 
-    read = MAR()
-    read = read.create(filename)
-    read.create_old(old)
-    num2 = read.get_allpos()
-    target = int(num2*stop)
-    while True:
-        pos, neg, total = read.get_numbers()
-        # print("%d/ %d" % (pos,pos+neg))
-        if pos >= target:
-            break
-        a,b,ids,c =read.train_reuse_random()
-        for id in ids:
-            read.code(id, read.body["label"][id])
-    return read
-
-def REUSE(filename,old,pne=True):
-    stop=0.9
-    thres=5
-
-    read = MAR()
-    read = read.create(filename)
-    read.create_old(old)
-    num2 = read.get_allpos()
-    target = int(num2*stop)
-    while True:
-        pos, neg, total = read.get_numbers()
-        print("%d/ %d" % (pos,pos+neg))
-        if pos >= target:
-            break
-        if pos < thres:
-            a,b,ids,c =read.train(pne)
-            for id in ids:
-                read.code(id, read.body["label"][id])
-        else:
-            a, b, ids, c = read.train_reuse(pne)
-            for id in ids:
-                read.code(id, read.body["label"][id])
-    return read
-
-def UPDATE_REUSE(filename,old):
-    stop=0.9
-    lifes=2
-    life=lifes
-    last_pos=0
-    thres=5
-
-    read = MAR()
-    read = read.create(filename)
-    read.create_old(old)
-    num2 = read.get_allpos()
-    target = int(num2*stop)
-    while True:
-        pos, neg, total = read.get_numbers()
-        # print("%d/ %d" % (pos, pos + neg))
-
-        if pos-last_pos:
-            life=lifes
-        else:
-            life=life-1
-        last_pos=pos
-
-
-        if pos >= target:
-            break
-        # if (pos >= thres or pos==0) and life<1:
-        if (pos >= thres) and life<1:
-            # print("reuse")
-            lifes=0
-            a,b,ids,c =read.train_reuse()
-            for id in ids:
-                read.code(id, read.body["label"][id])
-        else:
-            # print("update")
-            a, b, ids, c = read.train()
-            for id in ids:
-                read.code(id, read.body["label"][id])
-    return read
 
 def START_AUTO(filename):
     read = MAR()
@@ -1021,7 +898,7 @@ def ERROR(filename):
 
 def Code_Error(filename, code):
     stop=0.95
-    thres = 0
+    thres = 40
     if "P" in code:
         starting = 5
     else:
@@ -1061,46 +938,6 @@ def Code_Error(filename, code):
     read.export()
     return read
 
-def Code_noError(filename, code):
-    stop=0.95
-    thres = 0
-    if "P" in code:
-        starting = 5
-    else:
-        starting = 1
-
-    weighting = "W" in code or "M" in code
-    uncertain = "U" in code
-
-    read = MAR()
-    read = read.create(filename)
-    read.restart()
-    read = MAR()
-    read = read.create(filename)
-    if not ("A" in code or "M" in code):
-        read.enough = 100000
-    while True:
-        pos, neg, total = read.get_numbers()
-        try:
-            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
-        except:
-            print("%d, %d" % (pos, pos + neg))
-        # if pos >= target:
-        #     break
-        if pos < starting or pos+neg<thres:
-            for id in read.random():
-                read.code(id, read.body["label"][id])
-        else:
-            a,b,c,d =read.train(weighting=weighting,pne=False)
-            if read.est_num*stop<=pos:
-                break
-            if pos < 30 and uncertain:
-                for id in a:
-                    read.code(id, read.body["label"][id])
-            else:
-                for id in c:
-                    read.code(id, read.body["label"][id])
-    return read
 
 def Code_noError_repeats(filename, code="HUTM"):
     repeats=30
@@ -1117,6 +954,312 @@ def sum_result(filename):
         result['x'].append(r['x'][-1])
         result['pos'].append(r['pos'][-1])
     set_trace()
+
+
+#############################
+
+def UPDATE_ALL(filename,old,stop='true',pne=False):
+    stopat=0.95
+
+    read = MAR()
+    read = read.create(filename)
+    read.create_old(old)
+    num2 = read.get_allpos()
+    target = int(num2*stopat)
+    if stop =='est':
+        read.enable_est=True
+    else:
+        read.enable_est = False
+    while True:
+        pos, neg, total = read.get_numbers()
+        # try:
+        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        # except:
+        #     print("%d, %d" % (pos, pos + neg))
+        a, b, c, d = read.train(pne=pne)
+        if stop=='est':
+            if stopat*read.est_num <= pos:
+                break
+        else:
+            if pos >= target:
+                break
+
+        if pos+read.last_pos < 30:
+            for id in a:
+                read.code(id, read.body["label"][id])
+        else:
+            for id in c:
+                read.code(id, read.body["label"][id])
+    return read
+
+def UPDATE_POS(filename,old,stop='true',pne=True):
+    stopat=0.95
+
+    read = MAR()
+    read = read.create(filename)
+    read.create_pos(old)
+    num2 = read.get_allpos()
+    target = int(num2*stopat)
+    if stop =='est':
+        read.enable_est=True
+    else:
+        read.enable_est = False
+    while True:
+        pos, neg, total = read.get_numbers()
+        # try:
+        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        # except:
+        #     print("%d, %d" % (pos, pos + neg))
+        a, b, c, d = read.train(pne=pne)
+        if stop=='est':
+            if stopat*read.est_num <= pos:
+                break
+        else:
+            if pos >= target:
+                break
+
+        if pos+read.last_pos < 30:
+            for id in a:
+                read.code(id, read.body["label"][id])
+        else:
+            for id in c:
+                read.code(id, read.body["label"][id])
+    return read
+
+
+def REUSE(filename,old,stop='true',pne=True):
+    stopat = 0.95
+    thres=10
+    read = MAR()
+    read = read.create(filename)
+    read.create_pos(old)
+    num2 = read.get_allpos()
+    target = int(num2 * stopat)
+    if stop == 'est':
+        read.enable_est = True
+    else:
+        read.enable_est = False
+    while True:
+        pos, neg, total = read.get_numbers()
+        # print("%d/ %d" % (pos,pos+neg))
+
+        if pos < thres:
+            a,b,c,d =read.train(pne)
+
+            if pos+read.last_pos < 30:
+                for id in a:
+                    read.code(id, read.body["label"][id])
+            else:
+                for id in c:
+                    read.code(id, read.body["label"][id])
+        else:
+            a, b, c, d = read.train_reuse(pne)
+            if stop == 'est':
+                if stopat * read.est_num <= pos:
+                    break
+            else:
+                if pos >= target:
+                    break
+            if pos < 10:
+                for id in a:
+                    read.code(id, read.body["label"][id])
+            else:
+                for id in c:
+                    read.code(id, read.body["label"][id])
+    return read
+
+
+def Code_noError(filename, code, stop='true'):
+    stopat = 0.95
+    thres = 40
+    if "P" in code:
+        starting = 5
+    else:
+        starting = 1
+
+    weighting = "W" in code or "M" in code
+    uncertain = "U" in code
+
+    read = MAR()
+    read = read.create(filename)
+    num2 = read.get_allpos()
+    target = int(num2 * stopat)
+    if stop =='est':
+        read.enable_est=True
+    else:
+        read.enable_est = False
+    if not ("A" in code or "M" in code):
+        read.enough = 100000
+    while True:
+        pos, neg, total = read.get_numbers()
+        # try:
+        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        # except:
+        #     print("%d, %d" % (pos, pos + neg))
+
+        if pos < starting or pos+neg<thres:
+            for id in read.random():
+                read.code(id, read.body["label"][id])
+        else:
+            a,b,c,d =read.train(weighting=weighting,pne=False)
+            if stop == 'est':
+                if stopat * read.est_num <= pos:
+                    break
+            else:
+                if pos >= target:
+                    break
+            if pos < 10 and uncertain:
+                for id in a:
+                    read.code(id, read.body["label"][id])
+            else:
+                for id in c:
+                    read.code(id, read.body["label"][id])
+    return read
+
+
+### BM25
+def BM25(filename, query, stop='true'):
+    stopat = 0.95
+    thres = 0
+    starting = 1
+
+    read = MAR()
+    read = read.create(filename)
+
+    read.BM25(query.strip().split(' '))
+
+    num2 = read.get_allpos()
+    target = int(num2 * stopat)
+    if stop == 'est':
+        read.enable_est = True
+    else:
+        read.enable_est = False
+
+    while True:
+        pos, neg, total = read.get_numbers()
+        try:
+            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        except:
+            print("%d, %d" % (pos, pos + neg))
+
+        if pos < starting or pos+neg<thres:
+            for id in read.BM25_get():
+                read.code(id, read.body["label"][id])
+        else:
+            a,b,c,d =read.train(weighting=True,pne=True)
+            if stop == 'est':
+                if stopat * read.est_num <= pos:
+                    break
+            else:
+                if pos >= target:
+                    break
+            if pos < 10:
+                for id in a:
+                    read.code(id, read.body["label"][id])
+            else:
+                for id in c:
+                    read.code(id, read.body["label"][id])
+    return read
+
+
+
+
+############ scenarios ##########
+def has_data(stop='true'):
+    repeats=30
+    datasets=[('Hall2007+.csv','Hall2007-.csv'),('Wahono2008+.csv','Wahono2008-.csv'),('Danijel2005+.csv','Danijel2005-.csv'),('K_all3+.csv','K_all3-.csv')]
+    treatments=['UPDATE_ALL','UPDATE_POS','REUSE','Auto_Syn','BM25','RANDOM']
+    results={}
+    for data in datasets:
+        results[data[0]]={}
+        for treatment in treatments:
+            if data[0]=='K_all3+.csv' and treatment=='UPDATE_ALL':
+                continue
+            results[data[0]][treatment]=[]
+
+            for i in xrange(repeats):
+                if treatment=="UPDATE_ALL":
+                    read = UPDATE_ALL(data[0],data[1],stop=stop)
+                elif treatment=="UPDATE_POS":
+                    read = UPDATE_POS(data[0], data[1], stop=stop)
+                elif treatment=="REUSE":
+                    read = REUSE(data[0], data[1], stop=stop)
+                elif treatment=="Auto_Syn":
+                    if data[0]=="Hall2007+.csv":
+                        syn_data='Syn_Hall.csv'
+                    elif data[0]=="Wahono2008+.csv":
+                        syn_data = 'Syn_Wahono.csv'
+                    elif data[0]=="Danijel2005+.csv":
+                        syn_data = 'Syn_Danijel.csv'
+                    elif data[0]=="K_all3+.csv":
+                        syn_data = 'Syn_Kitchenham.csv'
+                    read = REUSE(data[0], syn_data, stop=stop)
+                elif treatment=="BM25":
+                    if data[0]=="Hall2007+.csv":
+                        query='defect prediction'
+                    elif data[0]=="Wahono2008+.csv":
+                        query = 'defect prediction'
+                    elif data[0]=="Danijel2005+.csv":
+                        query = 'defect prediction metrics'
+                    elif data[0]=="K_all3+.csv":
+                        query = 'systematic review'
+                    read = BM25(data[0], query=query, stop=stop)
+                elif treatment=="RANDOM":
+                    read = Code_noError(data[0],"HUTM" , stop=stop)
+                results[data[0]][treatment].append(read.record)
+                read.restart()
+                print(data[0]+'_'+treatment+str(i),end=" ")
+    with open("../dump/data_"+stop+".pickle","wb") as handle:
+        pickle.dump(results,handle)
+
+def no_data(stop='true'):
+    repeats=30
+    datasets=['Hall.csv','Wahono.csv','Danijel.csv','K_all3.csv']
+    treatments=['REUSE','Auto_Syn','BM25','RANDOM']
+    results={}
+    for data in datasets:
+        results[data]={}
+        for treatment in treatments:
+            if data=='K_all3.csv' and treatment=='REUSE':
+                continue
+            results[data][treatment]=[]
+            for i in xrange(repeats):
+                if treatment=="REUSE":
+                    if data=="Hall.csv":
+                        syn_data='Wahono.csv'
+                    elif data=="Wahono.csv":
+                        syn_data = 'Hall.csv'
+                    elif data=="Danijel.csv":
+                        syn_data = 'Hall.csv'
+                    read = REUSE(data, syn_data, stop=stop)
+                elif treatment=="Auto_Syn":
+                    if data=="Hall.csv":
+                        syn_data='Syn_Hall.csv'
+                    elif data=="Wahono.csv":
+                        syn_data = 'Syn_Wahono.csv'
+                    elif data=="Danijel.csv":
+                        syn_data = 'Syn_Danijel.csv'
+                    elif data=="K_all3.csv":
+                        syn_data = 'Syn_Kitchenham.csv'
+                    read = REUSE(data, syn_data, stop=stop)
+                elif treatment=="BM25":
+                    if data == "Hall.csv":
+                        query='defect prediction'
+                    elif data == "Wahono.csv":
+                        query = 'defect prediction'
+                    elif data == "Danijel.csv":
+                        query = 'defect prediction metrics'
+                    elif data == "K_all3.csv":
+                        query = 'systematic review'
+                    read = BM25(data, query=query, stop=stop)
+                elif treatment=="RANDOM":
+                    read = Code_noError(data,"HUTM" , stop=stop)
+                results[data][treatment].append(read.record)
+                read.restart()
+    with open("../dump/nodata_"+stop+".pickle","wb") as handle:
+        pickle.dump(results,handle)
+
+
 
 if __name__ == "__main__":
     eval(cmd())

@@ -1137,10 +1137,10 @@ def BM25(filename, query, stop='true'):
 
     while True:
         pos, neg, total = read.get_numbers()
-        # try:
-        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
-        # except:
-        #     print("%d, %d" % (pos, pos + neg))
+        try:
+            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        except:
+            print("%d, %d" % (pos, pos + neg))
 
         if pos < starting or pos+neg<thres:
             for id in read.BM25_get():
@@ -1259,7 +1259,20 @@ def no_data(stop='true'):
     with open("../dump/nodata_"+stop+".pickle","wb") as handle:
         pickle.dump(results,handle)
 
+def sum_res(filename):
+    with open("../dump/"+filename+".pickle","rb") as handle:
+        record = pickle.load(handle)
+    new={}
+    for dataset in record:
+        new[dataset]={}
+        for treatment in record[dataset]:
+            new[dataset][treatment]= [x['x'][-1] for x in record[dataset][treatment]]
+        print(dataset)
+        rdivDemo(new[dataset], isLatex=False)
+        set_trace()
 
+def BM25_test():
+    BM25("K_all3+.csv","software systematic review",'true')
 
 if __name__ == "__main__":
     eval(cmd())

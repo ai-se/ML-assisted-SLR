@@ -1137,10 +1137,10 @@ def BM25(filename, query, stop='true'):
 
     while True:
         pos, neg, total = read.get_numbers()
-        try:
-            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
-        except:
-            print("%d, %d" % (pos, pos + neg))
+        # try:
+        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        # except:
+        #     print("%d, %d" % (pos, pos + neg))
 
         if pos < starting or pos+neg<thres:
             for id in read.BM25_get():
@@ -1215,7 +1215,7 @@ def has_data(stop='true'):
 def no_data(stop='true'):
     repeats=30
     datasets=['Hall.csv','Wahono.csv','Danijel.csv','K_all3.csv']
-    treatments=['REUSE','Auto_Syn','BM25','RANDOM']
+    treatments=['UPDATE_ALL','UPDATE_POS','REUSE','Auto_Syn','BM25','RANDOM']
     results={}
     for data in datasets:
         results[data]={}
@@ -1260,7 +1260,7 @@ def no_data(stop='true'):
         pickle.dump(results,handle)
 
 def sum_res(filename):
-    with open("../dump/"+filename+".pickle","rb") as handle:
+    with open("../dump/"+filename+".pickle","r") as handle:
         record = pickle.load(handle)
     new={}
     for dataset in record:

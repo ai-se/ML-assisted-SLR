@@ -1220,17 +1220,22 @@ def no_data(stop='true'):
     for data in datasets:
         results[data]={}
         for treatment in treatments:
-            if data=='K_all3.csv' and treatment=='REUSE':
+            if data=='K_all3.csv' and (treatment=='REUSE' or treatment=="UPDATE_ALL" or treatment=="UPDATE_POS"):
                 continue
+            elif data == "Hall.csv":
+                syn_data = 'Wahono.csv'
+            elif data == "Wahono.csv":
+                syn_data = 'Hall.csv'
+            elif data == "Danijel.csv":
+                syn_data = 'Hall.csv'
             results[data][treatment]=[]
             for i in xrange(repeats):
-                if treatment=="REUSE":
-                    if data=="Hall.csv":
-                        syn_data='Wahono.csv'
-                    elif data=="Wahono.csv":
-                        syn_data = 'Hall.csv'
-                    elif data=="Danijel.csv":
-                        syn_data = 'Hall.csv'
+                if treatment=="UPDATE_ALL":
+                    read = UPDATE_ALL(data,syn_data,stop=stop)
+                elif treatment=="UPDATE_POS":
+                    read = UPDATE_POS(data, syn_data, stop=stop)
+                elif treatment=="REUSE":
+
                     read = REUSE(data, syn_data, stop=stop)
                 elif treatment=="Auto_Syn":
                     if data=="Hall.csv":

@@ -154,7 +154,10 @@ def draw_est(file):
         true = 45
         total = 1704
 
-
+    np.random.seed(2)
+    uniform = [1]*true+[0]*(total-true)
+    np.random.shuffle(uniform)
+    uniform_test = [sum(uniform[:where*10]) for where in range(int(total/10))]
 
     font = {'family': 'normal',
             'weight': 'bold',
@@ -181,7 +184,8 @@ def draw_est(file):
     for j, ind in enumerate(stats['pos']):
         # if ind == 50 or ind == 0 or ind==100:
         if ind == 50:
-            plt.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true)
+            plt.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, label='est')
+            plt.plot(np.array(range(len(stats['pos'][ind]['x'])))*10, np.array(uniform_test[:len(stats['pos'][ind]['x'])]) / true, label='random')
     plt.ylabel(str(file).split("_")[1] + "\nRecall")
     plt.xlabel("Studies Reviewed")
     plt.legend(bbox_to_anchor=(0.9, 0.40), loc=1, ncol=2, borderaxespad=0.)
@@ -193,6 +197,7 @@ def draw_est(file):
         # if ind == 50 or ind == 0 or ind==100:
         if ind == 50:
             plt.plot(stats['est'][ind]['x'], [true/total]*len(stats['est'][ind]['x']), linestyle=lines[0], label='true')
+            plt.plot(np.array(range(len(stats['pos'][ind]['x']))) * 10, np.array(uniform_test[:len(stats['pos'][ind]['x'])]).astype(float) / np.array(range(len(stats['pos'][ind]['x']))) / 10, label='random')
             index=1
             for key in stats['est'][ind]:
                 if key=='x':
@@ -463,7 +468,7 @@ def test_estimate(first):
     repeats=1
     result={'pos':[],'est':[]}
     for i in xrange(repeats):
-        np.random.seed(i)
+        np.random.seed(i+2)
         first = str(first)
         a = Code_noError(first, "HUTM")
         result['est'].append(a.record_est)
@@ -476,7 +481,7 @@ def test_wallace(first):
     repeats=1
     result={'pos':[],'est':[]}
     for i in xrange(repeats):
-        np.random.seed(i)
+        np.random.seed(i+2)
         first = str(first)
         a = START_Wallace(first)
         result['est'].append(a.record_est)

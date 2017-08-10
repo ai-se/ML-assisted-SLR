@@ -1207,7 +1207,7 @@ def has_data(stop='true'):
                 elif treatment=="RANDOM":
                     read = Code_noError(data[0],"HUTM" , stop=stop)
                 results[data[0]][treatment].append(read.record)
-                read.restart()
+                # read.restart()
                 print(data[0]+'_'+treatment+str(i),end=" ")
     with open("../dump/data_"+stop+".pickle","wb") as handle:
         pickle.dump(results,handle)
@@ -1260,7 +1260,7 @@ def no_data(stop='true'):
                 elif treatment=="RANDOM":
                     read = Code_noError(data,"HUTM" , stop=stop)
                 results[data][treatment].append(read.record)
-                read.restart()
+                # read.restart()
     with open("../dump/nodata_"+stop+".pickle","wb") as handle:
         pickle.dump(results,handle)
 

@@ -754,7 +754,10 @@ class MAR(object):
 
     ## Restart ##
     def restart(self):
-        os.remove("./memory/"+self.name+".pickle")
+        try:
+            os.remove("./memory/"+self.name+".pickle")
+        except:
+            pass
 
     ## Get missed relevant docs ##
     def get_rest(self):

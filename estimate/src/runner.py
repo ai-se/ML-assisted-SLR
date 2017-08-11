@@ -166,7 +166,7 @@ def draw_est(file):
 
     plt.rc('font', **font)
     paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
-             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+             'figure.autolayout': True, 'figure.figsize': (12, 6)}
     plt.rcParams.update(paras)
 
     with open("../dump/est_"+str(file)+".pickle", "r") as f:
@@ -190,9 +190,9 @@ def draw_est(file):
             plt.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, linestyle=lines[0], label='FASTREAD')
             plt.plot(stats2['pos'][ind]['x'], np.array(stats2['pos'][ind]['pos']) / true, linestyle=lines[1], label="sampling $\\propto$ probabilities")
             plt.plot(stats['pos'][ind]['x'], np.array(uniform_test)[(np.array(stats['pos'][ind]['x'])/10).astype(int)] / true, linestyle=lines[2], label='uniform random sampling')
-    plt.ylabel(str(file) + "\nRecall")
-    plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.ylabel("Recall")
+    plt.xlabel("# Studies Reviewed")
+    plt.legend(bbox_to_anchor=(1, 0.60), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/recall_" + str(file) + ".eps")
     plt.savefig("../figure/recall_" + str(file) + ".png")
 
@@ -217,9 +217,9 @@ def draw_est(file):
                 plt.plot(stats['est'][ind]['x'], np.array(stats['est'][ind][key])/total, linestyle=lines[index], label="estimated ("+name+")")
                 index=index+1
 
-    plt.ylabel(str(file) + "\nPrevalence")
-    plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.7), loc=1, ncol=1, borderaxespad=0.)
+    plt.ylabel("Prevalence")
+    plt.xlabel("# Studies Reviewed")
+    plt.legend(bbox_to_anchor=(1, 0.9), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/prev_est_" + str(file) + ".eps")
     plt.savefig("../figure/prev_est_" + str(file) + ".png")
 
@@ -250,9 +250,9 @@ def draw_est(file):
                          label="estimated ("+name+")")
                 index = index + 1
 
-    plt.ylabel(str(file) + "\nPrevalence")
-    plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=1, borderaxespad=0.)
+    plt.ylabel("Prevalence")
+    plt.xlabel("# Studies Reviewed")
+    plt.legend(bbox_to_anchor=(1, 0.9), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/prev_wallace_" + str(file) + ".eps")
     plt.savefig("../figure/prev_wallace_" + str(file) + ".png")
 

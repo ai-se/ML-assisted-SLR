@@ -137,7 +137,7 @@ def pro_simple(first):
 
 
 def draw_est(file):
-    which=str(file).split('_')[-1]
+    which=str(file)
     if which=="Wahono":
         true=62
         total=7002
@@ -147,17 +147,17 @@ def draw_est(file):
     elif which =="Danijel":
         true = 48
         total = 6000
-    elif which =="all3":
+    elif which =="K_all3":
         true = 45
         total = 1704
     else:
         true = 45
         total = 1704
 
-    np.random.seed(2)
+    np.random.seed(0)
     uniform = [1]*true+[0]*(total-true)
     np.random.shuffle(uniform)
-    uniform_test = [sum(uniform[:where*10]) for where in range(int(total/10))]
+    uniform_test = [sum(uniform[:where*10]) for where in range(int(total/10)+1)]
 
     font = {'family': 'normal',
             'weight': 'bold',
@@ -169,11 +169,14 @@ def draw_est(file):
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
-    with open("../dump/"+str(file)+".pickle", "r") as f:
+    with open("../dump/est_"+str(file)+".pickle", "r") as f:
         results=pickle.load(f)
+    with open("../dump/wallace_"+str(file)+".pickle", "r") as f:
+        results2=pickle.load(f)
 
 
     stats=bestNworst(results)
+    stats2 = bestNworst(results2)
     colors=['blue','purple','green','brown','red']
     lines=['-','--','-.',':']
     five=['$0th$','$25th$','$50th$','$75th$','$100th$']
@@ -184,11 +187,12 @@ def draw_est(file):
     for j, ind in enumerate(stats['pos']):
         # if ind == 50 or ind == 0 or ind==100:
         if ind == 50:
-            plt.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, label='est')
-            plt.plot(np.array(range(len(stats['pos'][ind]['x'])))*10, np.array(uniform_test[:len(stats['pos'][ind]['x'])]) / true, label='random')
-    plt.ylabel(str(file).split("_")[1] + "\nRecall")
+            plt.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, linestyle=lines[0], label='FASTREAD')
+            plt.plot(stats2['pos'][ind]['x'], np.array(stats2['pos'][ind]['pos']) / true, linestyle=lines[1], label="sampling $\\propto$ probabilities")
+            plt.plot(stats['pos'][ind]['x'], np.array(uniform_test)[(np.array(stats['pos'][ind]['x'])/10).astype(int)] / true, linestyle=lines[2], label='uniform random sampling')
+    plt.ylabel(str(file) + "\nRecall")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.40), loc=1, ncol=2, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/recall_" + str(file) + ".eps")
     plt.savefig("../figure/recall_" + str(file) + ".png")
 
@@ -197,20 +201,60 @@ def draw_est(file):
         # if ind == 50 or ind == 0 or ind==100:
         if ind == 50:
             plt.plot(stats['est'][ind]['x'], [true/total]*len(stats['est'][ind]['x']), linestyle=lines[0], label='true')
-            plt.plot(np.array(range(len(stats['pos'][ind]['x']))) * 10, np.array(uniform_test[:len(stats['pos'][ind]['x'])]).astype(float) / np.array(range(len(stats['pos'][ind]['x']))) / 10, label='random')
-            index=1
+
+            plt.plot(stats['est'][ind]['x'], np.array(uniform_test)[(np.array(stats['est'][ind]['x'])/10).astype(int)].astype(float) / np.array(stats['est'][ind]['x']) , linestyle=lines[1], label='estimated (uniform random sampling)')
+            index=2
             for key in stats['est'][ind]:
                 if key=='x':
                     continue
+                if key=='sigmoid':
+                    name='probability prediction'
+                elif key=="semi":
+                    name='SEMI'
+                else:
+                    name=key
                 # plt.plot(stats['est'][ind]['x'], stats['est'][ind][key],linestyle=lines[index],label=key)
-                plt.plot(stats['est'][ind]['x'], np.array(stats['est'][ind][key])/total, linestyle=lines[index], label=key)
+                plt.plot(stats['est'][ind]['x'], np.array(stats['est'][ind][key])/total, linestyle=lines[index], label="estimated ("+name+")")
                 index=index+1
 
-    plt.ylabel(str(file).split("_")[1] + "\nPrevalence")
+    plt.ylabel(str(file) + "\nPrevalence")
     plt.xlabel("Studies Reviewed")
-    plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=2, borderaxespad=0.)
-    plt.savefig("../figure/prev_" + str(file) + ".eps")
-    plt.savefig("../figure/prev_" + str(file) + ".png")
+    plt.legend(bbox_to_anchor=(0.9, 0.7), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/prev_est_" + str(file) + ".eps")
+    plt.savefig("../figure/prev_est_" + str(file) + ".png")
+
+    plt.figure(3)
+    for j, ind in enumerate(stats2['est']):
+        # if ind == 50 or ind == 0 or ind==100:
+        if ind == 50:
+            plt.plot(stats2['est'][ind]['x'], [true / total] * len(stats2['est'][ind]['x']), linestyle=lines[0],
+                     label='true')
+            plt.plot(stats['est'][ind]['x'],
+                     np.array(uniform_test)[(np.array(stats['est'][ind]['x']) / 10).astype(int)].astype(
+                         float) / np.array(stats['est'][ind]['x']), linestyle=lines[1],
+                     label='estimated (uniform random sampling)')
+
+            index = 2
+            for key in stats2['est'][ind]:
+                if key == 'x':
+                    continue
+                if key=='sigmoid':
+                    name='probability prediction'
+                elif key=="est":
+                    name='Wallace adjusted'
+                    continue
+                else:
+                    name=key
+                # plt.plot(stats['est'][ind]['x'], stats['est'][ind][key],linestyle=lines[index],label=key)
+                plt.plot(stats2['est'][ind]['x'], np.array(stats2['est'][ind][key]) / total, linestyle=lines[index],
+                         label="estimated ("+name+")")
+                index = index + 1
+
+    plt.ylabel(str(file) + "\nPrevalence")
+    plt.xlabel("Studies Reviewed")
+    plt.legend(bbox_to_anchor=(0.9, 0.80), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/prev_wallace_" + str(file) + ".eps")
+    plt.savefig("../figure/prev_wallace_" + str(file) + ".png")
 
 
 

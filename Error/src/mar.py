@@ -471,7 +471,11 @@ class MAR(object):
         score = {}
         for word in query:
             score[word]=[]
-            id= tfidfer.vocabulary_[word]
+            try:
+                id= tfidfer.vocabulary_[word]
+            except:
+                score[word]=[0]*len(content)
+                continue
             df = sum([1 for wc in tf[:,id] if wc>0])
             idf = np.log((len(content)-df+0.5)/(df+0.5))
             for i in xrange(len(content)):

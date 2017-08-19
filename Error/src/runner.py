@@ -1168,7 +1168,8 @@ def BM25(filename, query, stop='true'):
 def has_data(stop='true'):
     repeats=30
     datasets=[('Hall2007+.csv','Hall2007-.csv'),('Wahono2008+.csv','Wahono2008-.csv'),('Danijel2005+.csv','Danijel2005-.csv'),('K_all3+.csv','K_all3-.csv')]
-    treatments=['UPDATE_ALL','UPDATE_POS','REUSE','Auto_Syn','BM25','RANDOM']
+    treatments=['UPDATE_POS','REUSE','Auto_Syn','BM25','RANDOM']
+    treatments=['UPDATE_POS','BM25','RANDOM']
     results={}
     for data in datasets:
         results[data[0]]={}
@@ -1207,15 +1208,15 @@ def has_data(stop='true'):
                 elif treatment=="RANDOM":
                     read = Code_noError(data[0],"HUTM" , stop=stop)
                 results[data[0]][treatment].append(read.record)
-                read.restart()
-                print(data[0]+'_'+treatment+str(i),end=" ")
+                # read.restart()
+                # print(data[0]+'_'+treatment+str(i),end=" ")
     with open("../dump/data_"+stop+".pickle","wb") as handle:
         pickle.dump(results,handle)
 
 def no_data(stop='true'):
     repeats=30
     datasets=['Hall.csv','Wahono.csv','Danijel.csv','K_all3.csv']
-    treatments=['UPDATE_ALL','UPDATE_POS','REUSE','Auto_Syn','BM25','RANDOM']
+    treatments=['UPDATE_POS','REUSE','Auto_Syn','BM25','RANDOM']
     results={}
     for data in datasets:
         results[data]={}
@@ -1260,7 +1261,7 @@ def no_data(stop='true'):
                 elif treatment=="RANDOM":
                     read = Code_noError(data,"HUTM" , stop=stop)
                 results[data][treatment].append(read.record)
-                read.restart()
+                # read.restart()
     with open("../dump/nodata_"+stop+".pickle","wb") as handle:
         pickle.dump(results,handle)
 
@@ -1275,6 +1276,84 @@ def sum_res(filename):
         print(dataset)
         rdivDemo(new[dataset], isLatex=False)
         set_trace()
+
+def sum_pos_x(filename):
+    with open("../dump/"+filename+".pickle","r") as handle:
+        record = pickle.load(handle)
+    new={}
+    for dataset in record:
+        new[dataset]={}
+        for treatment in record[dataset]:
+            new[dataset][treatment]= [np.median([x['x'][-1] for x in record[dataset][treatment]]), np.median([x['pos'][-1] for x in record[dataset][treatment]])]
+            print("%s, %s: %d, %d" %(dataset,treatment,new[dataset][treatment][0],new[dataset][treatment][1]))
+        set_trace()
+
+def sum_true():
+    with open("../dump/data_true.pickle","r") as handle:
+        record = pickle.load(handle)
+    with open("../dump/nodata_true.pickle","r") as handle:
+        record1 = pickle.load(handle)
+    dataname={"Danijel.csv": "Radjenovi{\\'c} (Full)", "Wahono.csv": "Wahono (Full)", "Hall.csv": "Hall (Full)", "K_all3.csv": "Kitchenham (Full)", "Danijel2005+.csv": "Radjenovi{\\'c} (Half)", "Wahono2008+.csv": "Wahono (Half)", "Hall2007+.csv": "Hall (Half)", "K_all3+.csv": "Kitchenham (Half)"}
+    datasize={"Danijel.csv": 6000, "Wahono.csv": 7002, "Hall.csv": 8991, "K_all3.csv": 1704, "Danijel2005+.csv": 3035, "Wahono2008+.csv": 3810, "Hall2007+.csv": 4066, "K_all3+.csv": 1688}
+    treatmentname={"Auto_Syn": "Auto-Syn", "BM25": "Auto-BM25", "RANDOM": "RANDOM", "UPDATE_POS": "UPDATE", "REUSE": "REUSE"}
+    new={}
+    for d in record:
+        dataset=dataname[d]
+        new[dataset]={}
+        for t in record[d]:
+            if t=="UPDATE_ALL":
+                continue
+            treatment=treatmentname[t]
+
+            tmp = [x['x'][-1] for x in record[d][t]]
+            median=np.median(tmp)
+            iqr = np.percentile(tmp,75)-np.percentile(tmp,25)
+            w_median=0.95-median/datasize[d]
+            w_iqr=(np.percentile(tmp,75)-np.percentile(tmp,25))/datasize[d]
+
+            new[dataset][treatment]=[median, iqr, w_median, w_iqr]
+    for d in record1:
+        dataset=dataname[d]
+        new[dataset]={}
+        for t in record1[d]:
+            if t=="UPDATE_ALL":
+                continue
+            treatment=treatmentname[t]
+
+            tmp = [x['x'][-1] for x in record1[d][t]]
+            median=np.median(tmp)
+            iqr = np.percentile(tmp,75)-np.percentile(tmp,25)
+            w_median=0.95-median/datasize[d]
+            w_iqr=(np.percentile(tmp,75)-np.percentile(tmp,25))/datasize[d]
+
+            new[dataset][treatment]=[median, iqr, w_median, w_iqr]
+
+    ####draw table
+    treatments=['Auto-BM25', "Auto-Syn", "UPDATE", "REUSE", "RANDOM"]
+    datasets = ['Wahono (Full)', 'Hall (Full)', "Radjenovi{\\'c} (Full)", "Kitchenham (Full)", 'Wahono (Half)', 'Hall (Half)', "Radjenovi{\\'c} (Half)", "Kitchenham (Half)"]
+    print("\\begin{tabular}{ |l|l|c|c|c|c| }")
+    print("\\hline")
+    print(" & & \\multicolumn{2}{|c|}{X95} & \\multicolumn{2}{|c|}{WSS@95} \\\\")
+    print("\\cline{3-6}")
+    print(" Dataset & Treatment & median & iqr & median & iqr \\\\")
+    print("\\hline")
+    for dataset in datasets:
+        for treatment in treatments:
+            if treatment=="UPDATE":
+                d=dataset
+            else:
+                d=""
+            if dataset=="Kitchenham (Full)":
+                if treatment=="UPDATE" or treatment=="REUSE":
+                    continue
+                if treatment=="Auto-Syn":
+                    d=dataset
+            print(d+" & "+treatment+ " & " + " & ".join(map('{0:.0f}'.format,new[dataset][treatment][:2])) + " & " +" & ".join(map('{0:.2f}'.format,new[dataset][treatment][2:]))+" \\\\")
+            if treatment=="RANDOM":
+                print("\\hline")
+            # else:
+            #     print('\\cline{2-6}')
+    print("\\end{tabular}")
 
 def BM25_test():
     BM25("K_all3+.csv","software systematic review",'true')

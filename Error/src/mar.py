@@ -44,7 +44,7 @@ class MAR(object):
                 self.loadfile()
                 # print("Preprocessing")
                 self.preprocess()
-                self.save()
+                # self.save()
             except:
                 ## cannot find file in workspace ##
                 print("Data file not found")
@@ -73,7 +73,7 @@ class MAR(object):
             self.body["label"].extend([c[ind0] for c in content[1:] if c[ind0]!="undetermined"])
 
         self.preprocess()
-        self.save()
+        # self.save()
 
     ### Use previous knowledge, pos only
     def create_pos(self, filename):
@@ -97,7 +97,7 @@ class MAR(object):
             self.body["label"].extend([c[ind0] for c in content[1:] if c[ind0]=="yes"])
 
         self.preprocess()
-        self.save()
+        # self.save()
 
 
     def loadfile(self):

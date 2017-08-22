@@ -196,8 +196,6 @@ def draw_est(file):
 
 
 
-
-
 def draw(file):
     font = {'family': 'normal',
             'weight': 'bold',
@@ -1209,11 +1207,7 @@ def has_data(stop='true'):
                     read = Code_noError(data[0],"HUTM" , stop=stop)
                 results[data[0]][treatment].append(read.record)
                 # read.restart()
-<<<<<<< HEAD
-                print(data[0]+'_'+treatment+str(i),end=" ")
-=======
                 # print(data[0]+'_'+treatment+str(i),end=" ")
->>>>>>> 0c28beec64e3a518d5720856ab127877060b9347
     with open("../dump/data_"+stop+".pickle","wb") as handle:
         pickle.dump(results,handle)
 
@@ -1291,6 +1285,122 @@ def sum_pos_x(filename):
             new[dataset][treatment]= [np.median([x['x'][-1] for x in record[dataset][treatment]]), np.median([x['pos'][-1] for x in record[dataset][treatment]])]
             print("%s, %s: %d, %d" %(dataset,treatment,new[dataset][treatment][0],new[dataset][treatment][1]))
         set_trace()
+
+def draw_one():
+
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+    lines=['-','-','--','-.',':']
+    five=['$0th$','$25th$','$50th$','$75th$','$100th$']
+
+    with open("../dump/nodata_true.pickle","r") as handle:
+        record = pickle.load(handle)
+
+    what = record['Hall.csv']['RANDOM']
+    order = np.argsort([r['x'][-1] for r in what])
+    stats={}
+    for ind in [0,25,50,75,100]:
+        stats[ind]=what[order[int(ind*(len(order)-1)/100)]]
+
+
+
+    plt.figure(0)
+    for j,ind in enumerate(stats):
+        if ind == 50 or ind == 75 or ind==0 or ind==100:
+            plt.plot(stats[ind]['x'], np.array(stats[ind]['pos'])/106,linestyle=lines[j],label=five[j]+" Percentile")
+    plt.ylabel("Recall")
+    plt.xlabel("Studies Reviewed")
+
+    docnum = 8991
+    x=[i*100 for i in xrange(10)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/percentile.eps")
+    plt.savefig("../figure/percentile.png")
+
+def draw_two():
+
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+    lines=['-','-','--','-.',':']
+    five=['$0th$','$25th$','$50th$','$75th$','$100th$']
+
+    with open("../dump/nodata_est.pickle","r") as handle:
+        record = pickle.load(handle)
+
+    what = record['Hall.csv']['BM25']
+    order = np.argsort([r['x'][-1] for r in what])
+    stats={}
+    for ind in [0,25,50,75,100]:
+        stats[ind]=what[order[int(ind*(len(order)-1)/100)]]
+
+
+
+    plt.figure(0)
+    for j,ind in enumerate(stats):
+        if ind == 50 or ind == 75 or ind==0 or ind==100:
+            plt.plot(stats[ind]['x'], np.array(stats[ind]['pos'])/106,linestyle=lines[j],label=five[j]+" Percentile")
+    plt.ylabel("Recall")
+    plt.xlabel("Studies Reviewed")
+
+    docnum = 8991
+    x=[i*100 for i in xrange(7)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/percentile_BM25.eps")
+    plt.savefig("../figure/percentile_BM25.png")
+
+    what = record['Hall.csv']['UPDATE_POS']
+    order = np.argsort([r['x'][-1] for r in what])
+    stats={}
+    for ind in [0,25,50,75,100]:
+        stats[ind]=what[order[int(ind*(len(order)-1)/100)]]
+
+
+
+    plt.figure(1)
+    for j,ind in enumerate(stats):
+        if ind == 50 or ind == 75 or ind==0 or ind==100:
+            plt.plot(stats[ind]['x'], np.array(stats[ind]['pos'])/106,linestyle=lines[j],label=five[j]+" Percentile")
+    plt.ylabel("Recall")
+    plt.xlabel("Studies Reviewed")
+
+    docnum = 8991
+    x=[i*100 for i in xrange(7)]
+
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/percentile_UPDATE.eps")
+    plt.savefig("../figure/percentile_UPDATE.png")
+
 
 def sum_true():
     with open("../dump/data_true.pickle","r") as handle:

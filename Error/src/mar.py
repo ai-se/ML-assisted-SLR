@@ -17,7 +17,7 @@ class MAR(object):
         self.enough = 30
         self.kept=50
         self.atleast=100
-        self.syn_thres = 0.9
+        self.syn_thres = 0.8
         self.enable_est = True
 
 
@@ -485,6 +485,55 @@ class MAR(object):
     def BM25_get(self):
         return self.pool[np.argsort(self.bm[self.pool])[::-1][:self.step]]
 
+    ## already coded data, which ones are suspecious
+    def check(self,pne=True,weighting=True):
+        clf = svm.SVC(kernel='linear', probability=True, class_weight='balanced') if weighting else svm.SVC(kernel='linear', probability=True)
+        poses = np.where(np.array(self.body['code']) == "yes")[0]
+        negs = np.where(np.array(self.body['code']) == "no")[0]
+        left = poses
+        decayed = list(left) + list(negs)
+        unlabeled = np.where(np.array(self.body['code']) == "undetermined")[0]
+        try:
+            unlabeled = np.random.choice(unlabeled,size=np.max((len(left),self.atleast)),replace=False)
+        except:
+            pass
+
+        if not pne:
+            unlabeled=[]
+
+        labels=np.array([x if x!='undetermined' else 'no' for x in self.body['code']])
+        all_neg=list(negs)+list(unlabeled)
+        sample = list(decayed) + list(unlabeled)
+
+        clf.fit(self.csr_mat[sample], labels[sample])
+
+
+        ## aggressive undersampling ##
+        if len(poses)>=self.enough:
+
+            train_dist = clf.decision_function(self.csr_mat[all_neg])
+            pos_at = list(clf.classes_).index("yes")
+            if pos_at:
+                train_dist=-train_dist
+            negs_sel = np.argsort(train_dist)[::-1][:len(left)]
+            sample = list(left) + list(np.array(all_neg)[negs_sel])
+            clf.fit(self.csr_mat[sample], labels[sample])
+        elif pne:
+            train_dist = clf.decision_function(self.csr_mat[unlabeled])
+            pos_at = list(clf.classes_).index("yes")
+            if pos_at:
+                train_dist = -train_dist
+            unlabel_sel = np.argsort(train_dist)[::-1][:int(len(unlabeled) / 2)]
+            sample = list(decayed) + list(np.array(unlabeled)[unlabel_sel])
+            clf.fit(self.csr_mat[sample], labels[sample])
+        pos_at = list(clf.classes_).index("yes")
+
+        poses = np.array(poses)[np.argsort(np.array(self.body['time'])[poses])[self.last_pos:]]
+        negs = np.array(negs)[np.argsort(np.array(self.body['time'])[negs])[self.last_neg:]]
+        pos_pred = np.where(clf.predict_proba(self.csr_mat[poses])[:,pos_at] <0.5)
+        neg_pred = np.where(clf.predict_proba(self.csr_mat[negs])[:,pos_at] >0.5)
+        return np.array(poses)[pos_pred], np.array(negs)[neg_pred]
+
     ## Train model ##
     def train(self,pne=True,weighting=True):
         clf = svm.SVC(kernel='linear', probability=True, class_weight='balanced') if weighting else svm.SVC(kernel='linear', probability=True)
@@ -530,7 +579,10 @@ class MAR(object):
         uncertain_id, uncertain_prob = self.uncertain(clf)
         certain_id, certain_prob = self.certain(clf)
         if self.enable_est:
-            self.est_num, self.est = self.estimate_curve(clf, reuse=False, num_neg=len(sample)-len(left))
+            if self.last_pos>0 and len(poses)-self.last_pos>0:
+                self.est_num, self.est = self.estimate_curve(clf, reuse=True, num_neg=len(sample)-len(left))
+            else:
+                self.est_num, self.est = self.estimate_curve(clf, reuse=False, num_neg=len(sample)-len(left))
             return uncertain_id, self.est[uncertain_id], certain_id, self.est[certain_id]
         else:
             return uncertain_id, uncertain_prob, certain_id, certain_prob
@@ -704,12 +756,34 @@ class MAR(object):
         self.body["code"][id] = label
         self.body["time"][id] = time.time()
 
-    def code_error(self,id,label):
+    def code_error(self,id,error='none'):
+        if error=='circle':
+            self.code_circle(id, self.body['label'][id])
+        elif error=='random':
+            self.code_random(id, self.body['label'][id])
+        else:
+            self.code(id, self.body['label'][id])
+
+    def code_circle(self,id,label):
         import random
         if random.random()<0.0:
             self.body["code"][id] = label
         else:
             self.body["code"][id] = 'yes' if random.random()<float(self.body['syn_error'][id]) else 'no'
+        self.body["time"][id] = time.time()
+
+    def code_random(self,id,label):
+        import random
+        if label=='yes':
+            if random.random()<0.05:
+                self.body["code"][id] = 'no'
+            else:
+                self.body["code"][id] = 'yes'
+        else:
+            if random.random()<0.1:
+                self.body["code"][id] = 'yes'
+            else:
+                self.body["code"][id] = 'no'
         self.body["time"][id] = time.time()
 
     ## Plot ##

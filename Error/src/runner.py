@@ -891,7 +891,7 @@ def ERROR(filename):
     read = MAR()
     read = read.create(filename)
     read.lda()
-    read.syn_thres = 0.8
+    read.syn_thres = 0.9
     read.syn_error()
 
 def Code_Error(filename, code):
@@ -1116,7 +1116,7 @@ def Code_noError(filename, code, stop='true'):
 
 
 ### BM25
-def BM25(filename, query, stop='true'):
+def BM25(filename, query, stop='true', error='none'):
     stopat = 0.95
     thres = 0
     starting = 1
@@ -1124,7 +1124,7 @@ def BM25(filename, query, stop='true'):
     read = MAR()
     read = read.create(filename)
 
-    read.BM25(query.strip().split(' '))
+    read.BM25(query.strip().split('_'))
 
     num2 = read.get_allpos()
     target = int(num2 * stopat)
@@ -1135,14 +1135,14 @@ def BM25(filename, query, stop='true'):
 
     while True:
         pos, neg, total = read.get_numbers()
-        # try:
-        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
-        # except:
-        #     print("%d, %d" % (pos, pos + neg))
+        try:
+            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        except:
+            print("%d, %d" % (pos, pos + neg))
 
         if pos < starting or pos+neg<thres:
             for id in read.BM25_get():
-                read.code(id, read.body["label"][id])
+                read.code_error(id, error=error)
         else:
             a,b,c,d =read.train(weighting=True,pne=True)
             if stop == 'est':
@@ -1153,13 +1153,26 @@ def BM25(filename, query, stop='true'):
                     break
             if pos < 10:
                 for id in a:
-                    read.code(id, read.body["label"][id])
+                    read.code_error(id, error=error)
             else:
                 for id in c:
-                    read.code(id, read.body["label"][id])
+                    read.code_error(id, error=error)
+    read.export()
+    results = analyze(read)
+    print(results)
     return read
 
-
+def analyze(read):
+    unknown = np.where(np.array(read.body['code']) == "undetermined")[0]
+    pos = np.where(np.array(read.body['code']) == "yes")[0]
+    neg = np.where(np.array(read.body['code']) == "no")[0]
+    yes = np.where(np.array(read.body['label']) == "yes")[0]
+    no = np.where(np.array(read.body['label']) == "no")[0]
+    falsepos = len(set(pos) & set(no))
+    truepos = len(set(pos) & set(yes))
+    falseneg = len(set(neg) & set(yes))
+    unknownyes = len(set(unknown) & set(yes))
+    return {"falsepos": falsepos, "truepos": truepos, "falseneg": falseneg, "unknownyes": unknownyes}
 
 
 ############ scenarios ##########
@@ -1400,6 +1413,66 @@ def draw_two():
     plt.legend(bbox_to_anchor=(0.9, 0.50), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/percentile_UPDATE.eps")
     plt.savefig("../figure/percentile_UPDATE.png")
+
+
+def draw_three():
+
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+    lines=['-','--','-.',':']
+    five=['$0th$','$25th$','median result','$75th$','worst result']
+    colors=["blue",'brown', 'green', 'yellow', 'red']
+
+    with open("../dump/nodata_est1.pickle","r") as handle:
+        record = pickle.load(handle)
+
+    what = record['Hall.csv']['BM25']
+    with open("../dump/nodata_true.pickle","r") as handle:
+        record1 = pickle.load(handle)
+
+    what1 = record1['Hall.csv']['RANDOM']
+
+
+    order = np.argsort([r['x'][-1] for r in what])
+    stats={}
+    for ind in [0,25,50,75,100]:
+        stats[ind]=what[order[int(ind*(len(order)-1)/100)]]
+
+    order1 = np.argsort([r['x'][-1] for r in what1])
+    stats1={}
+    for ind in [0,25,50,75,100]:
+        stats1[ind]=what1[order1[int(ind*(len(order1)-1)/100)]]
+
+
+
+    plt.figure(0)
+    for j,ind in enumerate(stats):
+        if ind == 50 or ind==100:
+            plt.plot(stats[ind]['x'], np.array(stats[ind]['pos'])/106,linestyle=lines[1], color=colors[j], label="FAST2 ("+str(five[j])+")")
+    for j,ind in enumerate(stats1):
+        if ind == 50 or ind==100:
+            plt.plot(stats1[ind]['x'], np.array(stats1[ind]['pos'])/106,linestyle=lines[0], color=colors[j], label="FAST1 ("+str(five[j])+")")
+    plt.ylabel("Recall")
+    plt.xlabel("#Studies Reviewed")
+
+    docnum = 8991
+    x=[i*100 for i in xrange(10)]
+
+    xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
+
+    plt.xticks(x, xlabels)
+
+    plt.legend(bbox_to_anchor=(1, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/percentile_all.eps")
+    plt.savefig("../figure/percentile_all.png")
+
 
 
 def sum_true():

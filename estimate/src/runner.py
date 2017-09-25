@@ -308,11 +308,12 @@ def draw_est2(file):
     for j, ind in enumerate(stats['pos']):
         # if ind == 50 or ind == 0 or ind==100:
         if ind == 50:
-            plt.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, linestyle=lines[0], label='FASTREAD')
+            plt.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, linestyle=lines[0], label="Yu'16")
             plt.plot(stats2['pos'][ind]['x'], np.array(stats2['pos'][ind]['pos']) / true, linestyle=lines[1], label="sampling $\\propto$ probabilities")
             plt.plot(stats['pos'][ind]['x'], np.array(uniform_test)[(np.array(stats['pos'][ind]['x'])/10).astype(int)] / true, linestyle=lines[2], label='uniform random sampling')
     plt.ylabel("Recall")
     plt.xlabel("# Studies Reviewed")
+    plt.xlim(0, stats['pos'][ind]['x'][-1])
     plt.legend(bbox_to_anchor=(1, 0.30), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/recall_all_" + str(file) + ".eps")
     plt.savefig("../figure/recall_all_" + str(file) + ".png")
@@ -321,15 +322,16 @@ def draw_est2(file):
     for j, ind in enumerate(stats['est']):
         # if ind == 50 or ind == 0 or ind==100:
         if ind == 50:
-            plt.plot(stats['est'][ind]['x'], [true/total]*len(stats['est'][ind]['x']), linestyle=lines[0], label='true')
+            plt.plot(stats['est'][ind]['x'], [true/total]*len(stats['est'][ind]['x']), linestyle=lines[0], color='gray', label='true')
 
-            plt.plot(stats['est'][ind]['x'], np.array(uniform_test)[(np.array(stats['est'][ind]['x'])/10).astype(int)].astype(float) / np.array(stats['est'][ind]['x']) , linestyle=lines[1], label='estimated (uniform random sampling)')
+            plt.plot(stats['est'][ind]['x'], np.array(uniform_test)[(np.array(stats['est'][ind]['x'])/10).astype(int)].astype(float) / np.array(stats['est'][ind]['x']) , linestyle=lines[1], color='red', label='estimated (uniform random sampling)')
             index=2
             for key in stats['est'][ind]:
                 if key=="semi":
                     name='SEMI'
                 # plt.plot(stats['est'][ind]['x'], stats['est'][ind][key],linestyle=lines[index],label=key)
-                    plt.plot(stats['est'][ind]['x'], np.array(stats['est'][ind][key])/total, linestyle=lines[index], label="estimated ("+name+")")
+                    plt.plot(stats['est'][ind]['x'], np.array(stats['est'][ind][key])/total, linestyle=lines[index], color='blue', label="estimated ("+name+")")
+                    startpoint= stats['est'][ind]['x'][0]
                     index=index+1
 
     for j, ind in enumerate(stats2['est']):
@@ -338,7 +340,8 @@ def draw_est2(file):
             for key in stats2['est'][ind]:
                 if key=="est":
                     name="Wallace'13"
-                    plt.plot(stats2['est'][ind]['x'], np.array(stats2['est'][ind][key]) / total, linestyle=lines[index],
+                    startind=stats2['est'][ind]['x'].index(startpoint)
+                    plt.plot(stats2['est'][ind]['x'][startind:], np.array(stats2['est'][ind][key][startind:]) / total, color='green', linestyle=lines[index],
                              label="estimated ("+name+")")
                     index = index + 1
 

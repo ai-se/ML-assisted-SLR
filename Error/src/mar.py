@@ -19,6 +19,7 @@ class MAR(object):
         self.atleast=100
         self.syn_thres = 0.8
         self.enable_est = True
+        self.interval = 5
 
 
     def create(self,filename):
@@ -32,6 +33,7 @@ class MAR(object):
         self.last_pos=0
         self.last_neg=0
         self.record_est={"x":[],"semi":[],"sigmoid":[]}
+        self.round = 0
 
 
         try:
@@ -129,6 +131,11 @@ class MAR(object):
             self.body["syn_error"] = [c[ind] for c in content[1:]]
         except:
             self.body["syn_error"]=[0]*(len(content) - 1)
+        try:
+            ind = header.index("fixed")
+            self.body["fixed"] = [c[ind] for c in content[1:]]
+        except:
+            self.body["fixed"]=[0]*(len(content) - 1)
         return
     
     def lda(self):
@@ -485,54 +492,6 @@ class MAR(object):
     def BM25_get(self):
         return self.pool[np.argsort(self.bm[self.pool])[::-1][:self.step]]
 
-    ## already coded data, which ones are suspecious
-    def check(self,pne=True,weighting=True):
-        clf = svm.SVC(kernel='linear', probability=True, class_weight='balanced') if weighting else svm.SVC(kernel='linear', probability=True)
-        poses = np.where(np.array(self.body['code']) == "yes")[0]
-        negs = np.where(np.array(self.body['code']) == "no")[0]
-        left = poses
-        decayed = list(left) + list(negs)
-        unlabeled = np.where(np.array(self.body['code']) == "undetermined")[0]
-        try:
-            unlabeled = np.random.choice(unlabeled,size=np.max((len(left),self.atleast)),replace=False)
-        except:
-            pass
-
-        if not pne:
-            unlabeled=[]
-
-        labels=np.array([x if x!='undetermined' else 'no' for x in self.body['code']])
-        all_neg=list(negs)+list(unlabeled)
-        sample = list(decayed) + list(unlabeled)
-
-        clf.fit(self.csr_mat[sample], labels[sample])
-
-
-        ## aggressive undersampling ##
-        if len(poses)>=self.enough:
-
-            train_dist = clf.decision_function(self.csr_mat[all_neg])
-            pos_at = list(clf.classes_).index("yes")
-            if pos_at:
-                train_dist=-train_dist
-            negs_sel = np.argsort(train_dist)[::-1][:len(left)]
-            sample = list(left) + list(np.array(all_neg)[negs_sel])
-            clf.fit(self.csr_mat[sample], labels[sample])
-        elif pne:
-            train_dist = clf.decision_function(self.csr_mat[unlabeled])
-            pos_at = list(clf.classes_).index("yes")
-            if pos_at:
-                train_dist = -train_dist
-            unlabel_sel = np.argsort(train_dist)[::-1][:int(len(unlabeled) / 2)]
-            sample = list(decayed) + list(np.array(unlabeled)[unlabel_sel])
-            clf.fit(self.csr_mat[sample], labels[sample])
-        pos_at = list(clf.classes_).index("yes")
-
-        poses = np.array(poses)[np.argsort(np.array(self.body['time'])[poses])[self.last_pos:]]
-        negs = np.array(negs)[np.argsort(np.array(self.body['time'])[negs])[self.last_neg:]]
-        pos_pred = np.where(clf.predict_proba(self.csr_mat[poses])[:,pos_at] <0.5)
-        neg_pred = np.where(clf.predict_proba(self.csr_mat[negs])[:,pos_at] >0.5)
-        return np.array(poses)[pos_pred], np.array(negs)[neg_pred]
 
     ## Train model ##
     def train(self,pne=True,weighting=True):
@@ -575,6 +534,14 @@ class MAR(object):
             unlabel_sel = np.argsort(train_dist)[::-1][:int(len(unlabeled) / 2)]
             sample = list(decayed) + list(np.array(unlabeled)[unlabel_sel])
             clf.fit(self.csr_mat[sample], labels[sample])
+
+        # if self.round==self.interval:
+        #     self.round=0
+        #     susp, conf = self.susp(clf)
+        #     return susp, conf, susp, conf
+        # else:
+        #     self.round = self.round + 1
+
 
         uncertain_id, uncertain_prob = self.uncertain(clf)
         certain_id, certain_prob = self.certain(clf)
@@ -774,17 +741,53 @@ class MAR(object):
 
     def code_random(self,id,label):
         import random
+        error_rate = 0.1
         if label=='yes':
-            if random.random()<0.05:
-                self.body["code"][id] = 'no'
+            if random.random()<error_rate:
+                new = 'no'
             else:
-                self.body["code"][id] = 'yes'
+                new = 'yes'
         else:
-            if random.random()<0.1:
-                self.body["code"][id] = 'yes'
+            if random.random()<error_rate:
+                new = 'yes'
             else:
-                self.body["code"][id] = 'no'
+                new = 'no'
+        if new == self.body["code"][id]:
+            self.body['fixed'][id]=1
+        self.body["code"][id] = new
         self.body["time"][id] = time.time()
+
+    ## Get suspecious codes
+    def susp(self,clf):
+        thres_pos = 1
+        thres_neg = 0.5
+
+        poses = np.where(np.array(self.body['code']) == "yes")[0]
+        negs = np.where(np.array(self.body['code']) == "no")[0]
+        poses = np.array(poses)[np.argsort(np.array(self.body['time'])[poses])[self.last_pos:]]
+        negs = np.array(negs)[np.argsort(np.array(self.body['time'])[negs])[self.last_neg:]]
+
+        poses = np.array(poses)[np.where(np.array(self.body['fixed'])[poses] == 0)[0]]
+        negs = np.array(negs)[np.where(np.array(self.body['fixed'])[negs] == 0)[0]]
+
+
+        pos_at = list(clf.classes_).index("yes")
+        prob_pos = clf.predict_proba(self.csr_mat[poses])[:,pos_at]
+        se_pos = np.argsort(prob_pos)[:5]
+        se_pos = [s for s in se_pos if prob_pos[s]<thres_pos]
+        sel_pos = poses[se_pos]
+        print(np.array(self.body['label'])[sel_pos])
+
+        neg_at = list(clf.classes_).index("no")
+        prob_neg = clf.predict_proba(self.csr_mat[negs])[:,neg_at]
+        se_neg = np.argsort(prob_neg)[:5]
+        se_neg = [s for s in se_neg if prob_neg[s]<thres_neg]
+        sel_neg = negs[se_neg]
+        print(np.array(self.body['label'])[sel_neg])
+
+
+        return sel_pos.tolist() + sel_neg.tolist(), prob_pos[se_pos].tolist() + prob_neg[se_neg].tolist()
+
 
     ## Plot ##
     def plot(self):

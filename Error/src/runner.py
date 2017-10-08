@@ -1,27 +1,33 @@
 from __future__ import division, print_function
 
-import csv
 import numpy as np
 from pdb import set_trace
 from demos import cmd
 import pickle
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors
-import matplotlib.cm as cmx
-from sk import rdivDemo,a12slow
-import unicodedata
-import random
-from sklearn import svm
-from collections import Counter
-from scipy.sparse import csr_matrix
-from sklearn.cluster import KMeans
 
-from time import time
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sk import rdivDemo
+
+import random
+
+from collections import Counter
+
 from mar import MAR
 from wallace import Wallace
 
 
+
+# from scipy.sparse import csr_matrix
+# from sklearn.cluster import KMeans
+#
+# from time import time
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# from sklearn import svm
+# import unicodedata
+# import matplotlib.colors as colors
+# import matplotlib.cm as cmx
+# from sk import a12slow
+# import csv
 
 
 
@@ -1116,13 +1122,15 @@ def Code_noError(filename, code, stop='true'):
 
 
 ### BM25
-def BM25(filename, query, stop='true', error='none'):
+def BM25(filename, query, stop='true', error='none', interval = 100000):
     stopat = 0.95
     thres = 0
     starting = 1
 
     read = MAR()
     read = read.create(filename)
+
+    read.interval = interval
 
     read.BM25(query.strip().split('_'))
 
@@ -1135,10 +1143,10 @@ def BM25(filename, query, stop='true', error='none'):
 
     while True:
         pos, neg, total = read.get_numbers()
-        try:
-            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
-        except:
-            print("%d, %d" % (pos, pos + neg))
+        # try:
+        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        # except:
+        #     print("%d, %d" % (pos, pos + neg))
 
         if pos < starting or pos+neg<thres:
             for id in read.BM25_get():
@@ -1172,7 +1180,9 @@ def analyze(read):
     truepos = len(set(pos) & set(yes))
     falseneg = len(set(neg) & set(yes))
     unknownyes = len(set(unknown) & set(yes))
-    return {"falsepos": falsepos, "truepos": truepos, "falseneg": falseneg, "unknownyes": unknownyes}
+    unique = len(read.body['code']) - len(unknown)
+    count = sum(read.body['count'])
+    return {"falsepos": falsepos, "truepos": truepos, "falseneg": falseneg, "unknownyes": unknownyes, "unique": unique, "count": count}
 
 
 ############ scenarios ##########
@@ -1544,6 +1554,46 @@ def sum_true():
 
 def BM25_test():
     BM25("K_all3+.csv","software systematic review",'true')
+
+
+def error_no_machine():
+    files = ["Hall.csv", "Wahono.csv", "Danijel.csv", "K_all3.csv"]
+    queries = {"Hall.csv": 'defect_prediction', "Wahono.csv": 'defect_prediction', "Danijel.csv": 'defect_prediction_metrics', "K_all3.csv": "systematic review"}
+    for file in files:
+        print(file+": ", end='')
+        BM25(file,queries[file],'est','three')
+
+def error_machine():
+    files = ["Hall.csv", "Wahono.csv", "Danijel.csv", "K_all3.csv"]
+    queries = {"Hall.csv": 'defect_prediction', "Wahono.csv": 'defect_prediction', "Danijel.csv": 'defect_prediction_metrics', "K_all3.csv": "systematic review"}
+    for file in files:
+        print(file+": ", end='')
+        BM25(file,queries[file],'est','random')
+
+def error_hpcc(seed = 1):
+    np.random.seed(int(seed))
+    files = ["Hall.csv", "Wahono.csv", "Danijel.csv", "K_all3.csv"]
+    queries = {"Hall.csv": 'defect_prediction', "Wahono.csv": 'defect_prediction', "Danijel.csv": 'defect_prediction_metrics', "K_all3.csv": "systematic review"}
+    correct = ['none', 'three', 'machine']
+
+    results={}
+    for file in files:
+        results[file]={}
+        for cor in correct:
+            print(str(seed)+": "+file+": "+ cor+ ": ", end='')
+            if cor == 'three':
+                result = BM25(file,queries[file],'est','three')
+            elif cor == 'machine':
+                result = BM25(file,queries[file],'est','random', 5)
+            else:
+                result = BM25(file,queries[file],'est','random')
+
+            results[file][cor] = analyze(result)
+    with open("../dump/error_hpcc.pickle","w+") as handle:
+        pickle.dump(results,handle)
+
+
+
 
 if __name__ == "__main__":
     eval(cmd())

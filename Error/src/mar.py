@@ -19,7 +19,7 @@ class MAR(object):
         self.atleast=100
         self.syn_thres = 0.8
         self.enable_est = True
-        self.interval = 5
+        self.interval = 500000000
 
 
     def create(self,filename):
@@ -136,6 +136,11 @@ class MAR(object):
             self.body["fixed"] = [c[ind] for c in content[1:]]
         except:
             self.body["fixed"]=[0]*(len(content) - 1)
+        try:
+            ind = header.index("count")
+            self.body["count"] = [c[ind] for c in content[1:]]
+        except:
+            self.body["count"]=[0]*(len(content) - 1)
         return
     
     def lda(self):
@@ -495,6 +500,7 @@ class MAR(object):
 
     ## Train model ##
     def train(self,pne=True,weighting=True):
+
         clf = svm.SVC(kernel='linear', probability=True, class_weight='balanced') if weighting else svm.SVC(kernel='linear', probability=True)
         poses = np.where(np.array(self.body['code']) == "yes")[0]
         negs = np.where(np.array(self.body['code']) == "no")[0]
@@ -535,12 +541,14 @@ class MAR(object):
             sample = list(decayed) + list(np.array(unlabeled)[unlabel_sel])
             clf.fit(self.csr_mat[sample], labels[sample])
 
-        # if self.round==self.interval:
-        #     self.round=0
-        #     susp, conf = self.susp(clf)
-        #     return susp, conf, susp, conf
-        # else:
-        #     self.round = self.round + 1
+        ## correct errors with human-machine disagreements ##
+        if self.round==self.interval:
+            self.round=0
+            susp, conf = self.susp(clf)
+            return susp, conf, susp, conf
+        else:
+            self.round = self.round + 1
+        #####################################################
 
 
         uncertain_id, uncertain_prob = self.uncertain(clf)
@@ -728,6 +736,8 @@ class MAR(object):
             self.code_circle(id, self.body['label'][id])
         elif error=='random':
             self.code_random(id, self.body['label'][id])
+        elif error=='three':
+            self.code_three(id, self.body['label'][id])
         else:
             self.code(id, self.body['label'][id])
 
@@ -738,6 +748,12 @@ class MAR(object):
         else:
             self.body["code"][id] = 'yes' if random.random()<float(self.body['syn_error'][id]) else 'no'
         self.body["time"][id] = time.time()
+
+    def code_three(self, id, label):
+        self.code_random(id,label)
+        self.code_random(id,label)
+        if self.body['fixed'][id] == 0:
+            self.code_random(id,label)
 
     def code_random(self,id,label):
         import random
@@ -756,11 +772,14 @@ class MAR(object):
             self.body['fixed'][id]=1
         self.body["code"][id] = new
         self.body["time"][id] = time.time()
+        self.body["count"][id] = self.body["count"][id] + 1
 
     ## Get suspecious codes
     def susp(self,clf):
         thres_pos = 1
         thres_neg = 0.5
+        length_pos = 10
+        length_neg = 10
 
         poses = np.where(np.array(self.body['code']) == "yes")[0]
         negs = np.where(np.array(self.body['code']) == "no")[0]
@@ -773,17 +792,17 @@ class MAR(object):
 
         pos_at = list(clf.classes_).index("yes")
         prob_pos = clf.predict_proba(self.csr_mat[poses])[:,pos_at]
-        se_pos = np.argsort(prob_pos)[:5]
+        se_pos = np.argsort(prob_pos)[:length_pos]
         se_pos = [s for s in se_pos if prob_pos[s]<thres_pos]
         sel_pos = poses[se_pos]
-        print(np.array(self.body['label'])[sel_pos])
+        # print(np.array(self.body['label'])[sel_pos])
 
         neg_at = list(clf.classes_).index("no")
         prob_neg = clf.predict_proba(self.csr_mat[negs])[:,neg_at]
-        se_neg = np.argsort(prob_neg)[:5]
+        se_neg = np.argsort(prob_neg)[:length_neg]
         se_neg = [s for s in se_neg if prob_neg[s]<thres_neg]
         sel_neg = negs[se_neg]
-        print(np.array(self.body['label'])[sel_neg])
+        # print(np.array(self.body['label'])[sel_neg])
 
 
         return sel_pos.tolist() + sel_neg.tolist(), prob_pos[se_pos].tolist() + prob_neg[se_neg].tolist()

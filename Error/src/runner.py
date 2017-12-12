@@ -1126,6 +1126,8 @@ def BM25(filename, query, stop='true', error='none', interval = 100000):
     stopat = 0.95
     thres = 0
     starting = 1
+    counter = 0
+    pos_last = 0
 
     read = MAR()
     read = read.create(filename)
@@ -1143,10 +1145,10 @@ def BM25(filename, query, stop='true', error='none', interval = 100000):
 
     while True:
         pos, neg, total = read.get_numbers()
-        # try:
-        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
-        # except:
-        #     print("%d, %d" % (pos, pos + neg))
+        try:
+            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        except:
+            print("%d, %d" %(pos,pos+neg))
 
         if pos < starting or pos+neg<thres:
             for id in read.BM25_get():
@@ -1156,6 +1158,18 @@ def BM25(filename, query, stop='true', error='none', interval = 100000):
             if stop == 'est':
                 if stopat * read.est_num <= pos:
                     break
+            elif stop == 'soft':
+                if pos>0 and pos_last==pos:
+                    counter = counter+1
+                else:
+                    counter=0
+                pos_last=pos
+                if counter >=5:
+                    break
+            if stop == 'knee':
+                if pos>0:
+                    if read.knee():
+                        break
             else:
                 if pos >= target:
                     break

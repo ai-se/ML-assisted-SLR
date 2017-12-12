@@ -277,6 +277,29 @@ class MAR(object):
             tmp = pickle.load(handle)
         return tmp
 
+
+
+    def knee(self):
+        y = self.record['pos'][-1]
+        s = self.record['x'][-1]
+        ratio = s/np.sqrt(y**2+s**2)
+        per_best=-1
+        best=0
+        for i in range(len(self.record['x']))[::-1]:
+            per = (self.record['pos'][i]-self.record['x'][i]*y/s)*ratio
+
+            if per>per_best:
+                best = i
+                per_best=per
+
+        rho = (s-self.record['x'][best])*self.record['pos'][best]/self.record['x'][best]/(1+y-self.record['pos'][best])
+        thres = 156-min((150,y))
+        # thres = 6
+        if rho>=thres:
+            return True
+        else:
+            return False
+
     def estimate_curve(self, clf, reuse=False, num_neg=0):
         from sklearn import linear_model
         import random

@@ -518,7 +518,7 @@ def one_cache_est(filename):
 ## basic units
 
 def START_Wallace(filename):
-    stop=0.90
+    stop=0.95
     thres = 40
 
     read = Wallace()
@@ -526,7 +526,6 @@ def START_Wallace(filename):
     read.restart()
     read = Wallace()
     read = read.create(filename)
-    target = int(read.get_allpos()*stop)
     while True:
         pos, neg, total = read.get_numbers()
         # print("%d, %d" %(pos,pos+neg))
@@ -1109,6 +1108,9 @@ def Code_noError(filename, code, stop='true'):
             if stop == 'est':
                 if stopat * read.est_num <= pos:
                     break
+            elif stop == 'budget':
+                if pos+neg>=1000:
+                    break
             else:
                 if pos >= target:
                     break
@@ -1121,13 +1123,37 @@ def Code_noError(filename, code, stop='true'):
     return read
 
 
+
+def exp_BM25(stop='true'):
+    repeats=30
+
+    files = ["Hall.csv", "Wahono.csv", "Danijel.csv", "K_all3.csv"]
+    queries = {"Hall.csv": 'defect_prediction', "Wahono.csv": 'defect_prediction',
+               "Danijel.csv": 'defect_prediction_metrics', "K_all3.csv": "systematic review"}
+    results={}
+    for file in files:
+        results[file]={}
+        pos = []
+        cost = []
+        for i in xrange(repeats):
+            read = BM25(file, queries[file], stop=stop, seed=i)
+            pos.append(read.record['pos'][-1])
+            cost.append(read.record['x'][-1])
+        results[file]['pos'] = np.median(pos)
+        results[file]['cost'] = np.median(cost)
+    # print(results)
+    with open("../dump/other_"+stop+".pickle","wb") as handle:
+        pickle.dump(results,handle)
+    set_trace()
+
 ### BM25
-def BM25(filename, query, stop='true', error='none', interval = 100000):
+def BM25(filename, query, stop='true', error='none', interval = 100000, seed=0):
     stopat = 0.95
     thres = 0
     starting = 1
     counter = 0
     pos_last = 0
+    np.random.seed(seed)
 
     read = MAR()
     read = read.create(filename)
@@ -1145,10 +1171,10 @@ def BM25(filename, query, stop='true', error='none', interval = 100000):
 
     while True:
         pos, neg, total = read.get_numbers()
-        try:
-            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
-        except:
-            print("%d, %d" %(pos,pos+neg))
+        # try:
+        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        # except:
+        #     print("%d, %d" %(pos,pos+neg))
 
         if pos < starting or pos+neg<thres:
             for id in read.BM25_get():
@@ -1166,7 +1192,7 @@ def BM25(filename, query, stop='true', error='none', interval = 100000):
                 pos_last=pos
                 if counter >=5:
                     break
-            if stop == 'knee':
+            elif stop == 'knee':
                 if pos>0:
                     if read.knee():
                         break
@@ -1179,9 +1205,9 @@ def BM25(filename, query, stop='true', error='none', interval = 100000):
             else:
                 for id in c:
                     read.code_error(id, error=error)
-    read.export()
-    results = analyze(read)
-    print(results)
+    # read.export()
+    # results = analyze(read)
+    # print(results)
     return read
 
 def analyze(read):
@@ -1252,6 +1278,8 @@ def no_data(stop='true'):
     repeats=30
     datasets=['Hall.csv','Wahono.csv','Danijel.csv','K_all3.csv']
     treatments=['UPDATE_POS','REUSE','Auto_Syn','BM25','RANDOM']
+    datasets = ['Hall.csv']
+    treatments = ['RANDOM']
     results={}
     for data in datasets:
         results[data]={}
@@ -1498,6 +1526,74 @@ def draw_three():
     plt.savefig("../figure/percentile_all.png")
 
 
+def sum_median_worst():
+    with open("../dump/data_true.pickle","r") as handle:
+        record = pickle.load(handle)
+    with open("../dump/nodata_true.pickle","r") as handle:
+        record1 = pickle.load(handle)
+    dataname={"Danijel.csv": "Radjenovi{\\'c} (Full)", "Wahono.csv": "Wahono (Full)", "Hall.csv": "Hall (Full)", "K_all3.csv": "Kitchenham (Full)", "Danijel2005+.csv": "Radjenovi{\\'c} (Half)", "Wahono2008+.csv": "Wahono (Half)", "Hall2007+.csv": "Hall (Half)", "K_all3+.csv": "Kitchenham (Half)"}
+    datasize={"Danijel.csv": 6000, "Wahono.csv": 7002, "Hall.csv": 8991, "K_all3.csv": 1704, "Danijel2005+.csv": 3035, "Wahono2008+.csv": 3810, "Hall2007+.csv": 4066, "K_all3+.csv": 1688}
+    treatmentname={"Auto_Syn": "Auto-Syn", "BM25": "Auto-BM25", "RANDOM": "RANDOM", "UPDATE_POS": "UPDATE", "REUSE": "REUSE"}
+    new={}
+    for d in record:
+        dataset=dataname[d]
+        new[dataset]={}
+        for t in record[d]:
+            if t=="UPDATE_ALL":
+                continue
+            treatment=treatmentname[t]
+
+            tmp = [x['x'][-1] for x in record[d][t]]
+            median = np.median(tmp)
+            worst = np.percentile(tmp, 100)
+            w_median = 0.95 - median / datasize[d]
+            w_worst = 0.95 - worst / datasize[d]
+            new[dataset][treatment] = [median, worst, w_median, w_worst]
+
+    for d in record1:
+        dataset=dataname[d]
+        new[dataset]={}
+        for t in record1[d]:
+            if t=="UPDATE_ALL":
+                continue
+            treatment=treatmentname[t]
+
+            tmp = [x['x'][-1] for x in record1[d][t]]
+            median=np.median(tmp)
+            worst = np.percentile(tmp,100)
+            w_median = 0.95 - median / datasize[d]
+            w_worst = 0.95 - worst / datasize[d]
+            new[dataset][treatment] = [median, worst, w_median, w_worst]
+
+    ####draw table
+    treatments = ['Auto-BM25', "Auto-Syn", "UPDATE", "REUSE", "RANDOM"]
+    datasets = ['Wahono (Full)', 'Hall (Full)', "Radjenovi{\\'c} (Full)", "Kitchenham (Full)", 'Wahono (Half)',
+                'Hall (Half)', "Radjenovi{\\'c} (Half)", "Kitchenham (Half)"]
+    print("\\begin{tabular}{ |l|l|c|c|c|c| }")
+    print("\\hline")
+    print(" & & \\multicolumn{2}{|c|}{X95} & \\multicolumn{2}{|c|}{WSS@95} \\\\")
+    print("\\cline{3-6}")
+    print(" Dataset & Treatment & median & iqr & median & iqr \\\\")
+    print("\\hline")
+    for dataset in datasets:
+        for treatment in treatments:
+            if treatment == "UPDATE":
+                d = dataset
+            else:
+                d = ""
+            if dataset == "Kitchenham (Full)":
+                if treatment == "UPDATE" or treatment == "REUSE":
+                    continue
+                if treatment == "Auto-Syn":
+                    d = dataset
+            print(d + " & " + treatment + " & " + " & ".join(
+                map('{0:.0f}'.format, new[dataset][treatment][:2])) + " & " + " & ".join(
+                map('{0:.2f}'.format, new[dataset][treatment][2:])) + " \\\\")
+            if treatment == "RANDOM":
+                print("\\hline")
+                # else:
+                #     print('\\cline{2-6}')
+    print("\\end{tabular}")
 
 def sum_true():
     with open("../dump/data_true.pickle","r") as handle:

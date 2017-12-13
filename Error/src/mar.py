@@ -293,8 +293,8 @@ class MAR(object):
                 per_best=per
 
         rho = (s-self.record['x'][best])*self.record['pos'][best]/self.record['x'][best]/(1+y-self.record['pos'][best])
-        thres = 156-min((150,y))
-        # thres = 6
+        # thres = 156-min((150,y))
+        thres = 6
         if rho>=thres:
             return True
         else:

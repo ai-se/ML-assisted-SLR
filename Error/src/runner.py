@@ -1125,7 +1125,7 @@ def Code_noError(filename, code, stop='true'):
 
 
 def exp_BM25(stop='true'):
-    repeats=30
+    repeats=3
 
     files = ["Hall.csv", "Wahono.csv", "Danijel.csv", "K_all3.csv"]
     queries = {"Hall.csv": 'defect_prediction', "Wahono.csv": 'defect_prediction',

@@ -1176,6 +1176,18 @@ def BM25(filename, query, stop='true', error='none', interval = 100000, seed=0):
         # except:
         #     print("%d, %d" %(pos,pos+neg))
 
+        if pos + neg >= total:
+            if stop=='knee' and error=='random':
+                coded = np.where(np.array(read.body['code']) != "undetermined")[0]
+                seq = coded[np.argsort(read.body['time'][coded])]
+                part1 = set(seq[:read.kneepoint * read.step]) & set(
+                    np.where(np.array(read.body['code']) == "no")[0])
+                part2 = set(seq[read.kneepoint * read.step:]) & set(
+                    np.where(np.array(read.body['code']) == "yes")[0])
+                for id in part1 | part2:
+                    read.code_error(id, error=error)
+            break
+
         if pos < starting or pos+neg<thres:
             for id in read.BM25_get():
                 read.code_error(id, error=error)
@@ -1195,6 +1207,15 @@ def BM25(filename, query, stop='true', error='none', interval = 100000, seed=0):
             elif stop == 'knee':
                 if pos>0:
                     if read.knee():
+                        if error=='random':
+                            coded = np.where(np.array(read.body['code']) != "undetermined")[0]
+                            seq = coded[np.argsort(np.array(read.body['time'])[coded])]
+                            part1 = set(seq[:read.kneepoint * read.step]) & set(
+                                np.where(np.array(read.body['code']) == "no")[0])
+                            part2 = set(seq[read.kneepoint * read.step:]) & set(
+                                np.where(np.array(read.body['code']) == "yes")[0])
+                            for id in part1|part2:
+                                read.code_error(id, error=error)
                         break
             else:
                 if pos >= target:

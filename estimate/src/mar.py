@@ -14,7 +14,7 @@ class MAR(object):
     def __init__(self):
         self.fea_num = 4000
         self.step = 10
-        self.enough = 30
+        self.enough = 20
         self.kept=50
         self.atleast=100
         self.enable_est = True
@@ -314,7 +314,39 @@ class MAR(object):
 
         return esty,pre
 
+    ## BM25 ##
+    def BM25(self, query):
+        b = 0.75
+        k1 = 1.5
 
+        ### Combine title and abstract for training ###########
+        content = [self.body["Document Title"][index] + " " + self.body["Abstract"][index] for index in
+                   xrange(len(self.body["Document Title"]))]
+        #######################################################
+
+        ### Feature selection by tfidf in order to keep vocabulary ###
+
+        tfidfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=False, smooth_idf=False,
+                                  sublinear_tf=False, decode_error="ignore")
+        tf = tfidfer.fit_transform(content)
+        d_avg = np.mean(np.sum(tf, axis=1))
+        score = {}
+        for word in query:
+            score[word] = []
+            try:
+                id = tfidfer.vocabulary_[word]
+            except:
+                score[word] = [0] * len(content)
+                continue
+            df = sum([1 for wc in tf[:, id] if wc > 0])
+            idf = np.log((len(content) - df + 0.5) / (df + 0.5))
+            for i in xrange(len(content)):
+                score[word].append(
+                    idf * tf[i, id] / (tf[i, id] + k1 * ((1 - b) + b * np.sum(tf[0], axis=1)[0, 0] / d_avg)))
+        self.bm = np.sum(score.values(), axis=0)
+
+    def BM25_get(self):
+        return self.pool[np.argsort(self.bm[self.pool])[::-1][:self.step]]
 
     ## Train model ##
     def train(self,pne=True,weighting=True):

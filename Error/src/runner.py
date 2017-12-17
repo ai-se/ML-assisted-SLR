@@ -309,6 +309,7 @@ def bestNworst(results):
             continue
         stats[key]={}
         result=results[key]
+        set_trace()
         order = np.argsort([r['x'][-1] for r in result])
         for ind in [0,25,50,75,100]:
             stats[key][ind]=result[order[int(ind*(len(order)-1)/100)]]
@@ -450,17 +451,18 @@ def rest(first):
         pickle.dump(rest,handle)
 
 
-def test_estimate(first):
-    repeats=30
-    result={'pos':[],'est':[]}
+def test_estimate(first,query):
+    repeats = 1
+    result = {'pos': [], 'est': []}
     for i in xrange(repeats):
+        np.random.seed(i + 2)
         first = str(first)
-        a = START(first)
+        a = BM25(first, query, 'est', i+2)
         result['est'].append(a.record_est)
         result['pos'].append(a.record)
-        print(i,end=" ")
-    with open("../dump/est_"+first.split('.')[0]+".pickle","wb") as handle:
-        pickle.dump(result,handle)
+        print(i, end=" ")
+    with open("../dump/est_" + first.split('.')[0] + ".pickle", "wb") as handle:
+        pickle.dump(result, handle)
 
 def test_wallace(first):
     repeats=30
@@ -1125,7 +1127,7 @@ def Code_noError(filename, code, stop='true'):
 
 
 def exp_BM25(stop='true'):
-    repeats=3
+    repeats=30
 
     files = ["Hall.csv", "Wahono.csv", "Danijel.csv", "K_all3.csv"]
     queries = {"Hall.csv": 'defect_prediction', "Wahono.csv": 'defect_prediction',
@@ -1145,6 +1147,11 @@ def exp_BM25(stop='true'):
     with open("../dump/other_"+stop+".pickle","wb") as handle:
         pickle.dump(results,handle)
     set_trace()
+
+def exp_result(stop='true'):
+    with open("../dump/other_"+stop+".pickle","r") as handle:
+        results = pickle.load(handle)
+    print(results)
 
 ### BM25
 def BM25(filename, query, stop='true', error='none', interval = 100000, seed=0):

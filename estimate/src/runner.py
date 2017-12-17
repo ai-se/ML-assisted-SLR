@@ -256,7 +256,6 @@ def draw_est(file):
     plt.savefig("../figure/prev_wallace_" + str(file) + ".eps")
     plt.savefig("../figure/prev_wallace_" + str(file) + ".png")
 
-
 def draw_est2(file):
     which=str(file)
     if which=="Wahono":
@@ -308,8 +307,8 @@ def draw_est2(file):
     for j, ind in enumerate(stats['pos']):
         # if ind == 50 or ind == 0 or ind==100:
         if ind == 50:
-            plt.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, linestyle=lines[0], label="Yu'16")
-            plt.plot(stats2['pos'][ind]['x'], np.array(stats2['pos'][ind]['pos']) / true, linestyle=lines[1], label="sampling $\\propto$ probabilities")
+            plt.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, linestyle=lines[0], label="SEMI")
+            plt.plot(stats2['pos'][ind]['x'], np.array(stats2['pos'][ind]['pos']) / true, linestyle=lines[1], label="Wallace'13")
             plt.plot(stats['pos'][ind]['x'], np.array(uniform_test)[(np.array(stats['pos'][ind]['x'])/10).astype(int)] / true, linestyle=lines[2], label='uniform random sampling')
     plt.ylabel("Recall")
     plt.xlabel("# Studies Reviewed")
@@ -340,7 +339,7 @@ def draw_est2(file):
             for key in stats2['est'][ind]:
                 if key=="est":
                     name="Wallace'13"
-                    startind=stats2['est'][ind]['x'].index(startpoint)
+                    startind=2
                     plt.plot(stats2['est'][ind]['x'][startind:], np.array(stats2['est'][ind][key][startind:]) / total, color='green', linestyle=lines[index],
                              label="estimated ("+name+")")
                     index = index + 1
@@ -350,8 +349,6 @@ def draw_est2(file):
     plt.legend(bbox_to_anchor=(1, 1), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/prev_all_" + str(file) + ".eps")
     plt.savefig("../figure/prev_all_" + str(file) + ".png")
-
-
 
 
 
@@ -603,13 +600,13 @@ def rest(first):
         pickle.dump(rest,handle)
 
 
-def test_estimate(first):
+def test_estimate(first, query):
     repeats=1
     result={'pos':[],'est':[]}
     for i in xrange(repeats):
         np.random.seed(i+2)
         first = str(first)
-        a = Code_noError(first, "HUTM")
+        a = BM25(first, query, 'est', i + 2)
         result['est'].append(a.record_est)
         result['pos'].append(a.record)
         print(i,end=" ")
@@ -1004,7 +1001,61 @@ def START_ERROR(filename):
     read.export()
     return read
 
+### BM25
+def BM25(filename, query, stop='true', seed=0):
+    stopat = 10
+    thres = 0
+    starting = 1
+    counter = 0
+    pos_last = 0
+    np.random.seed(seed)
 
+    stops = 2000
+
+    read = MAR()
+    read = read.create(filename)
+
+
+    read.BM25(query.strip().split('_'))
+
+    num2 = read.get_allpos()
+    target = int(num2 * stopat)
+    if stop == 'est':
+        read.enable_est = True
+    else:
+        read.enable_est = False
+
+    while True:
+        pos, neg, total = read.get_numbers()
+        # try:
+        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        # except:
+        #     print("%d, %d" %(pos,pos+neg))
+
+        if pos + neg >= total or pos + neg >= stops:
+            break
+
+        if pos < starting or pos+neg<thres:
+            for id in read.BM25_get():
+                read.code(id,read.body['label'][id])
+        else:
+            a,b,c,d =read.train(weighting=True,pne=True)
+            if stop == 'est':
+                if stopat * read.est_num <= pos:
+                    break
+            else:
+                if pos >= target:
+                    break
+            if pos < 20:
+                for id in a:
+                    read.code(id, read.body['label'][id])
+            else:
+                for id in c:
+                    read.code(id, read.body['label'][id])
+    # read.export()
+    # results = analyze(read)
+    # print(results)
+    return read
 
 ###################################
 def LINEAR(filename):

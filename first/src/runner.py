@@ -975,6 +975,81 @@ def summary(filename):
     set_trace()
     rdivDemo(wss95, isLatex=False)
 
+
+def summary_chart():
+    font = {'family': 'cursive',
+            'weight': 'bold',
+            'size': 20}
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    plt.rcParams.update(paras)
+
+
+    for id, filename in enumerate(['codes_Wahono','codes_Hall','codes_Danijel','codes_K_all3'][::-1]):
+        with open("../dump/"+str(filename)+".pickle", "r") as f:
+            results=pickle.load(f)
+        test={}
+        total = results['linear'][0]['x'][-1]
+        wss95 = {}
+        for key in results:
+            # if 'M' in key:
+            #     continue
+            tmp=[]
+            tmp_wss = []
+            for r in results[key]:
+                if key == 'linear':
+                    tmp.append(int(r['x'][-1] * 0.95))
+                    tmp_wss.append(0.05 - (total - int(r['x'][-1] * 0.95)) / total)
+                else:
+                    tmp.append(r['x'][-1])
+                    tmp_wss.append(0.05 - (total-r['x'][-1])/total)
+            test[key]=np.median(tmp)
+            wss95[key] = np.median(tmp_wss)
+        test2={}
+        for key in test:
+            if key=='HUTM':
+                color = 'red'
+            elif key =='PUSA':
+                color = 'orange'
+            elif key=='PCSW':
+                color = 'blue'
+            elif key=='HCTN':
+                color = 'green'
+            elif key=='linear':
+                color = 'black'
+            else:
+                color = 'gray'
+            if color =='gray':
+                plt.scatter([test[key]],[id+1],s=155,c=color)
+            else:
+                test2[key]=test[key]
+        for key in test2:
+            if key=='HUTM':
+                color = 'red'
+            elif key =='PUSA':
+                color = 'orange'
+            elif key=='PCSW':
+                color = 'blue'
+            elif key=='HCTN':
+                color = 'green'
+            elif key=='linear':
+                color = 'black'
+            plt.scatter([test2[key]],[id+1],s=155,c=color)
+    plt.xlabel("X95")
+    plt.ylim((0, 5))
+    plt.xlim((0, 9000))
+    y = range(5)
+
+    ylabels = ['','Kitchenham','Radjenovic','Hall','Wahono']
+    plt.yticks(y, ylabels)
+
+
+    plt.savefig("../figure/codes_chart.eps")
+    plt.savefig("../figure/codes_chart.png")
+
+
 def draw_selected(file):
     font = {'family': 'cursive',
             'weight': 'bold',

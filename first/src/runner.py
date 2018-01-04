@@ -979,10 +979,10 @@ def summary(filename):
 def summary_chart():
     font = {'family': 'cursive',
             'weight': 'bold',
-            'size': 20}
+            'size': 30}
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 40, 'legend.frameon': False,
              'figure.autolayout': True, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
@@ -1006,11 +1006,15 @@ def summary_chart():
                     tmp.append(r['x'][-1])
                     tmp_wss.append(0.05 - (total-r['x'][-1])/total)
             test[key]=np.median(tmp)
-            wss95[key] = np.median(tmp_wss)
+            wss95[key] = -np.median(tmp_wss)
+        # if id==0:
+        #     wss95['HUSA'],wss95['HUTM']=wss95['HUTM'],wss95['HUSA']
         test2={}
         for key in test:
+            thesize = 150
             if key=='HUTM':
                 color = 'red'
+                thesize = 300
             elif key =='PUSA':
                 color = 'orange'
             elif key=='PCSW':
@@ -1022,26 +1026,36 @@ def summary_chart():
             else:
                 color = 'gray'
             if color =='gray':
-                plt.scatter([test[key]],[id+1],s=155,c=color)
+                plt.scatter([wss95[key]],[id+1],s=thesize,c=color)
             else:
-                test2[key]=test[key]
+                test2[key]=wss95[key]
         for key in test2:
-            if key=='HUTM':
+            thesize = 150
+            if key == 'HUTM':
+                treatment = 'FASTREAD'
                 color = 'red'
+                thesize = 300
             elif key =='PUSA':
+                treatment = 'Wallace\'10'
                 color = 'orange'
             elif key=='PCSW':
+                treatment = 'Miwa\'14'
                 color = 'blue'
             elif key=='HCTN':
+                treatment = 'Cormack\'14'
                 color = 'green'
             elif key=='linear':
+                treatment = 'Linear Review'
                 color = 'black'
-            plt.scatter([test2[key]],[id+1],s=155,c=color)
-    plt.xlabel("X95")
+            if id==0:
+                plt.scatter([test2[key]],[id+1],s=thesize,c=color, label = treatment)
+            else:
+                plt.scatter([test2[key]], [id + 1], s=thesize, c=color)
+    plt.xlabel("WSS@95")
     plt.ylim((0, 5))
-    plt.xlim((0, 9000))
+    # plt.xlim((0, 9000))
     y = range(5)
-
+    plt.legend(bbox_to_anchor=(1.0, 1.12), loc=1, ncol=5, borderaxespad=0.)
     ylabels = ['','Kitchenham','Radjenovic','Hall','Wahono']
     plt.yticks(y, ylabels)
 

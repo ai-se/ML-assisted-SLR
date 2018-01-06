@@ -1434,7 +1434,7 @@ def no_data(stop='true'):
                     elif data=="K_all3.csv":
                         syn_data = 'BM25_Kitchenham.csv'
                     read = REUSE(data, syn_data, stop=stop, seed=i)
-                elif treatment=="Cormack_BM25":
+                elif treatment=="Auto_Rand":
                     if data=="Hall.csv":
                         syn_data='BM25_Hall.csv'
                     elif data=="Wahono.csv":
@@ -1731,27 +1731,28 @@ def sum_median_worst():
 def sum_true():
     with open("../dump/data_true.pickle","r") as handle:
         record = pickle.load(handle)
-    with open("../dump/nodata_true.pickle","r") as handle:
+    with open("../dump/nodata1_true.pickle","r") as handle:
         record1 = pickle.load(handle)
     dataname={"Danijel.csv": "Radjenovi{\\'c} (Full)", "Wahono.csv": "Wahono (Full)", "Hall.csv": "Hall (Full)", "K_all3.csv": "Kitchenham (Full)", "Danijel2005+.csv": "Radjenovi{\\'c} (Half)", "Wahono2008+.csv": "Wahono (Half)", "Hall2007+.csv": "Hall (Half)", "K_all3+.csv": "Kitchenham (Half)"}
     datasize={"Danijel.csv": 6000, "Wahono.csv": 7002, "Hall.csv": 8991, "K_all3.csv": 1704, "Danijel2005+.csv": 3035, "Wahono2008+.csv": 3810, "Hall2007+.csv": 4066, "K_all3+.csv": 1688}
-    treatmentname={"Auto_Syn": "Auto-Syn", "BM25": "Auto-BM25", "RANDOM": "RANDOM", "UPDATE_POS": "UPDATE", "REUSE": "REUSE"}
+    treatmentname={"Auto_Syn": "Auto-Syn", "BM25": "Auto-BM25", "RANDOM": "RANDOM", "UPDATE_POS": "UPDATE", "REUSE": "REUSE", "Cormack_BM25": "Cormack-BM25", "Auto_Rand": "Auto-Rand"}
     new={}
-    for d in record:
-        dataset=dataname[d]
-        new[dataset]={}
-        for t in record[d]:
-            if t=="UPDATE_ALL":
-                continue
-            treatment=treatmentname[t]
+    # for d in record:
+    #     dataset=dataname[d]
+    #     new[dataset]={}
+    #     for t in record[d]:
+    #         if t=="UPDATE_ALL":
+    #             continue
+    #         treatment=treatmentname[t]
+    #
+    #         tmp = [x['x'][-1] for x in record[d][t]]
+    #         median=np.median(tmp)
+    #         iqr = np.percentile(tmp,75)-np.percentile(tmp,25)
+    #         w_median=0.95-median/datasize[d]
+    #         w_iqr=(np.percentile(tmp,75)-np.percentile(tmp,25))/datasize[d]
+    #
+    #         new[dataset][treatment]=[median, iqr, w_median, w_iqr]
 
-            tmp = [x['x'][-1] for x in record[d][t]]
-            median=np.median(tmp)
-            iqr = np.percentile(tmp,75)-np.percentile(tmp,25)
-            w_median=0.95-median/datasize[d]
-            w_iqr=(np.percentile(tmp,75)-np.percentile(tmp,25))/datasize[d]
-
-            new[dataset][treatment]=[median, iqr, w_median, w_iqr]
     for d in record1:
         dataset=dataname[d]
         new[dataset]={}
@@ -1767,10 +1768,12 @@ def sum_true():
             w_iqr=(np.percentile(tmp,75)-np.percentile(tmp,25))/datasize[d]
 
             new[dataset][treatment]=[median, iqr, w_median, w_iqr]
-
+    set_trace()
     ####draw table
-    treatments=['Auto-BM25', "Auto-Syn", "UPDATE", "REUSE", "RANDOM"]
-    datasets = ['Wahono (Full)', 'Hall (Full)', "Radjenovi{\\'c} (Full)", "Kitchenham (Full)", 'Wahono (Half)', 'Hall (Half)', "Radjenovi{\\'c} (Half)", "Kitchenham (Half)"]
+    # treatments=['Auto-BM25', "Auto-Syn", "UPDATE", "REUSE", "RANDOM"]
+    treatments = ['Auto-BM25', "Auto-Syn", "RANDOM", "Cormack-BM25", "Auto-Rand"]
+    # datasets = ['Wahono (Full)', 'Hall (Full)', "Radjenovi{\\'c} (Full)", "Kitchenham (Full)", 'Wahono (Half)', 'Hall (Half)', "Radjenovi{\\'c} (Half)", "Kitchenham (Half)"]
+    datasets = ['Wahono (Full)', 'Hall (Full)', "Radjenovi{\\'c} (Full)", "Kitchenham (Full)"]
     print("\\begin{tabular}{ |l|l|c|c|c|c| }")
     print("\\hline")
     print(" & & \\multicolumn{2}{|c|}{X95} & \\multicolumn{2}{|c|}{WSS@95} \\\\")

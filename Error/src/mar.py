@@ -738,6 +738,11 @@ class MAR(object):
     def random(self):
         return np.random.choice(self.pool,size=np.min((self.step,len(self.pool))),replace=False)
 
+    ## Get one random ##
+    def one_rand(self):
+        pool_yes = filter(lambda x: self.body['label'][x]=='yes', range(len(self.body['label'])))
+        return np.random.choice(pool_yes, size=1, replace=False)
+
     ## Format ##
     def format(self,id,prob=[]):
         result=[]

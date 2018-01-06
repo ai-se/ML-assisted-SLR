@@ -963,7 +963,8 @@ def sum_result(filename):
 
 #############################
 
-def UPDATE_ALL(filename,old,stop='true',pne=False):
+def UPDATE_ALL(filename,old,stop='true',pne=False,seed=0):
+    np.random.seed(seed)
     stopat=0.95
 
     read = MAR()
@@ -997,8 +998,9 @@ def UPDATE_ALL(filename,old,stop='true',pne=False):
                 read.code(id, read.body["label"][id])
     return read
 
-def UPDATE_POS(filename,old,stop='true',pne=True):
+def UPDATE_POS(filename,old,stop='true',pne=True,seed=0):
     stopat=0.95
+    np.random.seed(seed)
 
     read = MAR()
     read = read.create(filename)
@@ -1032,7 +1034,9 @@ def UPDATE_POS(filename,old,stop='true',pne=True):
     return read
 
 
-def REUSE(filename,old,stop='true',pne=True):
+def REUSE(filename,old,stop='true',pne=True,seed=0):
+
+    np.random.seed(seed)
     stopat = 0.95
     thres=10
     read = MAR()
@@ -1074,9 +1078,10 @@ def REUSE(filename,old,stop='true',pne=True):
     return read
 
 
-def Code_noError(filename, code, stop='true'):
+def Code_noError(filename, code, stop='true',seed=0):
+    np.random.seed(seed)
     stopat = 0.95
-    thres = 40
+    thres = 0
     if "P" in code:
         starting = 5
     else:
@@ -1124,7 +1129,88 @@ def Code_noError(filename, code, stop='true'):
                     read.code(id, read.body["label"][id])
     return read
 
+def Auto_Rand(filename, stop='true', error='none', interval = 100000, seed=0):
+    stopat = 0.95
+    thres = 0
+    starting = 1
+    counter = 0
+    pos_last = 0
+    np.random.seed(seed)
 
+    read = MAR()
+    read = read.create(filename)
+
+    read.interval = interval
+
+
+
+    num2 = read.get_allpos()
+    target = int(num2 * stopat)
+    if stop == 'est':
+        read.enable_est = True
+    else:
+        read.enable_est = False
+
+    while True:
+        pos, neg, total = read.get_numbers()
+        # try:
+        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        # except:
+        #     print("%d, %d" %(pos,pos+neg))
+
+        if pos + neg >= total:
+            if stop == 'knee' and error == 'random':
+                coded = np.where(np.array(read.body['code']) != "undetermined")[0]
+                seq = coded[np.argsort(read.body['time'][coded])]
+                part1 = set(seq[:read.kneepoint * read.step]) & set(
+                    np.where(np.array(read.body['code']) == "no")[0])
+                part2 = set(seq[read.kneepoint * read.step:]) & set(
+                    np.where(np.array(read.body['code']) == "yes")[0])
+                for id in part1 | part2:
+                    read.code_error(id, error=error)
+            break
+
+        if pos < starting or pos + neg < thres:
+            read.code_error(read.one_rand()[0], error=error)
+        else:
+            a, b, c, d = read.train(weighting=True, pne=True)
+            if stop == 'est':
+                if stopat * read.est_num <= pos:
+                    break
+            elif stop == 'soft':
+                if pos > 0 and pos_last == pos:
+                    counter = counter + 1
+                else:
+                    counter = 0
+                pos_last = pos
+                if counter >= 5:
+                    break
+            elif stop == 'knee':
+                if pos > 0:
+                    if read.knee():
+                        if error == 'random':
+                            coded = np.where(np.array(read.body['code']) != "undetermined")[0]
+                            seq = coded[np.argsort(np.array(read.body['time'])[coded])]
+                            part1 = set(seq[:read.kneepoint * read.step]) & set(
+                                np.where(np.array(read.body['code']) == "no")[0])
+                            part2 = set(seq[read.kneepoint * read.step:]) & set(
+                                np.where(np.array(read.body['code']) == "yes")[0])
+                            for id in part1 | part2:
+                                read.code_error(id, error=error)
+                        break
+            else:
+                if pos >= target:
+                    break
+            if pos < 10:
+                for id in a:
+                    read.code_error(id, error=error)
+            else:
+                for id in c:
+                    read.code_error(id, error=error)
+    # read.export()
+    # results = analyze(read)
+    # print(results)
+    return read
 
 def exp_BM25(stop='true'):
     repeats=30
@@ -1305,9 +1391,8 @@ def has_data(stop='true'):
 def no_data(stop='true'):
     repeats=30
     datasets=['Hall.csv','Wahono.csv','Danijel.csv','K_all3.csv']
-    treatments=['UPDATE_POS','REUSE','Auto_Syn','BM25','RANDOM']
-    datasets = ['Hall.csv']
-    treatments = ['RANDOM']
+    # datasets = ['Hall.csv']
+    treatments = ['Auto_Syn', 'BM25', 'RANDOM', 'Cormack_BM25', 'Auto_Rand']
     results={}
     for data in datasets:
         results[data]={}
@@ -1323,12 +1408,12 @@ def no_data(stop='true'):
             results[data][treatment]=[]
             for i in xrange(repeats):
                 if treatment=="UPDATE_ALL":
-                    read = UPDATE_ALL(data,syn_data,stop=stop)
+                    read = UPDATE_ALL(data,syn_data,stop=stop, seed=i)
                 elif treatment=="UPDATE_POS":
-                    read = UPDATE_POS(data, syn_data, stop=stop)
+                    read = UPDATE_POS(data, syn_data, stop=stop, seed=i)
                 elif treatment=="REUSE":
 
-                    read = REUSE(data, syn_data, stop=stop)
+                    read = REUSE(data, syn_data, stop=stop, seed=i)
                 elif treatment=="Auto_Syn":
                     if data=="Hall.csv":
                         syn_data='Syn_Hall.csv'
@@ -1338,22 +1423,42 @@ def no_data(stop='true'):
                         syn_data = 'Syn_Danijel.csv'
                     elif data=="K_all3.csv":
                         syn_data = 'Syn_Kitchenham.csv'
-                    read = REUSE(data, syn_data, stop=stop)
+                    read = REUSE(data, syn_data, stop=stop, seed=i)
+                elif treatment=="Cormack_BM25":
+                    if data=="Hall.csv":
+                        syn_data='BM25_Hall.csv'
+                    elif data=="Wahono.csv":
+                        syn_data = 'BM25_Wahono.csv'
+                    elif data=="Danijel.csv":
+                        syn_data = 'BM25_Danijel.csv'
+                    elif data=="K_all3.csv":
+                        syn_data = 'BM25_Kitchenham.csv'
+                    read = REUSE(data, syn_data, stop=stop, seed=i)
+                elif treatment=="Cormack_BM25":
+                    if data=="Hall.csv":
+                        syn_data='BM25_Hall.csv'
+                    elif data=="Wahono.csv":
+                        syn_data = 'BM25_Wahono.csv'
+                    elif data=="Danijel.csv":
+                        syn_data = 'BM25_Danijel.csv'
+                    elif data=="K_all3.csv":
+                        syn_data = 'BM25_Kitchenham.csv'
+                    read = Auto_Rand(data, stop=stop, seed=i)
                 elif treatment=="BM25":
                     if data == "Hall.csv":
-                        query='defect prediction'
+                        query='defect_prediction'
                     elif data == "Wahono.csv":
-                        query = 'defect prediction'
+                        query = 'defect_prediction'
                     elif data == "Danijel.csv":
-                        query = 'defect prediction metrics'
+                        query = 'defect_prediction_metrics'
                     elif data == "K_all3.csv":
-                        query = 'systematic review'
-                    read = BM25(data, query=query, stop=stop)
+                        query = 'systematic_review'
+                    read = BM25(data, query=query, stop=stop, seed=i)
                 elif treatment=="RANDOM":
-                    read = Code_noError(data,"HUTM" , stop=stop)
+                    read = Code_noError(data,"HUTM" , stop=stop, seed=i)
                 results[data][treatment].append(read.record)
                 # read.restart()
-    with open("../dump/nodata_"+stop+".pickle","wb") as handle:
+    with open("../dump/nodata1_"+stop+".pickle","wb") as handle:
         pickle.dump(results,handle)
 
 def sum_res(filename):

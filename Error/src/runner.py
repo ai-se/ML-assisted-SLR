@@ -1768,7 +1768,7 @@ def sum_true():
             w_iqr=(np.percentile(tmp,75)-np.percentile(tmp,25))/datasize[d]
 
             new[dataset][treatment]=[median, iqr, w_median, w_iqr]
-    set_trace()
+
     ####draw table
     # treatments=['Auto-BM25', "Auto-Syn", "UPDATE", "REUSE", "RANDOM"]
     treatments = ['Auto-BM25', "Auto-Syn", "RANDOM", "Cormack-BM25", "Auto-Rand"]
@@ -1781,18 +1781,16 @@ def sum_true():
     print(" Dataset & Treatment & median & iqr & median & iqr \\\\")
     print("\\hline")
     for dataset in datasets:
-        for treatment in treatments:
-            if treatment=="UPDATE":
+        for i,treatment in enumerate(treatments):
+            if i==0:
                 d=dataset
             else:
                 d=""
             if dataset=="Kitchenham (Full)":
                 if treatment=="UPDATE" or treatment=="REUSE":
                     continue
-                if treatment=="Auto-Syn":
-                    d=dataset
             print(d+" & "+treatment+ " & " + " & ".join(map('{0:.0f}'.format,new[dataset][treatment][:2])) + " & " +" & ".join(map('{0:.2f}'.format,new[dataset][treatment][2:]))+" \\\\")
-            if treatment=="RANDOM":
+            if i==4:
                 print("\\hline")
             # else:
             #     print('\\cline{2-6}')

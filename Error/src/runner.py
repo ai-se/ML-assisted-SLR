@@ -843,18 +843,21 @@ def run_Codes(filename):
         pickle.dump(result,handle)
 
 def summary(filename):
-    with open("../dump/"+str(filename)+".pickle", "rb") as f:
+    with open("../dump/"+str(filename)+".pickle", "r") as f:
         results=pickle.load(f)
-    test=[]
-    for key in results:
-        # if 'M' in key:
-        #     continue
-        tmp=[]
-        for r in results[key]:
-            tmp.append(r['x'][-1])
-        test.append([key]+tmp)
-    rdivDemo(test,isLatex=False)
-    set_trace()
+
+    for rs in results:
+        print(rs)
+        test = {}
+        for key in results[rs]:
+            # if 'M' in key:
+            #     continue
+            tmp=[]
+            for r in results[rs][key]:
+                tmp.append(r['x'][-1])
+            test[key]=tmp
+        rdivDemo(test,isLatex=False)
+        set_trace()
 
 def draw_selected(file):
     font = {'family': 'cursive',

@@ -1643,10 +1643,10 @@ def draw_three():
     plt.figure(0)
     for j,ind in enumerate(stats):
         if ind == 50 or ind==100:
-            plt.plot(stats[ind]['x'], np.array(stats[ind]['pos'])/106,linestyle=lines[1], color=colors[j], label="FAST2 ("+str(five[j])+")")
+            plt.plot(stats[ind]['x'], np.array(stats[ind]['pos'])/106,linestyle=lines[1], color=colors[j], label="FAST$^2$ ("+str(five[j])+")")
     for j,ind in enumerate(stats1):
         if ind == 50 or ind==100:
-            plt.plot(stats1[ind]['x'], np.array(stats1[ind]['pos'])/106,linestyle=lines[0], color=colors[j], label="FAST1 ("+str(five[j])+")")
+            plt.plot(stats1[ind]['x'], np.array(stats1[ind]['pos'])/106,linestyle=lines[0], color=colors[j], label="FASTREAD ("+str(five[j])+")")
     plt.ylabel("Recall")
     plt.xlabel("#Studies Reviewed")
 

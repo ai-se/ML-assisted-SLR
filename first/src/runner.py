@@ -982,10 +982,12 @@ def summary_chart():
             'size': 30}
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 40, 'legend.frameon': False,
-             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 28, 'axes.labelsize': 40, 'legend.frameon': True,
+             'figure.autolayout': False, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
+    fig = plt.figure()
+    ax = plt.subplot(111)
 
     for id, filename in enumerate(['codes_Wahono','codes_Hall','codes_Danijel','codes_K_all3'][::-1]):
         with open("../dump/"+str(filename)+".pickle", "r") as f:
@@ -1026,7 +1028,7 @@ def summary_chart():
             else:
                 color = 'gray'
             if color =='gray':
-                plt.scatter([wss95[key]],[id+1],s=thesize,c=color)
+                ax.scatter([wss95[key]],[id+1],s=thesize,c=color)
             else:
                 test2[key]=wss95[key]
         for key in test2:
@@ -1048,14 +1050,25 @@ def summary_chart():
                 treatment = 'Linear Review'
                 color = 'black'
             if id==0:
-                plt.scatter([test2[key]],[id+1],s=thesize,c=color, label = treatment)
+                ax.scatter([test2[key]],[id+1],s=thesize,c=color, label = treatment)
             else:
-                plt.scatter([test2[key]], [id + 1], s=thesize, c=color)
+                ax.scatter([test2[key]], [id + 1], s=thesize, c=color)
     plt.xlabel("WSS@95")
     plt.ylim((0, 5))
     # plt.xlim((0, 9000))
     y = range(5)
-    plt.legend(bbox_to_anchor=(1.0, 1.12), loc=1, ncol=5, borderaxespad=0.)
+    # plt.legend(bbox_to_anchor=(0., 1.32, 1., .102), loc=3, ncol=3, mode="expand", borderaxespad=0.)
+
+    # box = ax.get_position()
+    # ax.set_position([box.x0, box.y0,
+    #                  box.width, box.height * 0.7])
+    # ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.35),
+    #           fancybox=True, shadow=True, ncol=3)
+    plt.subplots_adjust(top=0.75,left=0.2,bottom=0.2,right=0.95)
+    ax.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
+                    mode="expand", borderaxespad=0, ncol=3)
+
+
     ylabels = ['','Kitchenham','Radjenovic','Hall','Wahono']
     plt.yticks(y, ylabels)
 

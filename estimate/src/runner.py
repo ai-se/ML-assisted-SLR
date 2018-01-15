@@ -281,12 +281,12 @@ def draw_est2(file):
 
     font = {'family': 'normal',
             'weight': 'bold',
-            'size': 20}
+            'size': 30}
 
 
     plt.rc('font', **font)
-    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
-             'figure.autolayout': True, 'figure.figsize': (16, 6)}
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 28, 'axes.labelsize': 40, 'legend.frameon': True,
+             'figure.autolayout': False, 'figure.figsize': (16, 6)}
     plt.rcParams.update(paras)
 
     with open("../dump/est_"+str(file)+".pickle", "r") as f:
@@ -304,32 +304,39 @@ def draw_est2(file):
     nums = set([])
     line=[0,0,0,0,0]
     plt.figure(1)
+
+    ax = plt.subplot(111)
     for j, ind in enumerate(stats['pos']):
         # if ind == 50 or ind == 0 or ind==100:
         if ind == 50:
-            plt.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, linestyle=lines[0], label="SEMI")
-            plt.plot(stats2['pos'][ind]['x'], np.array(stats2['pos'][ind]['pos']) / true, linestyle=lines[1], label="Wallace'13")
-            plt.plot(stats['pos'][ind]['x'], np.array(uniform_test)[(np.array(stats['pos'][ind]['x'])/10).astype(int)] / true, linestyle=lines[2], label='uniform random sampling')
+            ax.plot(stats['pos'][ind]['x'], np.array(uniform_test)[(np.array(stats['pos'][ind]['x'])/10).astype(int)] / true, color='red', linestyle=lines[1], label='uniform \nrandom \nsampling')
+            ax.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, linestyle=lines[2], color='blue', label="SEMI")
+            ax.plot(stats2['pos'][ind]['x'], np.array(stats2['pos'][ind]['pos']) / true, linestyle=lines[3], color='green', label="Wallace'13")
     plt.ylabel("Recall")
     plt.xlabel("# Studies Reviewed")
     plt.xlim(0, stats['pos'][ind]['x'][-1])
-    plt.legend(bbox_to_anchor=(1, 0.30), loc=1, ncol=1, borderaxespad=0.)
+    plt.subplots_adjust(top=0.95, left=0.15, bottom=0.2, right=0.75)
+
+    ax.legend(bbox_to_anchor=(1.02, 1), loc=0, ncol=1, borderaxespad=0.)
+
     plt.savefig("../figure/recall_all_" + str(file) + ".eps")
     plt.savefig("../figure/recall_all_" + str(file) + ".png")
 
+
     plt.figure(2)
+    ax = plt.subplot(111)
     for j, ind in enumerate(stats['est']):
         # if ind == 50 or ind == 0 or ind==100:
         if ind == 50:
             plt.plot(stats['est'][ind]['x'], [true/total]*len(stats['est'][ind]['x']), linestyle=lines[0], color='gray', label='true')
 
-            plt.plot(stats['est'][ind]['x'], np.array(uniform_test)[(np.array(stats['est'][ind]['x'])/10).astype(int)].astype(float) / np.array(stats['est'][ind]['x']) , linestyle=lines[1], color='red', label='estimated (uniform random sampling)')
+            plt.plot(stats['est'][ind]['x'], np.array(uniform_test)[(np.array(stats['est'][ind]['x'])/10).astype(int)].astype(float) / np.array(stats['est'][ind]['x']) , linestyle=lines[1], color='red', label='uniform \nrandom \nsampling')
             index=2
             for key in stats['est'][ind]:
                 if key=="semi":
                     name='SEMI'
                 # plt.plot(stats['est'][ind]['x'], stats['est'][ind][key],linestyle=lines[index],label=key)
-                    plt.plot(stats['est'][ind]['x'], np.array(stats['est'][ind][key])/total, linestyle=lines[index], color='blue', label="estimated ("+name+")")
+                    plt.plot(stats['est'][ind]['x'], np.array(stats['est'][ind][key])/total, linestyle=lines[index], color='blue', label=name)
                     startpoint= stats['est'][ind]['x'][0]
                     index=index+1
 
@@ -341,12 +348,15 @@ def draw_est2(file):
                     name="Wallace'13"
                     startind=2
                     plt.plot(stats2['est'][ind]['x'][startind:], np.array(stats2['est'][ind][key][startind:]) / total, color='green', linestyle=lines[index],
-                             label="estimated ("+name+")")
+                             label=name)
                     index = index + 1
 
     plt.ylabel("Prevalence")
     plt.xlabel("# Studies Reviewed")
-    plt.legend(bbox_to_anchor=(1, 1), loc=1, ncol=1, borderaxespad=0.)
+    plt.subplots_adjust(top=0.95, left=0.15, bottom=0.2, right=0.75)
+
+    ax.legend(bbox_to_anchor=(1.02, 1), loc=0, ncol=1, borderaxespad=0.)
+    # plt.show()
     plt.savefig("../figure/prev_all_" + str(file) + ".eps")
     plt.savefig("../figure/prev_all_" + str(file) + ".png")
 

@@ -1016,14 +1016,20 @@ def summary_chart():
             thesize = 150
             if key=='HUTM':
                 color = 'red'
-                thesize = 300
+                thesize = 600
             elif key =='PUSA':
                 color = 'orange'
+                thesize = 300
             elif key=='PCSW':
                 color = 'blue'
+                thesize = 300
             elif key=='HCTN':
                 color = 'green'
+                thesize = 300
             elif key=='linear':
+                color = 'black'
+                thesize = 300
+            elif key == 'HUSM':
                 color = 'black'
             else:
                 color = 'gray'
@@ -1031,24 +1037,31 @@ def summary_chart():
                 ax.scatter([wss95[key]],[id+1],s=thesize,c=color)
             else:
                 test2[key]=wss95[key]
-        for key in test2:
+        for key in ['HUTM','PUSA','PCSW','HCTN','linear','HUSM']:
             thesize = 150
             if key == 'HUTM':
                 treatment = 'FASTREAD'
                 color = 'red'
-                thesize = 300
+                thesize = 600
             elif key =='PUSA':
                 treatment = 'Wallace\'10'
                 color = 'orange'
+                thesize = 300
             elif key=='PCSW':
                 treatment = 'Miwa\'14'
                 color = 'blue'
+                thesize = 300
             elif key=='HCTN':
                 treatment = 'Cormack\'14'
                 color = 'green'
+                thesize = 300
             elif key=='linear':
                 treatment = 'Linear Review'
                 color = 'black'
+                thesize = 300
+            elif key=='HUSM':
+                treatment = 'Others'
+                color = 'gray'
             if id==0:
                 ax.scatter([test2[key]],[id+1],s=thesize,c=color, label = treatment)
             else:

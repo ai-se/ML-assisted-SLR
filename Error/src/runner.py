@@ -1648,7 +1648,7 @@ def draw_three():
         if ind == 50 or ind==100:
             plt.plot(stats1[ind]['x'], np.array(stats1[ind]['pos'])/106,linestyle=lines[0], color=colors[j], label="FASTREAD ("+str(five[j])+")")
     plt.ylabel("Recall")
-    plt.xlabel("#Studies Reviewed")
+    plt.xlabel("#Papers Reviewed")
 
     docnum = 8991
     x=[i*100 for i in xrange(10)]
@@ -1656,6 +1656,8 @@ def draw_three():
     xlabels = [str(z)+"\n("+'%.1f'%(z/docnum*100)+"%)" for z in x]
 
     plt.xticks(x, xlabels)
+    plt.ylim((0, 1))
+    plt.xlim((0, 900))
 
     plt.legend(bbox_to_anchor=(1, 0.50), loc=1, ncol=1, borderaxespad=0.)
     plt.savefig("../figure/percentile_all.eps")

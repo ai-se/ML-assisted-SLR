@@ -313,7 +313,7 @@ def draw_est2(file):
             ax.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, linestyle=lines[2], color='blue', label="SEMI")
             ax.plot(stats2['pos'][ind]['x'], np.array(stats2['pos'][ind]['pos']) / true, linestyle=lines[3], color='green', label="Wallace'13")
     plt.ylabel("Recall")
-    plt.xlabel("# Studies Reviewed")
+    plt.xlabel("#Papers Reviewed")
     plt.xlim(0, stats['pos'][ind]['x'][-1])
     plt.subplots_adjust(top=0.95, left=0.15, bottom=0.2, right=0.75)
 
@@ -352,7 +352,7 @@ def draw_est2(file):
                     index = index + 1
 
     plt.ylabel("Prevalence")
-    plt.xlabel("# Studies Reviewed")
+    plt.xlabel("#Papers Reviewed")
     plt.subplots_adjust(top=0.95, left=0.15, bottom=0.2, right=0.75)
 
     ax.legend(bbox_to_anchor=(1.02, 1), loc=0, ncol=1, borderaxespad=0.)

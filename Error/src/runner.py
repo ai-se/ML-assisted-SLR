@@ -1267,10 +1267,10 @@ def BM25(filename, query, stop='true', error='none', interval = 100000, seed=0):
 
     while True:
         pos, neg, total = read.get_numbers()
-        # try:
-        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
-        # except:
-        #     print("%d, %d" %(pos,pos+neg))
+        try:
+            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        except:
+            print("%d, %d" %(pos,pos+neg))
 
         if pos + neg >= total:
             if stop=='knee' and error=='random':

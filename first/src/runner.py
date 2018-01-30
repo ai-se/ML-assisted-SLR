@@ -947,7 +947,7 @@ def run_Codes(filename):
                         np.random.seed(i)
                         read = Codes(filename,code)
                         result[code].append(read.record)
-                        print("%s: %d" %(code,i))
+                        # print("%s: %d" %(code,i))
     with open("../dump/codes_"+filename.split('.')[0]+".pickle","wb") as handle:
         pickle.dump(result,handle)
 

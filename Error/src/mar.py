@@ -785,7 +785,7 @@ class MAR(object):
 
     def code_random(self,id,label):
         import random
-        error_rate = 0.1
+        error_rate = 0.3
         if label=='yes':
             if random.random()<error_rate:
                 new = 'no'

@@ -1220,7 +1220,7 @@ def exp_BM25(stop='true'):
 
     files = ["Hall.csv", "Wahono.csv", "Danijel.csv", "K_all3.csv"]
     queries = {"Hall.csv": 'defect_prediction', "Wahono.csv": 'defect_prediction',
-               "Danijel.csv": 'defect_prediction_metrics', "K_all3.csv": "systematic review"}
+               "Danijel.csv": 'defect_prediction_metrics', "K_all3.csv": "systematic_review"}
     results={}
     for file in files:
         results[file]={}
@@ -1230,8 +1230,11 @@ def exp_BM25(stop='true'):
             read = BM25(file, queries[file], stop=stop, seed=i)
             pos.append(read.record['pos'][-1])
             cost.append(read.record['x'][-1])
+            print(file)
+            print(i)
         results[file]['pos'] = np.median(pos)
         results[file]['cost'] = np.median(cost)
+
     # print(results)
     with open("../dump/other_"+stop+".pickle","wb") as handle:
         pickle.dump(results,handle)
@@ -1267,10 +1270,10 @@ def BM25(filename, query, stop='true', error='none', interval = 100000, seed=0):
 
     while True:
         pos, neg, total = read.get_numbers()
-        try:
-            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
-        except:
-            print("%d, %d" %(pos,pos+neg))
+        # try:
+        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        # except:
+        #     print("%d, %d" %(pos,pos+neg))
 
         if pos + neg >= total:
             if stop=='knee' and error=='random':

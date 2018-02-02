@@ -250,11 +250,13 @@ class MAR(object):
 
         ### Feature selection by tfidf in order to keep vocabulary ###
         tfidfer = TfidfVectorizer(lowercase=True, stop_words="english", norm=None, use_idf=True, smooth_idf=False,
-                                sublinear_tf=False,decode_error="ignore")
-        tfidf = tfidfer.fit_transform(content)
-        weight = tfidf.sum(axis=0).tolist()[0]
-        kept = np.argsort(weight)[-self.fea_num:]
-        self.voc = np.array(tfidfer.vocabulary_.keys())[np.argsort(tfidfer.vocabulary_.values())][kept]
+                                sublinear_tf=False,decode_error="ignore",max_features=4000)
+        tfidfer.fit(content)
+        self.voc = tfidfer.vocabulary_.keys()
+
+
+
+
         ##############################################################
 
         ### Term frequency as feature, L2 normalization ##########

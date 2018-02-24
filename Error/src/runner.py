@@ -1215,19 +1215,22 @@ def Auto_Rand(filename, stop='true', error='none', interval = 100000, seed=0):
     # print(results)
     return read
 
-def exp_BM25(stop='true'):
+def exp_BM25(stop='true', stopat=0.95):
     repeats=30
 
     files = ["Hall.csv", "Wahono.csv", "Danijel.csv", "K_all3.csv"]
+
+    # files = ["K_all3.csv"]
+
     queries = {"Hall.csv": 'defect_prediction', "Wahono.csv": 'defect_prediction',
-               "Danijel.csv": 'defect_prediction_metrics', "K_all3.csv": "systematic_review"}
+               "Danijel.csv": 'defect_prediction_metrics', "K_all3.csv": "literature_review"}
     results={}
     for file in files:
         results[file]={}
         pos = []
         cost = []
         for i in xrange(repeats):
-            read = BM25(file, queries[file], stop=stop, seed=i)
+            read = BM25(file, queries[file], stop=stop, stopat=stopat, seed=i)
             pos.append(read.record['pos'][-1])
             cost.append(read.record['x'][-1])
             print(file)
@@ -1246,8 +1249,8 @@ def exp_result(stop='true'):
     print(results)
 
 ### BM25
-def BM25(filename, query, stop='true', error='none', interval = 100000, seed=0):
-    stopat = 0.95
+def BM25(filename, query, stop='true', stopat=0.95, error='none', interval = 100000, seed=0):
+    stopat = float(stopat)
     thres = 0
     starting = 1
     counter = 0
@@ -1270,10 +1273,10 @@ def BM25(filename, query, stop='true', error='none', interval = 100000, seed=0):
 
     while True:
         pos, neg, total = read.get_numbers()
-        # try:
-        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
-        # except:
-        #     print("%d, %d" %(pos,pos+neg))
+        try:
+            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        except:
+            print("%d, %d" %(pos,pos+neg))
 
         if pos + neg >= total:
             if stop=='knee' and error=='random':
@@ -1296,7 +1299,7 @@ def BM25(filename, query, stop='true', error='none', interval = 100000, seed=0):
                 if stopat * read.est_num <= pos:
                     break
             elif stop == 'soft':
-                if pos>0 and pos_last==pos:
+                if pos>=10 and pos_last==pos:
                     counter = counter+1
                 else:
                     counter=0
@@ -1304,7 +1307,7 @@ def BM25(filename, query, stop='true', error='none', interval = 100000, seed=0):
                 if counter >=5:
                     break
             elif stop == 'knee':
-                if pos>0:
+                if pos>=10:
                     if read.knee():
                         if error=='random':
                             coded = np.where(np.array(read.body['code']) != "undetermined")[0]
@@ -1397,7 +1400,7 @@ def has_data(stop='true'):
 def no_data(stop='true'):
     repeats=30
     datasets=['Hall.csv','Wahono.csv','Danijel.csv','K_all3.csv']
-    # datasets = ['Hall.csv']
+    # datasets = ['K_all3.csv']
     treatments = ['Auto_Syn', 'BM25', 'RANDOM', 'Cormack_BM25', 'Auto_Rand']
     results={}
     for data in datasets:
@@ -1458,13 +1461,13 @@ def no_data(stop='true'):
                     elif data == "Danijel.csv":
                         query = 'defect_prediction_metrics'
                     elif data == "K_all3.csv":
-                        query = 'systematic_review'
+                        query = 'literature_review'
                     read = BM25(data, query=query, stop=stop, seed=i)
                 elif treatment=="RANDOM":
                     read = Code_noError(data,"HUTM" , stop=stop, seed=i)
                 results[data][treatment].append(read.record)
                 # read.restart()
-    with open("../dump/nodata1_"+stop+".pickle","wb") as handle:
+    with open("../dump/nodata0_"+stop+".pickle","wb") as handle:
         pickle.dump(results,handle)
 
 def sum_res(filename):
@@ -1739,7 +1742,7 @@ def sum_median_worst():
 def sum_true():
     with open("../dump/data_true.pickle","r") as handle:
         record = pickle.load(handle)
-    with open("../dump/nodata1_true.pickle","r") as handle:
+    with open("../dump/nodata0_true.pickle","r") as handle:
         record1 = pickle.load(handle)
     dataname={"Danijel.csv": "Radjenovi{\\'c} (Full)", "Wahono.csv": "Wahono (Full)", "Hall.csv": "Hall (Full)", "K_all3.csv": "Kitchenham (Full)", "Danijel2005+.csv": "Radjenovi{\\'c} (Half)", "Wahono2008+.csv": "Wahono (Half)", "Hall2007+.csv": "Hall (Half)", "K_all3+.csv": "Kitchenham (Half)"}
     datasize={"Danijel.csv": 6000, "Wahono.csv": 7002, "Hall.csv": 8991, "K_all3.csv": 1704, "Danijel2005+.csv": 3035, "Wahono2008+.csv": 3810, "Hall2007+.csv": 4066, "K_all3+.csv": 1688}
@@ -1764,18 +1767,23 @@ def sum_true():
     for d in record1:
         dataset=dataname[d]
         new[dataset]={}
+        skv={}
         for t in record1[d]:
             if t=="UPDATE_ALL":
                 continue
             treatment=treatmentname[t]
 
             tmp = [x['x'][-1] for x in record1[d][t]]
+
+            skv[t]=tmp
+
             median=np.median(tmp)
             iqr = np.percentile(tmp,75)-np.percentile(tmp,25)
             w_median=0.95-median/datasize[d]
             w_iqr=(np.percentile(tmp,75)-np.percentile(tmp,25))/datasize[d]
 
             new[dataset][treatment]=[median, iqr, w_median, w_iqr]
+        rdivDemo(skv)
 
     ####draw table
     # treatments=['Auto-BM25', "Auto-Syn", "UPDATE", "REUSE", "RANDOM"]

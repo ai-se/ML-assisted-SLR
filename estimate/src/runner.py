@@ -262,7 +262,7 @@ def draw_est2(file):
         true=62
         total=7002
     elif which =="Hall":
-        true = 106
+        true = 104
         total = 8991
     elif which =="Danijel":
         true = 48
@@ -684,9 +684,6 @@ def START_Wallace(filename):
 
     read = Wallace()
     read = read.create(filename)
-    read.restart()
-    read = Wallace()
-    read = read.create(filename)
     target = 2000
     while True:
         pos, neg, total = read.get_numbers()
@@ -1020,7 +1017,7 @@ def BM25(filename, query, stop='true', seed=0):
     pos_last = 0
     np.random.seed(seed)
 
-    stops = 2000
+    stops = 1500
 
     read = MAR()
     read = read.create(filename)
@@ -1056,7 +1053,7 @@ def BM25(filename, query, stop='true', seed=0):
             else:
                 if pos >= target:
                     break
-            if pos < 20:
+            if pos < 10:
                 for id in a:
                     read.code(id, read.body['label'][id])
             else:

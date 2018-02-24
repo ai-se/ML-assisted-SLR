@@ -14,7 +14,7 @@ class MAR(object):
     def __init__(self):
         self.fea_num = 4000
         self.step = 10
-        self.enough = 20
+        self.enough = 30
         self.kept=50
         self.atleast=100
         self.enable_est = True
@@ -265,7 +265,7 @@ class MAR(object):
 
         pos_num_last = Counter(y0)[1]
 
-        lifes = 3
+        lifes = 1
         life = lifes
         pos_num = Counter(y0)[1]
 

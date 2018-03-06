@@ -311,13 +311,19 @@ def draw_est2(file):
         if ind == 50:
             ax.plot(stats['pos'][ind]['x'], np.array(uniform_test)[(np.array(stats['pos'][ind]['x'])/10).astype(int)] / true, color='red', linestyle=lines[1], label='uniform \nrandom \nsampling')
             ax.plot(stats['pos'][ind]['x'], np.array(stats['pos'][ind]['pos'])/true, linestyle=lines[2], color='blue', label="SEMI")
-            ax.plot(stats2['pos'][ind]['x'], np.array(stats2['pos'][ind]['pos']) / true, linestyle=lines[3], color='green', label="Wallace'13")
+            xx = [stats2['pos'][ind]['x'][i] for i in xrange(len(stats2['pos'][ind]['x'])) if stats2['pos'][ind]['x'][i]<1500]
+            yy = [stats2['pos'][ind]['pos'][i] for i in xrange(len(stats2['pos'][ind]['x'])) if
+                  stats2['pos'][ind]['x'][i] < 1500]
+            ax.plot(xx, np.array(yy) / true, linestyle=lines[3],
+                    color='green', label="Wallace'13")
+
+            # ax.plot(stats2['pos'][ind]['x'], np.array(stats2['pos'][ind]['pos']) / true, linestyle=lines[3], color='green', label="Wallace'13")
     plt.ylabel("Recall")
     plt.xlabel("#Papers Reviewed")
     plt.xlim(0, stats['pos'][ind]['x'][-1])
     plt.subplots_adjust(top=0.95, left=0.15, bottom=0.2, right=0.75)
 
-    ax.legend(bbox_to_anchor=(1.02, 1), loc=0, ncol=1, borderaxespad=0.)
+    ax.legend(bbox_to_anchor=(1.02, 1), loc=2, ncol=1, borderaxespad=0.)
 
     plt.savefig("../figure/recall_all_" + str(file) + ".eps")
     plt.savefig("../figure/recall_all_" + str(file) + ".png")
@@ -347,15 +353,21 @@ def draw_est2(file):
                 if key=="est":
                     name="Wallace'13"
                     startind=2
-                    plt.plot(stats2['est'][ind]['x'][startind:], np.array(stats2['est'][ind][key][startind:]) / total, color='green', linestyle=lines[index],
-                             label=name)
+                    xx = [stats2['est'][ind]['x'][i] for i in xrange(len(stats2['est'][ind]['x'])) if
+                          stats2['est'][ind]['x'][i] < 1500]
+                    yy = [stats2['est'][ind]['est'][i] for i in xrange(len(stats2['est'][ind]['x'])) if
+                          stats2['est'][ind]['x'][i] < 1500]
+                    ax.plot(xx[startind:], np.array(yy[startind:]) / total, linestyle=lines[index],
+                            color='green', label="Wallace'13")
+                    # plt.plot(stats2['est'][ind]['x'][startind:], np.array(stats2['est'][ind][key][startind:]) / total, color='green', linestyle=lines[index],
+                    #          label=name)
                     index = index + 1
 
     plt.ylabel("Prevalence")
     plt.xlabel("#Papers Reviewed")
     plt.subplots_adjust(top=0.95, left=0.15, bottom=0.2, right=0.75)
 
-    ax.legend(bbox_to_anchor=(1.02, 1), loc=0, ncol=1, borderaxespad=0.)
+    ax.legend(bbox_to_anchor=(1.02, 1), loc=2, ncol=1, borderaxespad=0.)
     # plt.show()
     plt.savefig("../figure/prev_all_" + str(file) + ".eps")
     plt.savefig("../figure/prev_all_" + str(file) + ".png")

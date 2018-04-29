@@ -1243,6 +1243,32 @@ def exp_BM25(stop='true', stopat=0.95):
         pickle.dump(results,handle)
     set_trace()
 
+def exp_BM25_all(stop='true', stopat=0.95):
+    repeats=30
+
+    files = ["Hall.csv", "Wahono.csv", "Danijel.csv", "K_all3.csv"]
+
+    # files = ["K_all3.csv"]
+
+    queries = {"Hall.csv": 'defect_prediction', "Wahono.csv": 'defect_prediction',
+               "Danijel.csv": 'defect_prediction_metrics', "K_all3.csv": "literature_review"}
+    results={}
+    for file in files:
+        results[file]=[]
+        for i in xrange(repeats):
+            read = BM25(file, queries[file], stop=stop, stopat=stopat, seed=i)
+            results[file].append(read.record)
+
+    # print(results)
+    with open("../dump/record_"+stop+".pickle","wb") as handle:
+        pickle.dump(results,handle)
+
+def show_result(stop='true'):
+    with open("../dump/record_"+stop+".pickle","r") as handle:
+        results = pickle.load(handle)
+    set_trace()
+    print(results)
+
 def exp_result(stop='true'):
     with open("../dump/other_"+stop+".pickle","r") as handle:
         results = pickle.load(handle)
@@ -1273,10 +1299,10 @@ def BM25(filename, query, stop='true', stopat=0.95, error='none', interval = 100
 
     while True:
         pos, neg, total = read.get_numbers()
-        try:
-            print("%d, %d, %d" %(pos,pos+neg, read.est_num))
-        except:
-            print("%d, %d" %(pos,pos+neg))
+        # try:
+        #     print("%d, %d, %d" %(pos,pos+neg, read.est_num))
+        # except:
+        #     print("%d, %d" %(pos,pos+neg))
 
         if pos + neg >= total:
             if stop=='knee' and error=='random':

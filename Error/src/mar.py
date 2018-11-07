@@ -490,6 +490,10 @@ class MAR(object):
 
     ## BM25 ##
     def BM25(self,query):
+        if query[0]=='':
+            self.bm = np.random.rand(len(self.body["Document Title"]))
+            return
+
         b=0.75
         k1=1.5
 

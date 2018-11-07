@@ -775,12 +775,13 @@ def LINEAR(filename):
     return read
 
 def Codes(filename, code):
-    stop=0.95
+    stop=1
     thres = 0
     if "P" in code:
         starting = 5
     else:
         starting = 1
+    e=[]
 
     weighting = "W" in code or "M" in code
     uncertain = "U" in code
@@ -803,7 +804,7 @@ def Codes(filename, code):
             for id in read.random():
                 read.code(id, read.body["label"][id])
         else:
-            a,b,c,d,e =read.train(weighting=weighting)
+            a,b,c,d =read.train(weighting=weighting)
             if pos < 30 and uncertain:
                 for id in a:
                     read.code(id, read.body["label"][id])
@@ -1237,6 +1238,8 @@ def exp_BM25(stop='true', stopat=0.95):
             print(i)
         results[file]['pos'] = np.median(pos)
         results[file]['cost'] = np.median(cost)
+        results[file]['pos_iqr'] = np.percentile(pos,75)-np.percentile(pos,25)
+        results[file]['cost_iqr'] = np.percentile(cost,75)-np.percentile(cost,25)
 
     # print(results)
     with open("../dump/other_"+stop+".pickle","wb") as handle:
@@ -1249,7 +1252,7 @@ def exp_result(stop='true'):
     print(results)
 
 ### BM25
-def BM25(filename, query, stop='true', stopat=0.95, error='none', interval = 100000, seed=0):
+def BM25(filename, query='', stop='true', stopat=0.95, error='none', interval = 100000, seed=0):
     stopat = float(stopat)
     thres = 0
     starting = 1
@@ -1263,6 +1266,7 @@ def BM25(filename, query, stop='true', stopat=0.95, error='none', interval = 100
     read.interval = interval
 
     read.BM25(query.strip().split('_'))
+
 
     num2 = read.get_allpos()
     target = int(num2 * stopat)
@@ -1669,6 +1673,53 @@ def draw_three():
     plt.savefig("../figure/percentile_all.eps")
     plt.savefig("../figure/percentile_all.png")
 
+def draw_demo():
+
+
+    wallace = Codes("Hall.csv","PUTA").record
+    fast2 = BM25("Hall.csv","defect prediction",'true', 1.00).record
+    random = {'x':[],'pos':[]}
+    for x in xrange(900):
+        random['x'].append(x*10)
+        random['pos'].append(int(106*x*10/8991))
+
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 20}
+
+
+    plt.rc('font', **font)
+    paras = {'lines.linewidth': 4, 'legend.fontsize': 20, 'axes.labelsize': 30, 'legend.frameon': False,
+             'figure.autolayout': True, 'figure.figsize': (10, 6)}
+    plt.rcParams.update(paras)
+    lines=['-','--','-.',':']
+
+
+
+
+
+    plt.figure(1)
+    plt.plot(fast2['x'], np.array(fast2['pos'])/106,linestyle=lines[0], color='red', label="Active Learning 1")
+    plt.plot(wallace['x'], np.array(wallace['pos'])/106,linestyle=lines[1], color='green', label="Active Learning 2")
+    plt.plot(random['x'], np.array(random['pos'])/106,linestyle=lines[2], color="blue", label="Random Order")
+    plt.ylabel("Recall")
+    plt.xlabel("Cost")
+
+    docnum = 8991
+    x=[i*1800 for i in xrange(5)]
+    plt.ylim((0, 1))
+
+    xlabels = ['%d'%(z/docnum*100)+"%" for z in x]
+
+    plt.xticks(x, xlabels)
+
+
+
+    plt.legend(bbox_to_anchor=(1, 0.50), loc=1, ncol=1, borderaxespad=0.)
+    plt.savefig("../figure/percentile_demo.eps")
+    plt.savefig("../figure/percentile_demo.pdf")
+    set_trace()
+
 
 def sum_median_worst():
     with open("../dump/data_true.pickle","r") as handle:
@@ -1852,7 +1903,10 @@ def error_hpcc(seed = 1):
     with open("../dump/error_hpcc.pickle","w+") as handle:
         pickle.dump(results,handle)
 
-
+def stop_result():
+    with open("../dump/nodata_est.pickle","r") as handle:
+        record = pickle.load(handle)
+    set_trace()
 
 
 if __name__ == "__main__":
